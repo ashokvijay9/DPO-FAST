@@ -1,0 +1,242 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-blue: hsl(211, 82%, 50%);
+  --secondary-blue: hsl(211, 100%, 95%);
+  --accent-blue: hsl(211, 100%, 35%);
+  --success-green: hsl(142, 76%, 36%);
+  --warning-yellow: hsl(45, 100%, 51%);
+  --gray-text: hsl(215, 13%, 44%);
+  
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(211, 82%, 15%);
+  --card: hsl(211, 100%, 98%);
+  --card-foreground: hsl(211, 82%, 15%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(211, 82%, 15%);
+  --primary: var(--primary-blue);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --primary-dark: var(--accent-blue);
+  --secondary: var(--secondary-blue);
+  --secondary-foreground: hsl(211, 82%, 15%);
+  --muted: hsl(215, 27%, 92%);
+  --muted-foreground: var(--gray-text);
+  --accent: hsl(211, 100%, 95%);
+  --accent-foreground: var(--primary-blue);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(214, 32%, 91%);
+  --input: hsl(214, 32%, 91%);
+  --ring: var(--primary-blue);
+  --chart-1: var(--primary-blue);
+  --chart-2: var(--success-green);
+  --chart-3: var(--warning-yellow);
+  --chart-4: hsl(173, 58%, 39%);
+  --chart-5: hsl(12, 76%, 61%);
+  --sidebar: hsl(211, 100%, 98%);
+  --sidebar-foreground: hsl(211, 82%, 15%);
+  --sidebar-primary: var(--primary-blue);
+  --sidebar-primary-foreground: hsl(0, 0%, 100%);
+  --sidebar-accent: hsl(211, 100%, 95%);
+  --sidebar-accent-foreground: var(--primary-blue);
+  --sidebar-border: hsl(214, 32%, 91%);
+  --sidebar-ring: var(--primary-blue);
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 0.8rem;
+}
+
+.dark {
+  --background: hsl(211, 20%, 8%);
+  --foreground: hsl(0, 0%, 95%);
+  --card: hsl(211, 20%, 12%);
+  --card-foreground: hsl(0, 0%, 95%);
+  --popover: hsl(211, 20%, 8%);
+  --popover-foreground: hsl(0, 0%, 95%);
+  --primary: hsl(211, 82%, 60%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --primary-dark: hsl(211, 82%, 45%);
+  --secondary: hsl(211, 20%, 15%);
+  --secondary-foreground: hsl(0, 0%, 95%);
+  --muted: hsl(211, 20%, 15%);
+  --muted-foreground: hsl(215, 13%, 65%);
+  --accent: hsl(211, 20%, 15%);
+  --accent-foreground: hsl(211, 82%, 60%);
+  --destructive: hsl(0, 62%, 50%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(211, 20%, 18%);
+  --input: hsl(211, 20%, 18%);
+  --ring: hsl(211, 82%, 60%);
+  --chart-1: hsl(211, 82%, 60%);
+  --chart-2: hsl(142, 76%, 46%);
+  --chart-3: hsl(45, 100%, 61%);
+  --chart-4: hsl(173, 58%, 49%);
+  --chart-5: hsl(12, 76%, 71%);
+  --sidebar: hsl(211, 20%, 12%);
+  --sidebar-foreground: hsl(0, 0%, 95%);
+  --sidebar-primary: hsl(211, 82%, 60%);
+  --sidebar-primary-foreground: hsl(0, 0%, 100%);
+  --sidebar-accent: hsl(211, 20%, 15%);
+  --sidebar-accent-foreground: hsl(211, 82%, 60%);
+  --sidebar-border: hsl(211, 20%, 18%);
+  --sidebar-ring: hsl(211, 82%, 60%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+  }
+}
+
+@layer components {
+  .feature-card {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  
+  .feature-card:hover {
+    @apply transform -translate-y-1 shadow-lg;
+  }
+
+  .question-card {
+    @apply shadow-xl border-0;
+  }
+
+  .compliance-meter {
+    background: conic-gradient(
+      var(--success-green) 0deg 120deg,
+      var(--warning-yellow) 120deg 240deg,
+      hsl(0, 84%, 60%) 240deg 360deg
+    );
+  }
+
+  .compliance-meter::before {
+    content: '';
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+    background: white;
+    border-radius: 50%;
+    z-index: 1;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Loading states */
+.loading-shimmer {
+  background: linear-gradient(90deg, 
+    hsl(var(--muted)) 25%, 
+    hsl(var(--muted) / 0.5) 50%, 
+    hsl(var(--muted)) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Form enhancements */
+.form-field-error {
+  @apply border-destructive focus-visible:ring-destructive;
+}
+
+/* Table enhancements */
+.table-hover-row:hover {
+  @apply bg-muted/25;
+}
+
+/* Button loading state */
+.btn-loading {
+  @apply pointer-events-none opacity-60;
+}
+
+/* Professional spacing and typography */
+.content-section {
+  @apply py-16 md:py-24;
+}
+
+.section-title {
+  @apply text-3xl md:text-4xl font-bold mb-4;
+}
+
+.section-subtitle {
+  @apply text-xl text-muted-foreground mb-8 md:mb-12;
+}
+
+/* Status indicators */
+.status-valid {
+  @apply bg-green-100 text-green-800 border-green-200;
+}
+
+.status-pending {
+  @apply bg-yellow-100 text-yellow-800 border-yellow-200;
+}
+
+.status-expired {
+  @apply bg-red-100 text-red-800 border-red-200;
+}
+
+/* Priority indicators */
+.priority-high {
+  @apply bg-red-100 text-red-800 border-red-200;
+}
+
+.priority-medium {
+  @apply bg-yellow-100 text-yellow-800 border-yellow-200;
+}
+
+.priority-low {
+  @apply bg-blue-100 text-blue-800 border-blue-200;
+}
