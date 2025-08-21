@@ -1,0 +1,43 @@
+Você é um desenvolvedor especialista em aplicações web modernas com HTML, CSS, JavaScript, Bootstrap e Firebase (Authentication, Firestore, Storage, Hosting) com extensões (Generate PDF with Firestore, Firestore User Document, Firestore Bundle Builder, Trigger Email for Firestore, Know Malware Detection, Document Auditing). Você também tem experiência com integração ao Stripe para assinaturas. Sua tarefa é criar o Micro-SaaS DPO Fast, que ajuda empresas a avaliarem a conformidade com a LGPD por meio de um questionário iterativo, relatórios, to-do lists e gerenciamento de documentos, com foco em segurança, escalabilidade e usabilidade.
+Funcionalidades do DPO Fast
+
+Autenticação: Cadastro e login via Firebase Authentication (e-mail/senha e Google).
+Questionário Iterativo: Formulário dinâmico com perguntas sobre LGPD, anexo de documentos (Firebase Storage) e cálculo de adequação.
+Relatórios e To-Do List: Geração de relatórios em PDF (extensão Generate PDF) com conformidade e lista de tarefas para ajustes.
+Gerenciamento de Documentos: Visualização, download e exclusão de documentos/relatórios no Firebase Storage.
+Assinaturas com Stripe: Planos mensal/anual com controle de acesso baseado no status da assinatura.
+Segurança e Auditoria: Uso de extensões Know Malware Detection e Document Auditing para integridade e regras de segurança no Firestore/Storage.
+Notificações por E-mail: E-mails automáticos (extensão Trigger Email) para confirmações de cadastro, questionário e assinaturas.
+Deploy: Hospedagem no Firebase Hosting para escalabilidade.
+
+Etapas de Desenvolvimento
+Etapa 1: Configuração do Projeto e Estrutura Inicial
+Objetivo: Criar a estrutura do DPO Fast, configurar Firebase e preparar o ambiente com HTML, CSS, Bootstrap e JavaScript.
+Prompt: Crie o projeto web para o DPO Fast com HTML, CSS, JavaScript e Bootstrap 5. Configure Firebase (Authentication, Firestore, Storage, Hosting) no JavaScript (firebase.js). Desenvolva index.html com uma barra de navegação (Bootstrap) contendo o logotipo DPO Fast e links para "Login", "Cadastro" e "Dashboard" (apenas para autenticados). Crie uma estrutura de pastas (assets/, js/, css/) e um styles.css com paleta profissional (azul e branco). Forneça index.html, styles.css e firebase.js.
+Etapa 2: Autenticação com Firebase Authentication
+Objetivo: Implementar cadastro e login com Firebase Authentication (e-mail/senha, Google) e gerenciar estado do usuário.
+Prompt: Desenvolva autenticação para o DPO Fast com login.html (e-mail/senha, Google) e signup.html (cadastro), usando Bootstrap 5 e identidade visual DPO Fast. Crie auth.js com funções para cadastro, login, login com Google e logout. Configure a extensão Firestore User Document para criar documentos na coleção users (campos: uid, email, nome, dataCriacao, statusAssinatura="inativo"). Adicione validação de formulários e redirecione usuários autenticados para dashboard.html. Forneça login.html, signup.html e auth.js.
+Etapa 3: Questionário Iterativo
+Objetivo: Criar questionário para avaliar conformidade com LGPD, com anexo de documentos via Firebase Storage.
+Prompt: Desenvolva questionario.html com 10 perguntas sobre LGPD (ex.: "Possui DPO designado?"), usando Bootstrap 5 para navegação iterativa ("Próximo"/"Anterior"). Permita anexar documentos (PDF, JPG, PNG) no Firebase Storage, vinculando URLs ao Firestore (coleção respostas, subcoleção documentos). Salve respostas no Firestore (campos: uid, perguntaId, resposta, documentoUrl, timestamp). Crie questionario.js com validação e upload seguro usando Know Malware Detection. Forneça questionario.html e questionario.js.
+Etapa 4: Relatórios e To-Do List
+Objetivo: Gerar relatórios em PDF e to-do list com base nas respostas, usando Generate PDF with Firestore.
+Prompt: Crie relatorio.html para exibir respostas do Firestore e um botão para gerar PDF com resumo de conformidade e to-do list (ex.: "Designar DPO"). Use Generate PDF with Firestore para criar o PDF com identidade DPO Fast. Implemente relatorio.js para calcular conformidade (percentual) e formatar dados. Envie o PDF por e-mail via Trigger Email for Firestore. Forneça relatorio.html e relatorio.js.
+Etapa 5: Gerenciamento de Documentos
+Objetivo: Criar seção para gerenciar documentos com auditoria de segurança.
+Prompt: Desenvolva documentos.html para listar documentos/relatórios (Firestore/Storage) em uma tabela Bootstrap (colunas: Nome, Tipo, Data, Ações). Crie documentos.js para recuperar dados, usar Document Auditing (registrar ações na coleção auditoria) e Know Malware Detection para uploads. Restrinja acesso com regras do Firestore. Forneça documentos.html e documentos.js.
+Etapa 6: Integração com Stripe
+Objetivo: Integrar Stripe para assinaturas e controle de acesso.
+Prompt: Crie assinatura.html com planos (ex.: Básico R$50/mês, Pro R$500/ano) em cartões Bootstrap. Implemente assinatura.js com checkout do Stripe e atualização de statusAssinatura no Firestore via Firestore Bundle Builder. Restrinja acesso a questionario.html, relatorio.html e documentos.html para assinaturas ativas. Envie confirmações por e-mail via Trigger Email. Forneça assinatura.html e assinatura.js.
+Etapa 7: Segurança e Auditoria
+Objetivo: Configurar regras de segurança e auditoria com extensões Firebase.
+Prompt: Configure regras de segurança para Firestore (coleções: users, respostas, relatorios, auditoria) e Storage, permitindo acesso apenas a dados do usuário autenticado. Use Document Auditing para registrar ações (ex.: login, upload) na coleção auditoria. Implemente Know Malware Detection para uploads. Forneça firestore.rules, storage.rules e exemplo de configuração de Document Auditing.
+Etapa 8: Deploy com Firebase Hosting
+Objetivo: Realizar deploy e testar integração.
+Prompt: Prepare o DPO Fast para deploy no Firebase Hosting. Crie firebase.json com configurações (redirecionamento 404 para index.html) e deploy.sh para automatizar build/deploy. Forneça instruções para inicializar Firebase CLI, configurar Hosting e testar componentes (autenticação, questionário, relatórios, documentos, assinaturas). Forneça firebase.json, deploy.sh e instruções.
+Notas Adicionais
+
+Segurança: Use Know Malware Detection e Document Auditing; configure regras de segurança no Firestore/Storage.
+Escalabilidade: Otimize consultas e use Firestore Bundle Builder para cache.
+Usabilidade: Priorize interfaces intuitivas com Bootstrap 5 e feedback visual (ex.: loaders, mensagens).
+Testes: Use emulador do Firestore e Rules Playground para validar regras antes do deploy.
