@@ -23,6 +23,7 @@ export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  updateUserSubscription(userId: string, customerId: string, subscriptionId: string, plan: string): Promise<User>;
   
   // Questionnaire operations
   saveQuestionnaireResponse(response: InsertQuestionnaireResponse): Promise<QuestionnaireResponse>;
@@ -71,6 +72,21 @@ export class DatabaseStorage implements IStorage {
           updatedAt: new Date(),
         },
       })
+      .returning();
+    return user;
+  }
+
+  async updateUserSubscription(userId: string, customerId: string, subscriptionId: string, plan: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({
+        subscriptionStatus: "active",
+        subscriptionPlan: plan,
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: subscriptionId,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
       .returning();
     return user;
   }

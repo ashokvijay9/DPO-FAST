@@ -7,6 +7,16 @@ import { z } from "zod";
 import multer from "multer";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
+import Stripe from "stripe";
+import { attachUserPlan, checkDocumentLimits, checkReportLimits, requireAdvancedFeatures, getPlanLimits, type AuthenticatedRequest } from "./middleware/planLimits";
+
+// Initialize Stripe
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2025-07-30.basil",
+});
 
 // Configure multer for file uploads
 const upload = multer({
@@ -44,11 +54,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await setupAuth(app);
 
   // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  app.get('/api/auth/user', isAuthenticated, attachUserPlan, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
-      res.json(user);
+      
+      // Include plan information in the response
+      const userWithPlan = {
+        ...user,
+        planLimits: req.planLimits
+      };
+      
+      res.json(userWithPlan);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
@@ -135,7 +152,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/documents/upload', isAuthenticated, upload.single('file'), async (req: any, res) => {
+  app.post('/api/documents/upload', isAuthenticated, attachUserPlan, checkDocumentLimits, upload.single('file'), async (req: any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
@@ -236,6 +253,150 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error updating compliance task:", error);
       res.status(500).json({ message: "Failed to update compliance task" });
     }
+  });
+
+  // Plan limits endpoint
+  app.get('/api/plan/limits', isAuthenticated, attachUserPlan, async (req: any, res) => {
+    try {
+      res.json({
+        plan: req.userPlan,
+        limits: req.planLimits
+      });
+    } catch (error) {
+      console.error("Error fetching plan limits:", error);
+      res.status(500).json({ message: "Failed to fetch plan limits" });
+    }
+  });
+
+  // Subscription routes
+  app.get('/api/subscription/status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      res.json({
+        subscriptionStatus: user?.subscriptionStatus || 'inactive',
+        subscriptionPlan: user?.subscriptionPlan || 'free',
+        stripeCustomerId: user?.stripeCustomerId,
+        stripeSubscriptionId: user?.stripeSubscriptionId,
+      });
+    } catch (error) {
+      console.error("Error fetching subscription status:", error);
+      res.status(500).json({ message: "Failed to fetch subscription status" });
+    }
+  });
+
+  app.post('/api/subscription/create-checkout', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { priceId, plan } = req.body;
+      
+      if (!priceId || !plan) {
+        return res.status(400).json({ message: "Price ID and plan are required" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      let customerId = user.stripeCustomerId;
+
+      // Create Stripe customer if doesn't exist
+      if (!customerId) {
+        const customer = await stripe.customers.create({
+          email: user.email || '',
+          name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email || '',
+          metadata: {
+            userId: userId,
+          },
+        });
+        customerId = customer.id;
+      }
+
+      // Create checkout session
+      const session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price: priceId,
+            quantity: 1,
+          },
+        ],
+        mode: 'subscription',
+        success_url: `${req.protocol}://${req.get('host')}/subscription?success=true`,
+        cancel_url: `${req.protocol}://${req.get('host')}/subscription?canceled=true`,
+        metadata: {
+          userId: userId,
+          plan: plan,
+        },
+      });
+
+      res.json({ sessionUrl: session.url });
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+      res.status(500).json({ message: "Failed to create checkout session" });
+    }
+  });
+
+  app.post('/api/subscription/cancel', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.stripeSubscriptionId) {
+        return res.status(404).json({ message: "No active subscription found" });
+      }
+
+      // Cancel subscription at period end
+      await stripe.subscriptions.update(user.stripeSubscriptionId, {
+        cancel_at_period_end: true,
+      });
+
+      res.json({ message: "Subscription will be canceled at the end of the billing period" });
+    } catch (error) {
+      console.error("Error canceling subscription:", error);
+      res.status(500).json({ message: "Failed to cancel subscription" });
+    }
+  });
+
+  // Stripe webhook endpoint
+  app.post('/api/webhooks/stripe', async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    let event;
+
+    try {
+      event = stripe.webhooks.constructEvent(req.body, sig as string, process.env.STRIPE_WEBHOOK_SECRET || '');
+    } catch (err: any) {
+      console.log(`Webhook signature verification failed.`, err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    // Handle the event
+    switch (event.type) {
+      case 'checkout.session.completed':
+        const session = event.data.object as Stripe.Checkout.Session;
+        if (session.metadata?.userId && session.metadata?.plan && session.customer) {
+          // Update user subscription status
+          await storage.updateUserSubscription(
+            session.metadata.userId,
+            session.customer as string,
+            session.subscription as string,
+            session.metadata.plan
+          );
+        }
+        break;
+      case 'customer.subscription.deleted':
+        const subscription = event.data.object as Stripe.Subscription;
+        // Handle subscription cancellation
+        // You might want to update user status to inactive
+        break;
+      default:
+        console.log(`Unhandled event type ${event.type}`);
+    }
+
+    res.json({ received: true });
   });
 
   const httpServer = createServer(app);

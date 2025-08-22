@@ -1,0 +1,66 @@
+### Planos de Assinatura para o DPO Fast
+
+Com base na contextualização do Micro-SaaS DPO Fast, que foca em conformidade com a LGPD para empresas, gerei planos de assinatura simples e escaláveis. Eles incluem opções mensal e anual, com descrições detalhadas para facilitar a criação no Stripe. No Stripe, você pode criar **Produtos** (com descrições) e associar **Preços** recorrentes (mensal ou anual). Usei valores de exemplo do prompt (R$ 50/mês para Básico e R$ 500/ano para Pro), mas você pode ajustar.
+
+Recomendo criar no Stripe Dashboard:
+1. Vá para "Produtos" > "Adicionar produto".
+2. Defina o nome, descrição e imagem (opcional, use logotipo DPO Fast).
+3. Adicione preços recorrentes (mensal/anual) com o valor e moeda (BRL).
+4. Use IDs como "basic_monthly", "pro_annual" para integração no código.
+
+Aqui estão os planos sugeridos:
+
+#### 1. Plano Básico (Mensal)
+- **Nome do Produto no Stripe**: DPO Fast Básico
+- **Descrição**: Plano inicial para pequenas empresas avaliarem conformidade com a LGPD. Inclui acesso ao questionário iterativo, geração de 1 relatório PDF por mês, to-do list básica e gerenciamento de até 5 documentos. Ideal para startups ou testes iniciais. Suporte por e-mail limitado.
+- **Preço ID**: basic_monthly
+- **Valor**: R$ 50,00
+- **Intervalo**: Mensal (recurring)
+- **Moeda**: BRL
+- **Benefícios Principais**:
+  - Questionário com 10 perguntas sobre LGPD.
+  - Relatório PDF com resumo de conformidade.
+  - To-do list para ajustes.
+  - Armazenamento de documentos no Firebase Storage (limite de 5).
+  - Notificações por e-mail para confirmações.
+
+#### 2. Plano Básico (Anual)
+- **Nome do Produto no Stripe**: DPO Fast Básico (Anual)
+- **Descrição**: Versão anual do plano Básico com desconto de 20% (equivalente a 10 meses pagos). Acesso ao questionário iterativo, geração de 1 relatório PDF por mês, to-do list básica e gerenciamento de até 5 documentos. Perfeito para economia em conformidade inicial com a LGPD.
+- **Preço ID**: basic_annual
+- **Valor**: R$ 500,00 (R$ 50/mês x 10 meses efetivos)
+- **Intervalo**: Anual (recurring)
+- **Moeda**: BRL
+- **Benefícios Principais**: Mesmos do mensal, com economia anual.
+
+#### 3. Plano Pro (Mensal)
+- **Nome do Produto no Stripe**: DPO Fast Pro
+- **Descrição**: Plano avançado para empresas médias que precisam de conformidade aprofundada com a LGPD. Inclui questionário ilimitado, geração de relatórios PDF ilimitados, to-do list personalizada, gerenciamento de documentos ilimitados, auditoria de segurança e suporte prioritário. Integração total com extensões Firebase para malware detection e e-mails automáticos.
+- **Preço ID**: pro_monthly
+- **Valor**: R$ 100,00 (exemplo escalado; ajuste se necessário)
+- **Intervalo**: Mensal (recurring)
+- **Moeda**: BRL
+- **Benefícios Principais**:
+  - Questionário iterativo completo com anexos ilimitados.
+  - Relatórios PDF detalhados com percentual de conformidade.
+  - To-do list avançada com ações recomendadas.
+  - Gerenciamento de documentos com auditoria (Document Auditing).
+  - Acesso prioritário a atualizações e suporte via chat/e-mail.
+
+#### 4. Plano Pro (Anual)
+- **Nome do Produto no Stripe**: DPO Fast Pro (Anual)
+- **Descrição**: Versão anual do plano Pro com desconto de 20% (equivalente a 10 meses pagos). Acesso ilimitado ao questionário, relatórios, to-do list e documentos, com foco em segurança e escalabilidade para conformidade LGPD contínua.
+- **Preço ID**: pro_annual
+- **Valor**: R$ 1.000,00 (R$ 100/mês x 10 meses efetivos; baseado no exemplo de R$ 500/ano para Pro, mas ajustado para consistência)
+- **Intervalo**: Anual (recurring)
+- **Moeda**: BRL
+- **Benefícios Principais**: Mesmos do mensal, com economia anual.
+
+### Dicas para Adicionar ao Stripe
+- **Criação de Produtos**: Crie um produto por plano (ex.: "DPO Fast Básico") e adicione múltiplos preços (mensal/anual) ao mesmo produto para facilitar.
+- **Integração no Código**: No assinatura.js, use os Preço IDs para criar sessões de checkout com Stripe (ex.: `stripe.checkout.sessions.create({ line_items: [{ price: 'basic_monthly', quantity: 1 }] })`).
+- **Testes**: Use o modo Teste no Stripe para criar chaves API e simular pagamentos.
+- **Atualização no Firestore**: Após pagamento, atualize o `statusAssinatura` para "ativo" e o plano (ex.: "basic" ou "pro") no documento do usuário.
+- **Personalização**: Adicione metadados no Stripe (ex.: "limite_relatorios: 1" para Básico) para sincronizar com regras de acesso no app.
+
+Se precisar de mais detalhes, como variações de preços ou descrições personalizadas, avise!

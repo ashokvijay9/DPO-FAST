@@ -22,6 +22,7 @@ import {
   Plus
 } from "lucide-react";
 import DocumentUploadModal from "@/components/DocumentUploadModal";
+import PlanLimitModal from "@/components/PlanLimitModal";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -37,6 +38,8 @@ export default function Documents() {
   
   const [searchTerm, setSearchTerm] = useState("");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const [limitError, setLimitError] = useState<any>(null);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -55,6 +58,11 @@ export default function Documents() {
 
   const { data: documents, isLoading: isDocumentsLoading } = useQuery({
     queryKey: ["/api/documents"],
+    enabled: isAuthenticated,
+  });
+
+  const { data: planLimits } = useQuery({
+    queryKey: ["/api/plan/limits"],
     enabled: isAuthenticated,
   });
 
@@ -177,7 +185,22 @@ export default function Documents() {
               Organize e monitore todos os documentos relacionados à conformidade LGPD
             </p>
           </div>
-          <Button onClick={() => setIsUploadModalOpen(true)} data-testid="button-upload-document">
+          <Button onClick={() => {
+            // Check document limits before opening upload modal
+            const currentCount = (documents as any)?.length || 0;
+            const maxAllowed = (planLimits as any)?.limits?.maxDocuments;
+            
+            if (maxAllowed !== -1 && currentCount >= maxAllowed) {
+              setLimitError({
+                currentCount,
+                maxAllowed,
+                plan: (planLimits as any)?.plan || 'free'
+              });
+              setShowLimitModal(true);
+            } else {
+              setIsUploadModalOpen(true);
+            }
+          }} data-testid="button-upload-document">
             <Plus className="mr-2 h-4 w-4" />
             Upload Documento
           </Button>
@@ -328,6 +351,15 @@ export default function Documents() {
         <DocumentUploadModal 
           isOpen={isUploadModalOpen}
           onClose={() => setIsUploadModalOpen(false)}
+        />
+
+        <PlanLimitModal
+          isOpen={showLimitModal}
+          onClose={() => setShowLimitModal(false)}
+          limitType="documents"
+          currentPlan={limitError?.plan || 'free'}
+          currentCount={limitError?.currentCount}
+          maxAllowed={limitError?.maxAllowed}
         />
       </div>
     </div>
