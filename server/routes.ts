@@ -428,8 +428,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // For development/testing, use a default user ID if not authenticated
       const userId = req.user?.claims?.sub || 'dev-user-123';
+      const { resetTasks = false, ...bodyData } = req.body;
       const validatedData = insertQuestionnaireResponseSchema.parse({
-        ...req.body,
+        ...bodyData,
         userId,
       });
 
@@ -444,8 +445,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const response = await storage.saveQuestionnaireResponse(validatedData);
       
-      // Create compliance tasks based on answers
-      await createComplianceTasksBasedOnAnswers(userId, answers);
+      // Create compliance tasks based on answers - only reset if explicitly requested
+      if (validatedData.isComplete) {
+        await createComplianceTasksBasedOnAnswers(userId, answers, resetTasks);
+      }
 
       // Log the action
       await storage.logAction({
@@ -906,9 +909,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 }
 
 // Helper function to create compliance tasks based on questionnaire answers
-async function createComplianceTasksBasedOnAnswers(userId: string, answers: string[]) {
-  // First, delete all existing tasks to reset the list
-  await storage.deleteAllUserComplianceTasks(userId);
+async function createComplianceTasksBasedOnAnswers(userId: string, answers: string[], resetTasks: boolean = true) {
+  // Only delete existing tasks if explicitly requested (for new questionnaires)
+  if (resetTasks) {
+    await storage.deleteAllUserComplianceTasks(userId);
+  }
 
   // Define comprehensive task templates with detailed steps
   const taskTemplates = {

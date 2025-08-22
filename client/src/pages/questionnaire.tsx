@@ -22,6 +22,7 @@ export default function Questionnaire() {
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
   
+  const [showInitialOptions, setShowInitialOptions] = useState(true);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string | string[]>>({});
   const [observations, setObservations] = useState<Record<number, string>>({});
@@ -71,6 +72,9 @@ export default function Questionnaire() {
           navigate("/");
         }, 1000); // Wait 1 second to show the success toast
       }
+      
+      // Refresh the query to update the showInitialOptions state
+      queryClient.invalidateQueries({ queryKey: ["/api/questionnaire/response"] });
     },
     onError: (error) => {
       if (isUnauthorizedError(error as Error)) {
@@ -116,6 +120,33 @@ export default function Questionnaire() {
       }
     }
   }, [existingResponse, questions]);
+
+  // Check if user has existing responses to show initial options
+  useEffect(() => {
+    if (existingResponse && (existingResponse as any)?.answer) {
+      setShowInitialOptions(true);
+    } else {
+      setShowInitialOptions(false);
+    }
+  }, [existingResponse]);
+
+  const handleStartNewQuestionnaire = () => {
+    // Reset all answers for new questionnaire
+    setAnswers({});
+    setObservations({});
+    setFiles({});
+    setCurrentQuestion(0);
+    setShowInitialOptions(false);
+    // Store that this is a new questionnaire to reset tasks
+    sessionStorage.setItem('isNewQuestionnaire', 'true');
+  };
+
+  const handleContinueExisting = () => {
+    // Keep existing answers and continue
+    setShowInitialOptions(false);
+    // Store that this is continuing existing questionnaire
+    sessionStorage.setItem('isNewQuestionnaire', 'false');
+  };
 
   const handleAnswerChange = (questionIndex: number, answer: string | string[]) => {
     setAnswers(prev => ({
@@ -242,12 +273,16 @@ export default function Questionnaire() {
       }
     }
 
+    const isNewQuestionnaire = sessionStorage.getItem('isNewQuestionnaire') === 'true';
     saveMutation.mutate({
       questionId: 1, // Single response for all questions
       answer: JSON.stringify(answersArray),
       observations: Object.values(observations).join("\n"),
       isComplete: true,
+      resetTasks: isNewQuestionnaire,
     });
+    // Clean up session storage
+    sessionStorage.removeItem('isNewQuestionnaire');
   };
 
   if (isLoading) {
@@ -266,6 +301,83 @@ export default function Questionnaire() {
             <p className="text-muted-foreground">Carregando questionário...</p>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  // Show initial options screen if user has existing responses
+  if (showInitialOptions && existingResponse && (existingResponse as any)?.answer) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-4">
+        <div className="max-w-2xl mx-auto pt-20">
+          <Card className="border-0 shadow-2xl bg-white/80 dark:bg-slate-800/90 backdrop-blur-xl">
+            <CardHeader className="text-center pb-8">
+              <div className="mx-auto mb-6 p-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl w-16 h-16 flex items-center justify-center">
+                <BookOpen className="h-8 w-8 text-white" />
+              </div>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+                Questionário LGPD
+              </h1>
+              <p className="text-slate-600 dark:text-slate-300">
+                Você já possui respostas salvas. O que deseja fazer?
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4 pb-8">
+              <div className="grid gap-4">
+                <Card className="border-2 border-slate-200 dark:border-slate-600 hover:border-blue-400 dark:hover:border-blue-500 transition-colors cursor-pointer"
+                      onClick={handleContinueExisting}
+                      data-testid="button-continue-existing">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                        <FileCheck className="h-6 w-6 text-green-600 dark:text-green-400" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-slate-900 dark:text-white mb-1">
+                          Continuar Questionário Existente
+                        </h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-300">
+                          Continue de onde parou. Suas respostas anteriores serão mantidas e você pode editá-las.
+                        </p>
+                      </div>
+                      <ArrowRight className="h-5 w-5 text-slate-400" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-2 border-slate-200 dark:border-slate-600 hover:border-orange-400 dark:hover:border-orange-500 transition-colors cursor-pointer"
+                      onClick={handleStartNewQuestionnaire}
+                      data-testid="button-start-new">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                        <Target className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-slate-900 dark:text-white mb-1">
+                          Iniciar Novo Questionário
+                        </h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-300">
+                          Recomeçar do zero. Suas tarefas pendentes serão atualizadas com base nas novas respostas.
+                        </p>
+                        <Badge variant="outline" className="mt-2 text-xs">
+                          Gera novas tarefas
+                        </Badge>
+                      </div>
+                      <ArrowRight className="h-5 w-5 text-slate-400" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
+                  💡 Dica: Se suas informações mudaram recentemente, recomendamos iniciar um novo questionário para gerar tarefas mais precisas.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
