@@ -90,16 +90,22 @@ export default function Questionnaire() {
     if ((existingResponse as any)?.answer) {
       try {
         const existingAnswers = JSON.parse((existingResponse as any).answer);
-        const answersObj: Record<number, string> = {};
+        const answersObj: Record<number, string | string[]> = {};
         existingAnswers.forEach((answer: string, index: number) => {
-          answersObj[index] = answer;
+          const questionData = questions[index];
+          if (questionData?.type === "multiple" && answer) {
+            // For multiple choice questions, split the string back into an array
+            answersObj[index] = answer.split(", ").filter(item => item.trim() !== "");
+          } else {
+            answersObj[index] = answer;
+          }
         });
         setAnswers(answersObj);
       } catch (error) {
         console.error("Error parsing existing answers:", error);
       }
     }
-  }, [existingResponse]);
+  }, [existingResponse, questions]);
 
   const handleAnswerChange = (questionIndex: number, answer: string | string[]) => {
     setAnswers(prev => ({
@@ -110,7 +116,16 @@ export default function Questionnaire() {
 
   const handleMultipleAnswerChange = (questionIndex: number, option: string, checked: boolean) => {
     setAnswers(prev => {
-      const currentAnswers = (prev[questionIndex] as string[]) || [];
+      const prevAnswer = prev[questionIndex];
+      // Ensure currentAnswers is always an array
+      let currentAnswers: string[] = [];
+      if (Array.isArray(prevAnswer)) {
+        currentAnswers = prevAnswer;
+      } else if (typeof prevAnswer === 'string' && prevAnswer) {
+        // Convert string to array if needed (for loaded data)
+        currentAnswers = prevAnswer.split(", ").filter(item => item.trim() !== "");
+      }
+      
       if (checked) {
         return {
           ...prev,
@@ -322,7 +337,15 @@ export default function Questionnaire() {
                 <div key={index} className="flex items-center space-x-2">
                   <Checkbox
                     id={`checkbox-${currentQuestion}-${index}`}
-                    checked={(currentAnswer as string[] || []).includes(option)}
+                    checked={(() => {
+                      const answer = currentAnswer;
+                      if (Array.isArray(answer)) {
+                        return answer.includes(option);
+                      } else if (typeof answer === 'string' && answer) {
+                        return answer.split(", ").includes(option);
+                      }
+                      return false;
+                    })()}
                     onCheckedChange={(checked) => 
                       handleMultipleAnswerChange(currentQuestion, option, checked as boolean)
                     }
