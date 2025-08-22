@@ -210,6 +210,12 @@ export class DatabaseStorage implements IStorage {
     return updated;
   }
 
+  async deleteAllUserComplianceTasks(userId: string): Promise<void> {
+    await db
+      .delete(complianceTasks)
+      .where(eq(complianceTasks.userId, userId));
+  }
+
   // Compliance report operations
   async createComplianceReport(report: InsertComplianceReport): Promise<ComplianceReport> {
     const [created] = await db

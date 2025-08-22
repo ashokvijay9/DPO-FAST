@@ -88,8 +88,10 @@ export const complianceTasks = pgTable("compliance_tasks", {
   userId: varchar("user_id").notNull().references(() => users.id),
   title: varchar("title").notNull(),
   description: text("description").notNull(),
+  steps: jsonb("steps"), // Array of step-by-step instructions
   priority: varchar("priority").notNull(), // high, medium, low
   status: varchar("status").default("pending"), // pending, completed
+  category: varchar("category"), // data_protection, consent, documentation, etc.
   dueDate: timestamp("due_date"),
   completedAt: timestamp("completed_at"),
   createdAt: timestamp("created_at").defaultNow(),

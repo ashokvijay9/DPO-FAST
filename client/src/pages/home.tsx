@@ -290,40 +290,85 @@ export default function Home() {
               </CardHeader>
               <CardContent className="p-0">
                 {(tasks as any)?.length > 0 ? (
-                  <div className="divide-y">
+                  <div className="space-y-4 p-4">
                     {(tasks as any)?.slice(0, 5).map((task: any) => (
-                      <div key={task.id} className="p-4 flex items-center justify-between" data-testid={`task-item-${task.id}`}>
-                        <div className="flex-1">
-                          <div className="flex items-center mb-1">
-                            <Badge 
-                              variant={
-                                task.priority === 'high' ? 'destructive' : 
-                                task.priority === 'medium' ? 'default' : 
-                                'secondary'
-                              }
-                              className="mr-2"
+                      <Card key={task.id} className="border-l-4 border-l-blue-500 shadow-sm" data-testid={`task-item-${task.id}`}>
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Badge 
+                                  variant={
+                                    task.priority === 'high' ? 'destructive' : 
+                                    task.priority === 'medium' ? 'default' : 
+                                    'secondary'
+                                  }
+                                  className="text-xs"
+                                >
+                                  {task.priority === 'high' ? 'Alta Prioridade' : 
+                                   task.priority === 'medium' ? 'Média Prioridade' : 'Baixa Prioridade'}
+                                </Badge>
+                                {task.category && (
+                                  <Badge variant="outline" className="text-xs">
+                                    {task.category === 'governance' ? 'Governança' :
+                                     task.category === 'documentation' ? 'Documentação' :
+                                     task.category === 'consent_management' ? 'Consentimento' :
+                                     task.category === 'data_protection' ? 'Proteção de Dados' :
+                                     task.category === 'security' ? 'Segurança' :
+                                     task.category === 'training' ? 'Treinamento' :
+                                     task.category}
+                                  </Badge>
+                                )}
+                              </div>
+                              <h4 className="font-semibold text-slate-900 dark:text-white mb-1">{task.title}</h4>
+                              <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">{task.description}</p>
+                              
+                              {task.steps && task.steps.length > 0 && (
+                                <details className="group">
+                                  <summary className="cursor-pointer text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                                    <span>Ver passos detalhados ({task.steps.length} etapas)</span>
+                                    <ChevronRight className="h-3 w-3 transition-transform group-open:rotate-90" />
+                                  </summary>
+                                  <div className="mt-2 pl-4 border-l-2 border-slate-200 dark:border-slate-700">
+                                    <div className="space-y-1">
+                                      {task.steps.slice(0, 5).map((step: string, index: number) => (
+                                        <div key={index} className="text-xs text-slate-600 dark:text-slate-400 flex items-start gap-2">
+                                          <span className="w-4 h-4 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-xs font-medium text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0">
+                                            {index + 1}
+                                          </span>
+                                          <span className="flex-1">{step.replace(/^\d+\.\s*/, '')}</span>
+                                        </div>
+                                      ))}
+                                      {task.steps.length > 5 && (
+                                        <div className="text-xs text-slate-500 pl-6">
+                                          ... e mais {task.steps.length - 5} passos
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </details>
+                              )}
+                              
+                              {task.dueDate && (
+                                <div className="flex items-center gap-1 mt-2 text-xs text-slate-600 dark:text-slate-400">
+                                  <Calendar className="h-3 w-3" />
+                                  <span>Prazo: {new Date(task.dueDate).toLocaleDateString('pt-BR')}</span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              className="ml-4 gap-1"
+                              data-testid={`button-complete-task-${task.id}`}
                             >
-                              {task.priority === 'high' ? 'Alta' : 
-                               task.priority === 'medium' ? 'Média' : 'Baixa'}
-                            </Badge>
+                              <CheckCircle className="h-3 w-3" />
+                              Concluir
+                            </Button>
                           </div>
-                          <h4 className="font-medium">{task.title}</h4>
-                          <p className="text-sm text-muted-foreground mb-1">{task.description}</p>
-                          {task.dueDate && (
-                            <p className="text-xs text-muted-foreground flex items-center">
-                              <Calendar className="h-3 w-3 mr-1" />
-                              Prazo: {new Date(task.dueDate).toLocaleDateString('pt-BR')}
-                            </p>
-                          )}
-                        </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          data-testid={`button-complete-task-${task.id}`}
-                        >
-                          Marcar como Feito
-                        </Button>
-                      </div>
+                        </CardContent>
+                      </Card>
                     ))}
                   </div>
                 ) : (
