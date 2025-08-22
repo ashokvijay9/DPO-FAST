@@ -18,7 +18,12 @@ import {
   Calendar,
   Target,
   Download,
-  FileBarChart
+  FileBarChart,
+  BookOpen,
+  User,
+  TrendingUp,
+  BarChart3,
+  Settings
 } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -119,72 +124,155 @@ export default function Home() {
   const canGenerateReport = complianceScore > 0; // User must have completed questionnaire
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
+      {/* Modern Header */}
+      <div className="border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg shadow-lg">
+                <Target className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                  DPO Fast
+                </h1>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Dashboard de Conformidade LGPD
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate('/questionnaire')}
+                className="gap-2"
+              >
+                <BookOpen className="h-4 w-4" />
+                Questionário
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate('/documents')}
+                className="gap-2"
+              >
+                <FileText className="h-4 w-4" />
+                Documentos
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.location.href = '/api/logout'}
+                className="gap-2"
+              >
+                <User className="h-4 w-4" />
+                Sair
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Dashboard de Conformidade</h1>
+          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 mb-2">
+            <CheckCircle className="h-4 w-4" />
+            Última atualização há poucos minutos
+          </div>
           <p className="text-muted-foreground">
             Acompanhe o status de adequação LGPD da sua empresa
           </p>
         </div>
 
-        {/* Stats Cards */}
+        {/* Modern Stats Cards */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card className="relative overflow-hidden">
+          <Card className="border-0 shadow-lg bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-green-500/10 via-emerald-500/10 to-teal-500/10 p-4 border-b">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                  <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
+                </div>
+                <h3 className="font-semibold text-slate-700 dark:text-slate-300">Score de Conformidade</h3>
+              </div>
+            </div>
             <CardContent className="p-6 text-center">
-              <div className="compliance-meter mx-auto mb-4 relative w-32 h-32 rounded-full bg-gradient-to-r from-green-400 via-yellow-400 to-red-400 flex items-center justify-center">
-                <div className="absolute inset-4 bg-white rounded-full flex items-center justify-center">
-                  <span className="text-2xl font-bold text-primary" data-testid="text-compliance-score">
+              <div className="relative w-24 h-24 mx-auto mb-4">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-green-400 to-emerald-600 opacity-20"></div>
+                <div className="absolute inset-2 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center shadow-lg">
+                  <span className="text-2xl font-bold text-green-600 dark:text-green-400" data-testid="text-compliance-score">
                     {complianceScore}%
                   </span>
                 </div>
               </div>
-              <h3 className="font-semibold text-lg">Nível de Conformidade</h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
                 {complianceScore >= 80 
-                  ? "Sua empresa está em ótimo caminho!" 
+                  ? "Excelente conformidade!" 
                   : complianceScore >= 60 
-                  ? "Sua empresa está em bom caminho!"
-                  : "Há oportunidades de melhoria"
+                  ? "Bom nível de adequação"
+                  : "Precisa de melhorias"
                 }
               </p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center mb-4">
-                <AlertTriangle className="h-8 w-8 text-yellow-500 mr-3" />
-                <div>
-                  <h3 className="text-2xl font-bold" data-testid="text-pending-tasks">{pendingTasks}</h3>
-                  <p className="text-sm text-muted-foreground">Tarefas Pendentes</p>
+          <Card className="border-0 shadow-lg bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-yellow-500/10 via-orange-500/10 to-red-500/10 p-4 border-b">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+                  <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
                 </div>
+                <h3 className="font-semibold text-slate-700 dark:text-slate-300">Tarefas Pendentes</h3>
               </div>
-              <Progress value={pendingTasks > 0 ? 60 : 100} className="mb-2" />
-              <p className="text-xs text-muted-foreground">
-                {pendingTasks === 0 ? "Todas as tarefas concluídas!" : `${pendingTasks} tarefas precisam de atenção`}
-              </p>
+            </div>
+            <CardContent className="p-6">
+              <div className="text-center mb-4">
+                <h3 className="text-3xl font-bold text-slate-900 dark:text-white" data-testid="text-pending-tasks">{pendingTasks}</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400">ações necessárias</p>
+              </div>
+              <div className="space-y-2">
+                <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      pendingTasks === 0 
+                        ? 'bg-gradient-to-r from-green-500 to-emerald-600' 
+                        : 'bg-gradient-to-r from-yellow-500 to-orange-600'
+                    }`}
+                    style={{ width: `${pendingTasks === 0 ? 100 : Math.max(20, 100 - (pendingTasks * 10))}%` }}
+                  />
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-400 text-center">
+                  {pendingTasks === 0 ? "Tudo em dia!" : "Requer atenção"}
+                </p>
+              </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center mb-4">
-                <FileText className="h-8 w-8 text-green-500 mr-3" />
-                <div>
-                  <h3 className="text-2xl font-bold" data-testid="text-documents-count">{documentsCount}</h3>
-                  <p className="text-sm text-muted-foreground">Documentos</p>
+          <Card className="border-0 shadow-lg bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-purple-500/10 p-4 border-b">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                  <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 </div>
+                <h3 className="font-semibold text-slate-700 dark:text-slate-300">Documentos</h3>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-green-600 flex items-center">
-                  <CheckCircle className="h-4 w-4 mr-1" />
-                  {validDocuments} Válidos
-                </span>
-                <span className="text-yellow-600 flex items-center">
-                  <AlertTriangle className="h-4 w-4 mr-1" />
-                  {pendingDocuments} Revisão
-                </span>
+            </div>
+            <CardContent className="p-6">
+              <div className="text-center mb-4">
+                <h3 className="text-3xl font-bold text-slate-900 dark:text-white" data-testid="text-documents-count">{documentsCount}</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400">arquivos gerenciados</p>
+              </div>
+              <div className="flex justify-between text-sm space-x-2">
+                <div className="text-center flex-1">
+                  <div className="text-green-600 dark:text-green-400 font-semibold">{validDocuments}</div>
+                  <div className="text-xs text-slate-600 dark:text-slate-400">Válidos</div>
+                </div>
+                <div className="text-center flex-1">
+                  <div className="text-yellow-600 dark:text-yellow-400 font-semibold">{pendingDocuments}</div>
+                  <div className="text-xs text-slate-600 dark:text-slate-400">Revisão</div>
+                </div>
               </div>
             </CardContent>
           </Card>

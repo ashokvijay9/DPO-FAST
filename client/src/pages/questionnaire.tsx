@@ -10,7 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
-import { ChevronLeft, ChevronRight, Save, Check, FileIcon, Upload } from "lucide-react";
+import { ChevronLeft, ChevronRight, Save, Check, FileIcon, Upload, BookOpen, Target, ArrowRight, ArrowLeft, HelpCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -289,40 +290,55 @@ export default function Questionnaire() {
         </div>
 
         {currentQuestionData.type === "text" && (
-          <div className="space-y-2">
-            <Label htmlFor={`answer-${currentQuestion}`}>Resposta:</Label>
-            <Textarea
-              id={`answer-${currentQuestion}`}
-              placeholder="Digite sua resposta aqui..."
-              value={currentAnswer as string}
-              onChange={(e) => handleAnswerChange(currentQuestion, e.target.value)}
-              rows={4}
-              data-testid={`textarea-answer-${currentQuestion + 1}`}
-            />
+          <div className="space-y-4">
+            <div className="p-6 bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-slate-200 dark:border-slate-700">
+              <Label htmlFor={`answer-${currentQuestion}`} className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3 block">
+                Sua resposta:
+              </Label>
+              <Textarea
+                id={`answer-${currentQuestion}`}
+                placeholder="Digite sua resposta detalhada aqui..."
+                value={currentAnswer as string}
+                onChange={(e) => handleAnswerChange(currentQuestion, e.target.value)}
+                rows={5}
+                className="w-full resize-none border-0 bg-white dark:bg-slate-900 shadow-sm rounded-lg focus:ring-2 focus:ring-blue-500 transition-all"
+                data-testid={`textarea-answer-${currentQuestion + 1}`}
+              />
+            </div>
           </div>
         )}
 
         {currentQuestionData.type === "single" && (
-          <div className="space-y-3">
-            <Label>Selecione uma opção:</Label>
+          <div className="space-y-4">
+            <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              Selecione uma opção:
+            </Label>
             <RadioGroup 
               value={currentAnswer as string} 
               onValueChange={(value) => handleAnswerChange(currentQuestion, value)}
               data-testid={`radio-group-${currentQuestion + 1}`}
+              className="space-y-2"
             >
               {currentQuestionData.options?.map((option: string, index: number) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <RadioGroupItem 
-                    value={option} 
-                    id={`option-${currentQuestion}-${index}`}
-                    data-testid={`radio-option-${currentQuestion + 1}-${index + 1}`}
-                  />
-                  <Label 
+                <div key={index} className="group">
+                  <label
                     htmlFor={`option-${currentQuestion}-${index}`}
-                    className="cursor-pointer text-sm"
+                    className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+                      currentAnswer === option
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 shadow-md'
+                        : 'border-slate-200 dark:border-slate-700 hover:border-blue-300 hover:bg-slate-50 dark:hover:bg-slate-800/30'
+                    }`}
                   >
-                    {option}
-                  </Label>
+                    <RadioGroupItem 
+                      value={option} 
+                      id={`option-${currentQuestion}-${index}`}
+                      data-testid={`radio-option-${currentQuestion + 1}-${index + 1}`}
+                      className="mt-0.5"
+                    />
+                    <span className="text-sm text-slate-700 dark:text-slate-300 flex-1 leading-relaxed">
+                      {option}
+                    </span>
+                  </label>
                 </div>
               ))}
             </RadioGroup>
@@ -330,131 +346,223 @@ export default function Questionnaire() {
         )}
 
         {currentQuestionData.type === "multiple" && (
-          <div className="space-y-3">
-            <Label>Selecione todas as opções que se aplicam:</Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-64 overflow-y-auto border rounded-lg p-4">
-              {currentQuestionData.options?.map((option: string, index: number) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`checkbox-${currentQuestion}-${index}`}
-                    checked={(() => {
-                      const answer = currentAnswer;
-                      if (Array.isArray(answer)) {
-                        return answer.includes(option);
-                      } else if (typeof answer === 'string' && answer) {
-                        return answer.split(", ").includes(option);
-                      }
-                      return false;
-                    })()}
-                    onCheckedChange={(checked) => 
-                      handleMultipleAnswerChange(currentQuestion, option, checked as boolean)
-                    }
-                    data-testid={`checkbox-option-${currentQuestion + 1}-${index + 1}`}
-                  />
-                  <Label 
-                    htmlFor={`checkbox-${currentQuestion}-${index}`}
-                    className="cursor-pointer text-sm"
-                  >
-                    {option}
-                  </Label>
-                </div>
-              ))}
+          <div className="space-y-4">
+            <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              Selecione todas as opções que se aplicam:
+            </Label>
+            <div className="grid grid-cols-1 gap-3 max-h-80 overflow-y-auto pr-2">
+              {currentQuestionData.options?.map((option: string, index: number) => {
+                const isSelected = (() => {
+                  const answer = currentAnswer;
+                  if (Array.isArray(answer)) {
+                    return answer.includes(option);
+                  } else if (typeof answer === 'string' && answer) {
+                    return answer.split(", ").includes(option);
+                  }
+                  return false;
+                })();
+                
+                return (
+                  <div key={index} className="group">
+                    <label
+                      htmlFor={`checkbox-${currentQuestion}-${index}`}
+                      className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+                        isSelected
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 shadow-md'
+                          : 'border-slate-200 dark:border-slate-700 hover:border-blue-300 hover:bg-slate-50 dark:hover:bg-slate-800/30'
+                      }`}
+                    >
+                      <Checkbox
+                        id={`checkbox-${currentQuestion}-${index}`}
+                        checked={isSelected}
+                        onCheckedChange={(checked) => 
+                          handleMultipleAnswerChange(currentQuestion, option, checked as boolean)
+                        }
+                        data-testid={`checkbox-option-${currentQuestion + 1}-${index + 1}`}
+                        className="mt-0.5"
+                      />
+                      <span className="text-sm text-slate-700 dark:text-slate-300 flex-1 leading-relaxed">
+                        {option}
+                      </span>
+                    </label>
+                  </div>
+                );
+              })}
             </div>
+            {Array.isArray(currentAnswer) && currentAnswer.length > 0 && (
+              <div className="mt-3 p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg">
+                <p className="text-xs text-green-700 dark:text-green-300 font-medium">
+                  {currentAnswer.length} opção{currentAnswer.length > 1 ? 'ões' : ''} selecionada{currentAnswer.length > 1 ? 's' : ''}
+                </p>
+              </div>
+            )}
           </div>
         )}
 
         {needsDocument() && (
-          <div className="border-2 border-dashed border-primary/20 rounded-lg p-6 bg-primary/5">
+          <div className="mt-6 p-6 bg-gradient-to-r from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-950/30 dark:via-amber-950/30 dark:to-yellow-950/30 border-2 border-dashed border-orange-200 dark:border-orange-800 rounded-xl">
             <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Upload className="h-5 w-5 text-primary" />
-                <Label className="text-sm font-medium">
-                  Documento Obrigatório
-                </Label>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                  <Upload className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                </div>
+                <div>
+                  <Label className="text-sm font-semibold text-orange-800 dark:text-orange-200">
+                    Documento Comprobatório
+                  </Label>
+                  <p className="text-xs text-orange-700 dark:text-orange-300 mt-1">
+                    Para esta resposta, é necessário anexar um documento oficial
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Para esta resposta, é necessário anexar um documento comprobatório.
-              </p>
-              <Input
-                type="file"
-                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                onChange={(e) => handleFileChange(currentQuestion, e.target.files)}
-                data-testid={`file-upload-${currentQuestion + 1}`}
-              />
+              <div className="relative">
+                <Input
+                  type="file"
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                  onChange={(e) => handleFileChange(currentQuestion, e.target.files)}
+                  data-testid={`file-upload-${currentQuestion + 1}`}
+                  className="file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 file:cursor-pointer cursor-pointer"
+                />
+              </div>
               {currentFiles && currentFiles.length > 0 && (
-                <div className="flex items-center gap-2 text-sm text-green-600">
-                  <FileIcon className="h-4 w-4" />
-                  <span>{currentFiles[0].name}</span>
+                <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg">
+                  <FileIcon className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  <span className="text-sm text-green-700 dark:text-green-300 font-medium">{currentFiles[0].name}</span>
                 </div>
               )}
             </div>
           </div>
         )}
 
-        <div className="space-y-2">
-          <Label htmlFor={`observation-${currentQuestion}`}>
-            Observações (opcional):
-          </Label>
-          <Textarea
-            id={`observation-${currentQuestion}`}
-            placeholder="Adicione observações sobre esta pergunta (opcional)..."
-            value={currentObservation}
-            onChange={(e) => handleObservationChange(currentQuestion, e.target.value)}
-            rows={3}
-            data-testid={`textarea-observation-${currentQuestion + 1}`}
-          />
+        <div className="mt-6 space-y-3">
+          <div className="p-4 bg-slate-50/50 dark:bg-slate-800/20 rounded-xl border border-slate-200 dark:border-slate-700">
+            <Label htmlFor={`observation-${currentQuestion}`} className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3 block">
+              Observações adicionais (opcional):
+            </Label>
+            <Textarea
+              id={`observation-${currentQuestion}`}
+              placeholder="Adicione contextos, esclarecimentos ou observações relevantes..."
+              value={currentObservation}
+              onChange={(e) => handleObservationChange(currentQuestion, e.target.value)}
+              rows={3}
+              className="w-full resize-none border-0 bg-white dark:bg-slate-900 shadow-sm rounded-lg focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+              data-testid={`textarea-observation-${currentQuestion + 1}`}
+            />
+          </div>
         </div>
       </div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <Card className="question-card shadow-lg">
-            <CardHeader className="bg-card border-b">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-xl font-semibold">Avaliação de Conformidade LGPD</h1>
-                  <p className="text-sm text-muted-foreground">
-                    Questão <span data-testid="text-current-question">{currentQuestion + 1}</span> de {totalQuestions}
-                  </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
+      {/* Modern Header */}
+      <div className="border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg shadow-lg">
+                <BookOpen className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                  Avaliação LGPD
+                </h1>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Questionário de conformidade empresarial
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <Badge variant="secondary" className="text-xs px-3 py-1">
+                {currentQuestion + 1} de {totalQuestions}
+              </Badge>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleSaveDraft}
+                disabled={saveMutation.isPending}
+                data-testid="button-save-draft"
+                className="gap-2"
+              >
+                <Save className="h-4 w-4" />
+                {saveMutation.isPending ? "Salvando..." : "Salvar"}
+              </Button>
+            </div>
+          </div>
+          
+          {/* Modern Progress Bar */}
+          <div className="mt-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                Progresso da Avaliação
+              </span>
+              <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                {Math.round(progress)}%
+              </span>
+            </div>
+            <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto p-4">
+        <div className="mt-8">
+          <Card className="border-0 shadow-xl bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg overflow-hidden">
+            {/* Question Header */}
+            <div className="bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-purple-500/10 p-6 border-b">
+              <div className="flex items-start gap-4">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                  <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 </div>
-                <div className="w-48">
-                  <Progress value={progress} className="h-2" />
-                  <p className="text-xs text-muted-foreground mt-1 text-right">
-                    {Math.round(progress)}%
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                      Questão {currentQuestion + 1}
+                    </h2>
+                    <Badge variant="outline" className="text-xs">
+                      {currentQuestionData?.type === 'text' ? 'Texto' :
+                       currentQuestionData?.type === 'single' ? 'Única escolha' : 'Múltipla escolha'}
+                    </Badge>
+                  </div>
+                  <h3 className="text-base font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    {currentQuestionData?.question}
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 flex items-start gap-1">
+                    <HelpCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                    {currentQuestionData?.description}
                   </p>
                 </div>
               </div>
-            </CardHeader>
+            </div>
 
+            {/* Question Content */}
             <CardContent className="p-8">
               {renderQuestion()}
             </CardContent>
 
-            <div className="border-t bg-card px-8 py-4">
-              <div className="flex justify-between">
+            {/* Navigation Footer */}
+            <div className="bg-slate-50/50 dark:bg-slate-800/50 border-t px-8 py-6">
+              <div className="flex justify-between items-center">
                 <Button 
-                  variant="outline" 
+                  variant="ghost" 
                   onClick={handlePrevious}
                   disabled={currentQuestion === 0}
                   data-testid="button-previous"
+                  className="gap-2"
                 >
-                  <ChevronLeft className="mr-2 h-4 w-4" />
+                  <ArrowLeft className="h-4 w-4" />
                   Anterior
                 </Button>
+                
                 <div className="flex gap-3">
-                  <Button 
-                    variant="outline" 
-                    onClick={handleSaveDraft}
-                    disabled={saveMutation.isPending}
-                    data-testid="button-save-draft"
-                  >
-                    <Save className="mr-2 h-4 w-4" />
-                    Salvar Rascunho
-                  </Button>
                   <Button 
                     onClick={handleNext}
                     disabled={
@@ -463,19 +571,40 @@ export default function Questionnaire() {
                       saveMutation.isPending
                     }
                     data-testid="button-next"
+                    className="gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg"
                   >
                     {currentQuestion === totalQuestions - 1 ? (
                       <>
-                        <Check className="mr-2 h-4 w-4" />
-                        Finalizar
+                        <Check className="h-4 w-4" />
+                        Finalizar Avaliação
                       </>
                     ) : (
                       <>
                         Próxima
-                        <ChevronRight className="ml-2 h-4 w-4" />
+                        <ArrowRight className="h-4 w-4" />
                       </>
                     )}
                   </Button>
+                </div>
+              </div>
+              
+              {/* Question Status Indicators */}
+              <div className="flex justify-center mt-6">
+                <div className="flex gap-2">
+                  {Array.from({ length: totalQuestions }, (_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCurrentQuestion(i)}
+                      className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                        i === currentQuestion
+                          ? 'bg-blue-500 shadow-lg shadow-blue-500/30'
+                          : answers[i]
+                          ? 'bg-green-400 hover:bg-green-500'
+                          : 'bg-slate-300 dark:bg-slate-600 hover:bg-slate-400'
+                      }`}
+                      data-testid={`indicator-${i + 1}`}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
