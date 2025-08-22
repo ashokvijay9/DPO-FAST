@@ -14,11 +14,13 @@ import { ChevronLeft, ChevronRight, Save, Check, FileIcon, Upload, BookOpen, Tar
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useLocation } from "wouter";
 
 export default function Questionnaire() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const queryClient = useQueryClient();
+  const [, navigate] = useLocation();
   
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string | string[]>>({});
@@ -55,13 +57,20 @@ export default function Questionnaire() {
       const response = await apiRequest("POST", "/api/questionnaire/save", data);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       toast({
         title: "Sucesso!",
         description: "Questionário salvo com sucesso!",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["/api/compliance-tasks"] });
+      
+      // Redirect to dashboard if questionnaire is completed
+      if (variables.isComplete) {
+        setTimeout(() => {
+          navigate("/");
+        }, 1000); // Wait 1 second to show the success toast
+      }
     },
     onError: (error) => {
       if (isUnauthorizedError(error as Error)) {

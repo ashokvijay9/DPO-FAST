@@ -23,7 +23,8 @@ import {
   User,
   TrendingUp,
   BarChart3,
-  Settings
+  Settings,
+  ChevronRight
 } from "lucide-react";
 import { useLocation } from "wouter";
 
