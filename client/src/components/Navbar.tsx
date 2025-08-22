@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Shield, Menu, X, Home, FileCheck, FileText, CreditCard, User, LogOut } from "lucide-react";
+import { Shield, Menu, X, Home, FileCheck, FileText, FileBarChart, CreditCard, User, LogOut } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function Navbar() {
@@ -36,6 +36,7 @@ export default function Navbar() {
     { href: "/", label: "Dashboard", icon: Home },
     { href: "/questionnaire", label: "Questionário", icon: FileCheck },
     { href: "/documents", label: "Documentos", icon: FileText },
+    { href: "/reports", label: "Relatórios", icon: FileBarChart },
     { href: "/subscription", label: "Assinaturas", icon: CreditCard },
   ];
 

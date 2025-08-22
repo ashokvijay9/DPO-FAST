@@ -8,6 +8,7 @@ import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import Questionnaire from "@/pages/questionnaire";
 import Documents from "@/pages/documents";
+import Reports from "@/pages/reports";
 import Subscription from "@/pages/subscription";
 import Profile from "@/pages/profile";
 import Navbar from "@/components/Navbar";
@@ -27,6 +28,7 @@ function Router() {
             <Route path="/" component={Home} />
             <Route path="/questionnaire" component={Questionnaire} />
             <Route path="/documents" component={Documents} />
+            <Route path="/reports" component={Reports} />
             <Route path="/subscription" component={Subscription} />
             <Route path="/profile" component={Profile} />
           </>
