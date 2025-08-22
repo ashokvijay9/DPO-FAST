@@ -1,0 +1,304 @@
+### Questionário para Mapeamento de Software DPO
+
+#### Seção 1: Perguntas Gerais (Baseado na Planilha "Perguntas")
+
+1. Área da empresa: (dissertativa; não requer documento anexado obrigatório)
+
+2. Processo de tratamento de dados a ser mapeado: (dissertativa; não requer documento anexado obrigatório)
+
+3. Qual a finalidade desse processo de tratamento de dados: (dissertativa; não requer documento anexado obrigatório)
+
+4. Qual cargo é responsável pela realização desse processo de tratamento de dados: (dissertativa; não requer documento anexado obrigatório)
+
+5. Quais dos dados abaixo são utilizados nesse tratamento de dados? (alternativa - seleção múltipla de opções listadas; não requer documento anexado obrigatório)
+   - Nome
+   - Sobrenome
+   - Assinatura
+   - Apenas iniciais
+   - Idade
+   - Data e Local de nascimento
+   - Gênero
+   - Certidão de Nascimento
+   - Altura
+   - Peso
+   - Nacionalidade
+   - Naturalidade
+   - Estado Civil
+   - Lazer e interesses
+   - Fotografias
+   - Gravação de voz
+   - Número de filhos
+   - Raça ou Origem Étnica
+   - Histórico/ vida sexual
+   - Dado biométrico (identificar)
+   - Nome da Mãe
+   - Nome do Pai
+   - CPF
+   - RG
+   - CNH
+   - CTPS
+   - Dados de crianças e adolescentes
+   - Carteira SUS
+   - Bolsa família
+   - Número de passaporte
+   - Visto de entrada em outros países
+   - PIS/PASEP
+   - Endereço residencial
+   - Telefone residencial
+   - Número de fax residencial
+   - E-mail pessoal
+   - Número de celular pessoal
+   - Mídias sociais
+   - Diplomas e escolaridade
+   - Licenças e associação profissional
+   - Histórico acadêmico
+   - Ocupação/Cargo
+   - Endereço comercial
+   - Telefone comercial
+   - Fax comercial
+   - E-mail comercial
+   - Celular comercial
+   - Número de Identificação do Empregador
+   - Exame médico admissional
+   - Exame médico periódico
+   - Exame médico demissional
+   - Carta de referência
+   - Número de Identificação do de pagamento de imposto de renda
+   - Reivindicações/reclamações do funcionário dentro da instituição
+   - Histórico empregatício declarado pelo funcionário
+   - Histórico empregatício obtido através de análise/troca de informações com empresas fora da empresa
+   - Dados bancários
+   - Dados de PIX
+   - Histórico de transações financeiras
+   - Score de crédito
+   - Histórico do uso de seguro
+   - Salário e outros rendimentos
+   - Dados de renda familiar mensal e patrimônio
+   - Antecedentes criminais
+   - Processos em andamento/concluídos envolvendo o titular
+   - Crenças religiosas ou filosóficas
+   - Posicionamento político
+   - Filiação sindical
+   - Filiação política
+   - Orientação sexual
+   - Preferência de compra
+   - Preferências de navegação na internet
+   - Perfil comportamental
+   - Informações sobre dispositivos móveis
+   - Geolocalização
+   - Áudio/Vídeo
+   - Informações no calendário
+   - Registro de ligações
+   - Contatos/Agenda
+   - Mensagens de texto (conteúdo)
+   - E-mail (conteúdo)
+   - Identificador único de dispositivo (IMEI)
+   - Endereço de IP
+   - Clickstream/rastreamento de website
+   - Modelo do aparelho/versão do sistema operacional do dispositivo
+   - Senha de acesso ao dispositivo
+   - MAC address /ou número de série
+   - Número do cartão
+   - Nome do titular do cartão
+   - Data de validade
+   - Número, CVV, CVC2, CID
+   - Senha
+   - Número de registro médico
+   - Número de beneficiário no plano de saúde
+   - Tratamento médico
+   - Diagnóstico médico
+   - Reembolsos médicos
+   - Histórico médico
+   - Dados de reclamações médicas
+   - Número de prescrição médica
+   - Histórico de saúde familiar ou morbidade
+   - Informações genéticas
+   - Dados de veículo
+   - origem racial ou étnica
+   - convicção religiosa
+   - opinião política
+   - filiação a sindicato
+   - organização de caráter religioso, filosófico ou político
+   - dado referente à saúde
+   - Dado referente à vida sexual
+   - dado genético ou biométrico
+   - Outros
+
+6. Por qual motivo os dados são coletados? (dissertativa; não requer documento anexado obrigatório)
+
+7. Em qual hipótese prevista na LGPD os dados são coletados? (alternativa - seleção de opções listadas; não requer documento anexado obrigatório)
+   - Mediante consentimento do titular
+   - Cumprimento de obrigação legal pelo controlador;
+   - Cumprimento de obrigação regulatória pelo controlador;
+   - Pela administração pública, para o tratamento e uso compartilhado de dados necessários à execução de políticas públicas previstas em leis e regulamentos ou respaldadas em contratos, convênios ou instrumentos congêneres, observadas as disposições do Capítulo IV desta Lei;
+   - Para a realização de estudos por órgão de pesquisa
+   - Execução de contrato
+   - Execução de procedimentos preliminares relacionados a contrato
+   - Para o exercício regular de direitos em processo judicial, administrativo ou arbitral
+   - Para a proteção da vida ou da incolumidade física do titular ou de terceiro;
+   - Para a tutela da saúde
+   - Interesses legítimos do controlador ou de terceiro
+   - Para a proteção do crédito
+   - Garantia da prevenção à fraude e à segurança do titular, nos processos de identificação e autenticação de cadastro em sistemas eletrônicos
+
+8. Quem é o titular dos dados coletados? (alternativa - seleção múltipla de opções listadas; não requer documento anexado obrigatório)
+   - Sócio
+   - Colaborador
+   - Fornecedor
+   - Cliente
+   - Visitante
+   - Outros
+
+9. Durante o mês quantas vezes os dados são coletados para essa finalidade? (alternativa - seleção de opções listadas; não requer documento anexado obrigatório)
+   - Até 25
+   - De 25 a 50
+   - De 51 a 100
+   - de 101 a 200
+   - Mais de 200
+
+10. Se o dado é utilizado com base no consentimento, a empresa solicita formalmente o consentimento do titular? (alternativa - seleção de opções listadas; requer documento anexado obrigatório se resposta for "sim", como prova de consentimento, para prosseguir)
+    - sim
+    - não
+    - Esse processo não está baseado no consentimento
+
+11. Como os dados são coletados? (alternativa - seleção múltipla de opções listadas; não requer documento anexado obrigatório)
+    - Formulário no site
+    - Formulário em aplicativo
+    - Formulário físico
+    - whatsapp ou similares
+    - e-mail
+    - telefone
+    - Enviado por outra empresa cliente
+    - Enviado por outra empresa não cliente
+    - Comprado de outra empresa
+    - Enviado por outra área da empresa
+    - Dados armazenados previamento em sistema
+
+12. Outras áreas da empresa possuem acesso aos mesmos dados? (alternativa - sim/não; não requer documento anexado obrigatório)
+    - sim
+    - não
+
+13. A área compartilha os dados com empresas externas? (alternativa - sim/não; não requer documento anexado obrigatório)
+    - sim
+    - não
+
+14. No caso de resposta positiva ao item 13, o compartilhamento é informado ao titular? (alternativa - sim/não; requer documento anexado obrigatório se resposta for "sim", como contrato ou notificação, para prosseguir)
+    - sim
+    - não
+
+15. Como os dados são armazenados? (alternativa - seleção de opções listadas; não requer documento anexado obrigatório)
+    - Formato Digital
+    - Formato físico
+
+16. Se for em formato físico, os dados ficam armazenados em arquivos? (alternativa - sim/não; não requer documento anexado obrigatório)
+    - sim
+    - não
+
+17. Em caso positivo o arquivo físico fica localizado em sala com controle de acesso? (alternativa - sim/não; não requer documento anexado obrigatório)
+    - sim
+    - não
+
+18. O arquivo físico é chaveado? (alternativa - sim/não; não requer documento anexado obrigatório)
+    - sim
+    - não
+
+19. Se for em formato digital, os arquivos ficam armazenados em núvem? (alternativa - sim/não; não requer documento anexado obrigatório)
+    - sim
+    - não
+
+20. Em caso positivo qual o provedor de núvem utilizado: (dissertativa; requer documento anexado obrigatório, como contrato ou comprovante do provedor, para prosseguir)
+
+21. Se for em formato digital, os arquivos ficam armazenados em sistemas? (alternativa - sim/não; não requer documento anexado obrigatório)
+    - sim
+    - não
+
+22. Em caso positivo de armazenamento de sistema, qual o nome do sistema e a empresa que o fornece? (incluir o site da empresa) (dissertativa; requer documento anexado obrigatório, como contrato ou especificação do sistema, para prosseguir)
+
+23. Os dados são compartilhados ou arquivados com empresas ou provedores localizados em território estrangeiro? (alternativa - sim/não; requer documento anexado obrigatório se resposta for "sim", como cláusula contratual, para prosseguir)
+    - sim
+    - não
+
+24. A área utiliza dispositivo móvel de armazenamento de dados? (alternativa - sim/não; não requer documento anexado obrigatório)
+    - sim
+    - não
+
+25. A área realiza backups dos dados que utiliza? (alternativa - sim/não; não requer documento anexado obrigatório)
+    - sim
+    - não
+
+26. Por quanto tempo os dados são armazenados? (alternativa - seleção de opções listadas; não requer documento anexado obrigatório)
+    - Tempo indefinido
+    - Até 1 ano
+    - Até 5 anos
+    - Até 10 anos
+    - Até 20 anos
+
+27. O dado pessoal é submetido a decisão automatizada durante o processo? (alternativa - sim/não; não requer documento anexado obrigatório)
+    - sim
+    - não
+
+28. O dado pessoal é utilizado em campanhas de marketing ou para finalidades diferente da informada? (alternativa - sim/não; não requer documento anexado obrigatório)
+    - sim
+    - não
+
+29. O dado pessoal é revisado periodicamente? (alternativa - sim/não; não requer documento anexado obrigatório)
+    - sim
+    - não
+
+#### Seção 2: Perguntas de TI (Baseado na Planilha "TI")
+
+1. Governança e Gestão de Segurança da Informação (grupo de perguntas; cada subpergunta é analisada individualmente)
+   - A empresa possui uma política formal de segurança da informação alinhada à ISO 27001? (alternativa - sim/não implícito, mas pode ser dissertativa para explicação; requer documento anexado obrigatório, como a política, para prosseguir)
+   - Existe um Comitê de Segurança da Informação ou um responsável pela gestão de riscos e proteção de dados (DPO ou equivalente)? (alternativa - sim/não; requer documento anexado obrigatório, como organograma ou nomeação, para prosseguir)
+   - A gestão de riscos inclui identificação, avaliação e mitigação de riscos relacionados ao tratamento de dados pessoais? (alternativa - sim/não; requer documento anexado obrigatório, como relatório de riscos, para prosseguir)
+   - Há auditorias regulares para verificar a conformidade com a LGPD e as ISOs? (alternativa - sim/não; requer documento anexado obrigatório, como relatório de auditoria, para prosseguir)
+   - Explique como está o processo de certificação Iso 27.001. (dissertativa; requer documento anexado obrigatório, como certificação ou plano, para prosseguir)
+
+2. Controle de Acessos dos colaboradores (grupo de perguntas; cada subpergunta é analisada individualmente)
+   - Existe um processo formal para criar, revisar e excluir acessos de usuários? (alternativa - sim/não; requer documento anexado obrigatório, como procedimento, para prosseguir)
+   - Existe uma política de senhas em vigor? (alternativa - sim/não; requer documento anexado obrigatório, como política, para prosseguir)
+   - Os usuários têm acesso apenas às informações necessárias para o desempenho de suas funções (princípio do "menor privilégio")? (alternativa - sim/não; requer documento anexado obrigatório, como matriz de acessos, para prosseguir)
+   - O uso de autenticação multifator (MFA) é obrigatório para sistemas críticos? (alternativa - sim/não; requer documento anexado obrigatório, como configuração, para prosseguir)
+
+3. Inventário e Tratamento de Dados Pessoais (grupo de perguntas; cada subpergunta é analisada individualmente)
+   - A empresa mantém um registro atualizado das operações de tratamento de dados pessoais, conforme exigido pela LGPD? (alternativa - sim/não; requer documento anexado obrigatório, como registro, para prosseguir)
+   - Quais mecanismos são usados para identificar, classificar e proteger dados sensíveis? (dissertativa; requer documento anexado obrigatório, como procedimento, para prosseguir)
+   - Existem processos para atender os direitos dos titulares (como exclusão, portabilidade e confirmação de tratamento)? (alternativa - sim/não; requer documento anexado obrigatório, como fluxo de processos, para prosseguir)
+   - Há uma política clara para retenção e descarte seguro de dados pessoais? (alternativa - sim/não; requer documento anexado obrigatório, como política, para prosseguir)
+
+4. Segurança da Infraestrutura e dos Sistemas (grupo de perguntas; cada subpergunta é analisada individualmente)
+   - Quais medidas estão implementadas para proteger dados em trânsito e em repouso (ex.: criptografia)? (dissertativa; requer documento anexado obrigatório, como configuração ou relatório, para prosseguir)
+   - A infraestrutura está sujeita a testes de vulnerabilidade e/ou testes de invasão regulares? (alternativa - sim/não; requer documento anexado obrigatório, como relatório de testes, para prosseguir)
+   - Os sistemas e softwares utilizados estão atualizados e protegidos contra vulnerabilidades conhecidas? (alternativa - sim/não; requer documento anexado obrigatório, como log de atualizações, para prosseguir)
+   - Existe um plano de resposta a incidentes de segurança, e ele é testado regularmente? (alternativa - sim/não; requer documento anexado obrigatório, como plano, para prosseguir)
+   - Como são realizados os backups? (dissertativa; requer documento anexado obrigatório, como procedimento, para prosseguir)
+   - Em qual local os backups ficam armazenados? Nuvem? Qual sistema? (dissertativa; requer documento anexado obrigatório, como configuração, para prosseguir)
+   - Qual sistema de firewall ou antivirus a empresa utiliza? (dissertativa; requer documento anexado obrigatório, como licença ou configuração, para prosseguir)
+   - Existe um inventário de máquinas e softwares atualizado na empresa? (alternativa - sim/não; requer documento anexado obrigatório, como inventário, para prosseguir)
+   - A empresa realiza testes contínuos de vazamento de dados? (alternativa - sim/não; requer documento anexado obrigatório, como relatório, para prosseguir)
+
+5. Terceiros e Fornecedores (grupo de perguntas; cada subpergunta é analisada individualmente)
+   - Há contratos com fornecedores que garantam conformidade com a LGPD e as ISOs (incluindo cláusulas de confidencialidade e segurança)? (alternativa - sim/não; requer documento anexado obrigatório, como contrato, para prosseguir)
+   - Os terceiros que processam dados pessoais são avaliados quanto à segurança de suas práticas? (alternativa - sim/não; requer documento anexado obrigatório, como avaliação, para prosseguir)
+   - É realizado um monitoramento contínuo dos fornecedores críticos? (alternativa - sim/não; requer documento anexado obrigatório, como relatório de monitoramento, para prosseguir)
+   - existe algum controle de acesso a clientes e terceiros? (alternativa - sim/não; requer documento anexado obrigatório, como procedimento, para prosseguir)
+   - A empresa oferece acesso wi-fi a clientes? (alternativa - sim/não; não requer documento anexado obrigatório)
+   - Existe algum sistema de controle a esse acesso wi-fi? (alternativa - sim/não; requer documento anexado obrigatório se resposta for "sim", como configuração, para prosseguir)
+
+6. Treinamento e Conscientização (grupo de perguntas; cada subpergunta é analisada individualmente)
+   - Os colaboradores recebem treinamento regular sobre boas práticas de segurança da informação e proteção de dados? (alternativa - sim/não; requer documento anexado obrigatório, como certificado ou plano de treinamento, para prosseguir)
+   - Há campanhas internas para conscientizar sobre riscos como phishing e engenharia social? (alternativa - sim/não; requer documento anexado obrigatório, como material de campanha, para prosseguir)
+
+7. Monitoramento e Log de Atividades (grupo de perguntas; cada subpergunta é analisada individualmente)
+   - Os sistemas têm logs de acesso e atividades, e estes são monitorados para detectar atividades suspeitas? (alternativa - sim/não; requer documento anexado obrigatório, como amostra de logs, para prosseguir)
+   - Existe uma política para retenção e auditoria de logs? (alternativa - sim/não; requer documento anexado obrigatório, como política, para prosseguir)
+   - Como a empresa gerencia alertas e eventos de segurança? (dissertativa; requer documento anexado obrigatório, como procedimento, para prosseguir)
+
+8. Continuidade de Negócios e Recuperação de Desastres (grupo de perguntas; cada subpergunta é analisada individualmente)
+   - Existe um plano de continuidade de negócios e um plano de recuperação de desastres alinhados à ISO 27001? (alternativa - sim/não; requer documento anexado obrigatório, como plano, para prosseguir)
+   - Esses planos incluem a proteção e recuperação de dados pessoais? (alternativa - sim/não; requer documento anexado obrigatório, como seção do plano, para prosseguir)
+   - Os backups são realizados regularmente e armazenados de forma segura? (alternativa - sim/não; requer documento anexado obrigatório, como log de backups, para prosseguir)
+
+9. Consentimento e Base Legal para Tratamento de Dados (grupo de perguntas; cada subpergunta é analisada individualmente)
+   - Quais sistemas garantem o registro e gerenciamento do consentimento dos titulares? (dissertativa; requer documento anexado obrigatório, como configuração do sistema, para prosseguir)
+   - Há mecanismos para validar a base legal do tratamento de dados em diferentes operações? (alternativa - sim/não; requer documento anexado obrigatório, como procedimento, para prosseguir)

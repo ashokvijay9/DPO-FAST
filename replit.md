@@ -44,8 +44,8 @@ Preferred communication style: Simple, everyday language.
 - **File Constraints**: 10MB file size limit with extension-based filtering
 - **Storage Strategy**: Local file system with unique filename generation
 
-## API Structure
-- **LGPD Questionnaire**: 10 predefined questions covering key LGPD compliance areas
+## API Structure  
+- **LGPD Questionnaire**: 29 comprehensive questions for DPO software mapping covering data treatment processes, legal bases, storage methods, and compliance requirements
 - **Document Operations**: CRUD operations for compliance documents with user isolation
 - **Dashboard Data**: Aggregated compliance metrics and task summaries
 - **Compliance Tasks**: Automated task generation based on questionnaire responses

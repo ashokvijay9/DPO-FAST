@@ -37,16 +37,276 @@ const upload = multer({
 
 // LGPD Questionnaire questions
 const lgpdQuestions = [
-  "Sua empresa possui um Data Protection Officer (DPO) designado?",
-  "Existe uma política de privacidade atualizada conforme a LGPD?",
-  "A empresa possui processos para obtenção de consentimento dos titulares?",
-  "Há procedimentos estabelecidos para atender solicitações de titulares?",
-  "A empresa realiza mapeamento regular dos dados pessoais tratados?",
-  "Existem medidas técnicas de segurança implementadas?",
-  "Há contratos adequados com fornecedores que tratam dados?",
-  "A empresa possui plano de resposta a incidentes de segurança?",
-  "São realizados treinamentos sobre LGPD para os colaboradores?",
-  "Existe documentação dos relatórios de impacto à proteção de dados?"
+  {
+    id: 1,
+    question: "Área da empresa:",
+    type: "text",
+    requiresDocument: false,
+    description: "dissertativa; não requer documento anexado obrigatório"
+  },
+  {
+    id: 2,
+    question: "Processo de tratamento de dados a ser mapeado:",
+    type: "text",
+    requiresDocument: false,
+    description: "dissertativa; não requer documento anexado obrigatório"
+  },
+  {
+    id: 3,
+    question: "Qual a finalidade desse processo de tratamento de dados:",
+    type: "text",
+    requiresDocument: false,
+    description: "dissertativa; não requer documento anexado obrigatório"
+  },
+  {
+    id: 4,
+    question: "Qual cargo é responsável pela realização desse processo de tratamento de dados:",
+    type: "text",
+    requiresDocument: false,
+    description: "dissertativa; não requer documento anexado obrigatório"
+  },
+  {
+    id: 5,
+    question: "Quais dos dados abaixo são utilizados nesse tratamento de dados?",
+    type: "multiple",
+    requiresDocument: false,
+    options: [
+      "Nome", "Sobrenome", "Assinatura", "Apenas iniciais", "Idade", "Data e Local de nascimento", "Gênero", "Certidão de Nascimento",
+      "Altura", "Peso", "Nacionalidade", "Naturalidade", "Estado Civil", "Lazer e interesses", "Fotografias", "Gravação de voz",
+      "Número de filhos", "Raça ou Origem Étnica", "Histórico/ vida sexual", "Dado biométrico (identificar)", "Nome da Mãe", "Nome do Pai",
+      "CPF", "RG", "CNH", "CTPS", "Dados de crianças e adolescentes", "Carteira SUS", "Bolsa família", "Número de passaporte",
+      "Visto de entrada em outros países", "PIS/PASEP", "Endereço residencial", "Telefone residencial", "Número de fax residencial",
+      "E-mail pessoal", "Número de celular pessoal", "Mídias sociais", "Diplomas e escolaridade", "Licenças e associação profissional",
+      "Histórico acadêmico", "Ocupação/Cargo", "Endereço comercial", "Telefone comercial", "Fax comercial", "E-mail comercial",
+      "Celular comercial", "Número de Identificação do Empregador", "Exame médico admissional", "Exame médico periódico",
+      "Exame médico demissional", "Carta de referência", "Número de Identificação do de pagamento de imposto de renda",
+      "Reivindicações/reclamações do funcionário dentro da instituição", "Histórico empregatício declarado pelo funcionário",
+      "Histórico empregatício obtido através de análise/troca de informações com empresas fora da empresa", "Dados bancários",
+      "Dados de PIX", "Histórico de transações financeiras", "Score de crédito", "Histórico do uso de seguro",
+      "Salário e outros rendimentos", "Dados de renda familiar mensal e patrimônio", "Antecedentes criminais",
+      "Processos em andamento/concluídos envolvendo o titular", "Crenças religiosas ou filosóficas", "Posicionamento político",
+      "Filiação sindical", "Filiação política", "Orientação sexual", "Preferência de compra", "Preferências de navegação na internet",
+      "Perfil comportamental", "Informações sobre dispositivos móveis", "Geolocalização", "Áudio/Vídeo", "Informações no calendário",
+      "Registro de ligações", "Contatos/Agenda", "Mensagens de texto (conteúdo)", "E-mail (conteúdo)", "Identificador único de dispositivo (IMEI)",
+      "Endereço de IP", "Clickstream/rastreamento de website", "Modelo do aparelho/versão do sistema operacional do dispositivo",
+      "Senha de acesso ao dispositivo", "MAC address /ou número de série", "Número do cartão", "Nome do titular do cartão",
+      "Data de validade", "Número, CVV, CVC2, CID", "Senha", "Número de registro médico", "Número de beneficiário no plano de saúde",
+      "Tratamento médico", "Diagnóstico médico", "Reembolsos médicos", "Histórico médico", "Dados de reclamações médicas",
+      "Número de prescrição médica", "Histórico de saúde familiar ou morbidade", "Informações genéticas", "Dados de veículo",
+      "origem racial ou étnica", "convicção religiosa", "opinião política", "filiação a sindicato",
+      "organização de caráter religioso, filosófico ou político", "dado referente à saúde", "Dado referente à vida sexual",
+      "dado genético ou biométrico", "Outros"
+    ],
+    description: "alternativa - seleção múltipla de opções listadas; não requer documento anexado obrigatório"
+  },
+  {
+    id: 6,
+    question: "Por qual motivo os dados são coletados?",
+    type: "text",
+    requiresDocument: false,
+    description: "dissertativa; não requer documento anexado obrigatório"
+  },
+  {
+    id: 7,
+    question: "Em qual hipótese prevista na LGPD os dados são coletados?",
+    type: "single",
+    requiresDocument: false,
+    options: [
+      "Mediante consentimento do titular",
+      "Cumprimento de obrigação legal pelo controlador;",
+      "Cumprimento de obrigação regulatória pelo controlador;",
+      "Pela administração pública, para o tratamento e uso compartilhado de dados necessários à execução de políticas públicas previstas em leis e regulamentos ou respaldadas em contratos, convênios ou instrumentos congêneres, observadas as disposições do Capítulo IV desta Lei;",
+      "Para a realização de estudos por órgão de pesquisa",
+      "Execução de contrato",
+      "Execução de procedimentos preliminares relacionados a contrato",
+      "Para o exercício regular de direitos em processo judicial, administrativo ou arbitral",
+      "Para a proteção da vida ou da incolumidade física do titular ou de terceiro;",
+      "Para a tutela da saúde",
+      "Interesses legítimos do controlador ou de terceiro",
+      "Para a proteção do crédito",
+      "Garantia da prevenção à fraude e à segurança do titular, nos processos de identificação e autenticação de cadastro em sistemas eletrônicos"
+    ],
+    description: "alternativa - seleção de opções listadas; não requer documento anexado obrigatório"
+  },
+  {
+    id: 8,
+    question: "Quem é o titular dos dados coletados?",
+    type: "multiple",
+    requiresDocument: false,
+    options: ["Sócio", "Colaborador", "Fornecedor", "Cliente", "Visitante", "Outros"],
+    description: "alternativa - seleção múltipla de opções listadas; não requer documento anexado obrigatório"
+  },
+  {
+    id: 9,
+    question: "Durante o mês quantas vezes os dados são coletados para essa finalidade?",
+    type: "single",
+    requiresDocument: false,
+    options: ["Até 25", "De 25 a 50", "De 51 a 100", "de 101 a 200", "Mais de 200"],
+    description: "alternativa - seleção de opções listadas; não requer documento anexado obrigatório"
+  },
+  {
+    id: 10,
+    question: "Se o dado é utilizado com base no consentimento, a empresa solicita formalmente o consentimento do titular?",
+    type: "single",
+    requiresDocument: true,
+    documentCondition: "sim",
+    options: ["sim", "não", "Esse processo não está baseado no consentimento"],
+    description: "alternativa - seleção de opções listadas; requer documento anexado obrigatório se resposta for 'sim', como prova de consentimento, para prosseguir"
+  },
+  {
+    id: 11,
+    question: "Como os dados são coletados?",
+    type: "multiple",
+    requiresDocument: false,
+    options: ["Formulário no site", "Formulário em aplicativo", "Formulário físico", "whatsapp ou similares", "e-mail", "telefone", "Enviado por outra empresa cliente", "Enviado por outra empresa não cliente", "Comprado de outra empresa", "Enviado por outra área da empresa", "Dados armazenados previamente em sistema"],
+    description: "alternativa - seleção múltipla de opções listadas; não requer documento anexado obrigatório"
+  },
+  {
+    id: 12,
+    question: "Outras áreas da empresa possuem acesso aos mesmos dados?",
+    type: "single",
+    requiresDocument: false,
+    options: ["sim", "não"],
+    description: "alternativa - sim/não; não requer documento anexado obrigatório"
+  },
+  {
+    id: 13,
+    question: "A área compartilha os dados com empresas externas?",
+    type: "single",
+    requiresDocument: false,
+    options: ["sim", "não"],
+    description: "alternativa - sim/não; não requer documento anexado obrigatório"
+  },
+  {
+    id: 14,
+    question: "No caso de resposta positiva ao item 13, o compartilhamento é informado ao titular?",
+    type: "single",
+    requiresDocument: true,
+    documentCondition: "sim",
+    options: ["sim", "não"],
+    description: "alternativa - sim/não; requer documento anexado obrigatório se resposta for 'sim', como contrato ou notificação, para prosseguir"
+  },
+  {
+    id: 15,
+    question: "Como os dados são armazenados?",
+    type: "single",
+    requiresDocument: false,
+    options: ["Formato Digital", "Formato físico"],
+    description: "alternativa - seleção de opções listadas; não requer documento anexado obrigatório"
+  },
+  {
+    id: 16,
+    question: "Se for em formato físico, os dados ficam armazenados em arquivos?",
+    type: "single",
+    requiresDocument: false,
+    options: ["sim", "não"],
+    description: "alternativa - sim/não; não requer documento anexado obrigatório"
+  },
+  {
+    id: 17,
+    question: "Em caso positivo o arquivo físico fica localizado em sala com controle de acesso?",
+    type: "single",
+    requiresDocument: false,
+    options: ["sim", "não"],
+    description: "alternativa - sim/não; não requer documento anexado obrigatório"
+  },
+  {
+    id: 18,
+    question: "O arquivo físico é chaveado?",
+    type: "single",
+    requiresDocument: false,
+    options: ["sim", "não"],
+    description: "alternativa - sim/não; não requer documento anexado obrigatório"
+  },
+  {
+    id: 19,
+    question: "Se for em formato digital, os arquivos ficam armazenados em nuvem?",
+    type: "single",
+    requiresDocument: false,
+    options: ["sim", "não"],
+    description: "alternativa - sim/não; não requer documento anexado obrigatório"
+  },
+  {
+    id: 20,
+    question: "Em caso positivo qual o provedor de nuvem utilizado:",
+    type: "text",
+    requiresDocument: true,
+    options: [],
+    description: "dissertativa; requer documento anexado obrigatório, como contrato ou comprovante do provedor, para prosseguir"
+  },
+  {
+    id: 21,
+    question: "Se for em formato digital, os arquivos ficam armazenados em sistemas?",
+    type: "single",
+    requiresDocument: false,
+    options: ["sim", "não"],
+    description: "alternativa - sim/não; não requer documento anexado obrigatório"
+  },
+  {
+    id: 22,
+    question: "Em caso positivo de armazenamento de sistema, qual o nome do sistema e a empresa que o fornece? (incluir o site da empresa)",
+    type: "text",
+    requiresDocument: true,
+    options: [],
+    description: "dissertativa; requer documento anexado obrigatório, como contrato ou especificação do sistema, para prosseguir"
+  },
+  {
+    id: 23,
+    question: "Os dados são compartilhados ou arquivados com empresas ou provedores localizados em território estrangeiro?",
+    type: "single",
+    requiresDocument: true,
+    documentCondition: "sim",
+    options: ["sim", "não"],
+    description: "alternativa - sim/não; requer documento anexado obrigatório se resposta for 'sim', como cláusula contratual, para prosseguir"
+  },
+  {
+    id: 24,
+    question: "A área utiliza dispositivo móvel de armazenamento de dados?",
+    type: "single",
+    requiresDocument: false,
+    options: ["sim", "não"],
+    description: "alternativa - sim/não; não requer documento anexado obrigatório"
+  },
+  {
+    id: 25,
+    question: "A área realiza backups dos dados que utiliza?",
+    type: "single",
+    requiresDocument: false,
+    options: ["sim", "não"],
+    description: "alternativa - sim/não; não requer documento anexado obrigatório"
+  },
+  {
+    id: 26,
+    question: "Por quanto tempo os dados são armazenados?",
+    type: "single",
+    requiresDocument: false,
+    options: ["Tempo indefinido", "Até 1 ano", "Até 5 anos", "Até 10 anos", "Até 20 anos"],
+    description: "alternativa - seleção de opções listadas; não requer documento anexado obrigatório"
+  },
+  {
+    id: 27,
+    question: "O dado pessoal é submetido a decisão automatizada durante o processo?",
+    type: "single",
+    requiresDocument: false,
+    options: ["sim", "não"],
+    description: "alternativa - sim/não; não requer documento anexado obrigatório"
+  },
+  {
+    id: 28,
+    question: "O dado pessoal é utilizado em campanhas de marketing ou para finalidades diferente da informada?",
+    type: "single",
+    requiresDocument: false,
+    options: ["sim", "não"],
+    description: "alternativa - sim/não; não requer documento anexado obrigatório"
+  },
+  {
+    id: 29,
+    question: "O dado pessoal é revisado periodicamente?",
+    type: "single",
+    requiresDocument: false,
+    options: ["sim", "não"],
+    description: "alternativa - sim/não; não requer documento anexado obrigatório"
+  }
 ];
 
 export async function registerRoutes(app: Express): Promise<Server> {
