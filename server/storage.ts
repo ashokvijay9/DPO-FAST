@@ -4,6 +4,7 @@ import {
   documents,
   auditLog,
   complianceTasks,
+  complianceReports,
   type User,
   type UpsertUser,
   type QuestionnaireResponse,
@@ -14,6 +15,8 @@ import {
   type InsertAuditLog,
   type ComplianceTask,
   type InsertComplianceTask,
+  type ComplianceReport,
+  type InsertComplianceReport,
   type UpdateUserProfile,
 } from "@shared/schema";
 import { db } from "./db";
@@ -46,6 +49,12 @@ export interface IStorage {
   getComplianceTasks(userId: string): Promise<ComplianceTask[]>;
   updateComplianceTask(id: string, updates: Partial<InsertComplianceTask>): Promise<ComplianceTask>;
   
+  // Compliance report operations
+  createComplianceReport(report: InsertComplianceReport): Promise<ComplianceReport>;
+  getComplianceReports(userId: string): Promise<ComplianceReport[]>;
+  getComplianceReport(id: string, userId: string): Promise<ComplianceReport | undefined>;
+  deleteComplianceReport(id: string, userId: string): Promise<boolean>;
+  
   // Dashboard data
   getDashboardData(userId: string): Promise<{
     complianceScore: number;
@@ -53,6 +62,7 @@ export interface IStorage {
     documentsCount: number;
     validDocuments: number;
     pendingDocuments: number;
+    lastReportDate?: Date;
   }>;
 }
 
@@ -200,6 +210,38 @@ export class DatabaseStorage implements IStorage {
     return updated;
   }
 
+  // Compliance report operations
+  async createComplianceReport(report: InsertComplianceReport): Promise<ComplianceReport> {
+    const [created] = await db
+      .insert(complianceReports)
+      .values(report)
+      .returning();
+    return created;
+  }
+
+  async getComplianceReports(userId: string): Promise<ComplianceReport[]> {
+    return db
+      .select()
+      .from(complianceReports)
+      .where(eq(complianceReports.userId, userId))
+      .orderBy(desc(complianceReports.createdAt));
+  }
+
+  async getComplianceReport(id: string, userId: string): Promise<ComplianceReport | undefined> {
+    const [report] = await db
+      .select()
+      .from(complianceReports)
+      .where(and(eq(complianceReports.id, id), eq(complianceReports.userId, userId)));
+    return report;
+  }
+
+  async deleteComplianceReport(id: string, userId: string): Promise<boolean> {
+    const result = await db
+      .delete(complianceReports)
+      .where(and(eq(complianceReports.id, id), eq(complianceReports.userId, userId)));
+    return (result.rowCount ?? 0) > 0;
+  }
+
   // Dashboard data
   async getDashboardData(userId: string): Promise<{
     complianceScore: number;
@@ -207,6 +249,7 @@ export class DatabaseStorage implements IStorage {
     documentsCount: number;
     validDocuments: number;
     pendingDocuments: number;
+    lastReportDate?: Date;
   }> {
     const [questionnaireResponse] = await db
       .select()
@@ -225,12 +268,20 @@ export class DatabaseStorage implements IStorage {
       .from(complianceTasks)
       .where(and(eq(complianceTasks.userId, userId), eq(complianceTasks.status, "pending")));
 
+    const [lastReport] = await db
+      .select()
+      .from(complianceReports)
+      .where(eq(complianceReports.userId, userId))
+      .orderBy(desc(complianceReports.createdAt))
+      .limit(1);
+
     return {
       complianceScore: questionnaireResponse?.complianceScore || 0,
       pendingTasks: userTasks.length,
       documentsCount: userDocuments.length,
       validDocuments: userDocuments.filter(d => d.status === "valid").length,
       pendingDocuments: userDocuments.filter(d => d.status === "pending").length,
+      lastReportDate: lastReport?.createdAt,
     };
   }
 }

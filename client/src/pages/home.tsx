@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { apiRequest } from "@/lib/queryClient";
 import { 
   FileText, 
   AlertTriangle, 
@@ -15,7 +16,9 @@ import {
   FileCheck, 
   Crown,
   Calendar,
-  Target
+  Target,
+  Download,
+  FileBarChart
 } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -23,6 +26,7 @@ export default function Home() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const [, navigate] = useLocation();
+  const queryClient = useQueryClient();
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -54,6 +58,49 @@ export default function Home() {
     enabled: isAuthenticated,
   });
 
+  const { data: reports } = useQuery({
+    queryKey: ["/api/reports"],
+    enabled: isAuthenticated,
+  });
+
+  const generateReportMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/reports/generate", {});
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Sucesso!",
+        description: "Relatório de conformidade gerado com sucesso!",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/reports"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
+      
+      // Auto-download the report
+      if (data.downloadUrl) {
+        window.open(data.downloadUrl, '_blank');
+      }
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error as Error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Erro",
+        description: "Falha ao gerar relatório de conformidade",
+        variant: "destructive",
+      });
+    },
+  });
+
   if (isLoading || isDashboardLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -67,6 +114,9 @@ export default function Home() {
   const documentsCount = (dashboardData as any)?.documentsCount || 0;
   const validDocuments = (dashboardData as any)?.validDocuments || 0;
   const pendingDocuments = (dashboardData as any)?.pendingDocuments || 0;
+  const lastReportDate = (dashboardData as any)?.lastReportDate;
+
+  const canGenerateReport = complianceScore > 0; // User must have completed questionnaire
 
   return (
     <div className="min-h-screen bg-background">
@@ -198,8 +248,81 @@ export default function Home() {
             </Card>
           </div>
 
-          {/* Quick Actions */}
-          <div>
+          {/* Reports and Quick Actions */}
+          <div className="space-y-6">
+            {/* Reports Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <FileBarChart className="h-5 w-5 mr-2" />
+                  Relatórios de Conformidade
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <h4 className="font-medium">Gerar Novo Relatório</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {canGenerateReport ? 
+                        "Crie um relatório completo com seu status de conformidade" : 
+                        "Complete o questionário para gerar relatórios"
+                      }
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => generateReportMutation.mutate()}
+                    disabled={!canGenerateReport || generateReportMutation.isPending}
+                    data-testid="button-generate-report"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    {generateReportMutation.isPending ? "Gerando..." : "Gerar PDF"}
+                  </Button>
+                </div>
+
+                {reports && (reports as any).length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-sm">Relatórios Anteriores</h4>
+                    {(reports as any).slice(0, 3).map((report: any) => (
+                      <div key={report.id} className="flex items-center justify-between p-2 border rounded">
+                        <div>
+                          <p className="text-sm font-medium">{report.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(report.createdAt).toLocaleDateString('pt-BR')} • {report.complianceScore}% conformidade
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => window.open(`/api/reports/${report.id}/download`, '_blank')}
+                          data-testid={`button-download-report-${report.id}`}
+                        >
+                          <Download className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                    {(reports as any).length > 3 && (
+                      <Button
+                        variant="link"
+                        size="sm"
+                        onClick={() => navigate("/documents")}
+                        className="p-0 text-xs"
+                        data-testid="button-view-all-reports"
+                      >
+                        Ver todos os relatórios →
+                      </Button>
+                    )}
+                  </div>
+                )}
+
+                {lastReportDate && (
+                  <div className="text-xs text-muted-foreground">
+                    Último relatório: {new Date(lastReportDate).toLocaleDateString('pt-BR')}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
             <Card>
               <CardHeader>
                 <CardTitle>Ações Rápidas</CardTitle>
@@ -221,14 +344,6 @@ export default function Home() {
                 >
                   <Upload className="mr-2 h-4 w-4" />
                   Upload Documento
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start"
-                  data-testid="button-generate-report"
-                >
-                  <FileText className="mr-2 h-4 w-4" />
-                  Gerar Relatório
                 </Button>
                 <Button 
                   variant="outline" 

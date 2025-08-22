@@ -19,7 +19,9 @@ import {
   Download,
   Trash2,
   MoreHorizontal,
-  Plus
+  Plus,
+  FileBarChart,
+  Filter
 } from "lucide-react";
 import DocumentUploadModal from "@/components/DocumentUploadModal";
 import PlanLimitModal from "@/components/PlanLimitModal";
@@ -40,6 +42,7 @@ export default function Documents() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [limitError, setLimitError] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<'documents' | 'reports'>('documents');
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -64,6 +67,42 @@ export default function Documents() {
   const { data: planLimits } = useQuery({
     queryKey: ["/api/plan/limits"],
     enabled: isAuthenticated,
+  });
+
+  const { data: reports, isLoading: isReportsLoading } = useQuery({
+    queryKey: ["/api/reports"],
+    enabled: isAuthenticated,
+  });
+
+  const deleteReportMutation = useMutation({
+    mutationFn: async (reportId: string) => {
+      await apiRequest("DELETE", `/api/reports/${reportId}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Sucesso!",
+        description: "Relatório excluído com sucesso!",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/reports"] });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error as Error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Erro",
+        description: "Falha ao excluir relatório",
+        variant: "destructive",
+      });
+    },
   });
 
   const deleteMutation = useMutation({
@@ -109,6 +148,12 @@ export default function Documents() {
   const handleDeleteDocument = (documentId: string) => {
     if (confirm("Tem certeza que deseja excluir este documento?")) {
       deleteMutation.mutate(documentId);
+    }
+  };
+
+  const handleDeleteReport = (reportId: string) => {
+    if (confirm("Tem certeza que deseja excluir este relatório?")) {
+      deleteReportMutation.mutate(reportId);
     }
   };
 
@@ -169,20 +214,27 @@ export default function Documents() {
     doc.category.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
+  const filteredReports = (reports as any)?.filter((report: any) =>
+    report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    report.reportType.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || [];
+
   // Calculate stats
   const totalDocuments = (documents as any)?.length || 0;
   const validDocuments = (documents as any)?.filter((d: any) => d.status === 'valid').length || 0;
   const pendingDocuments = (documents as any)?.filter((d: any) => d.status === 'pending').length || 0;
   const expiredDocuments = (documents as any)?.filter((d: any) => d.status === 'expired').length || 0;
+  
+  const totalReports = (reports as any)?.length || 0;
 
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Gerenciamento de Documentos</h1>
+            <h1 className="text-3xl font-bold mb-2">Documentos & Relatórios</h1>
             <p className="text-muted-foreground">
-              Organize e monitore todos os documentos relacionados à conformidade LGPD
+              Organize documentos e acesse relatórios de conformidade LGPD
             </p>
           </div>
           <Button onClick={() => {
@@ -206,9 +258,40 @@ export default function Documents() {
           </Button>
         </div>
 
+        {/* Tab Navigation */}
+        <div className="border-b border-gray-200 mb-6">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveTab('documents')}
+              className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'documents'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-primary hover:border-gray-300'
+              }`}
+              data-testid="tab-documents"
+            >
+              <FileText className="inline-block h-4 w-4 mr-2" />
+              Documentos ({totalDocuments})
+            </button>
+            <button
+              onClick={() => setActiveTab('reports')}
+              className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'reports'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-primary hover:border-gray-300'
+              }`}
+              data-testid="tab-reports"
+            >
+              <FileBarChart className="inline-block h-4 w-4 mr-2" />
+              Relatórios ({totalReports})
+            </button>
+          </nav>
+        </div>
+
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card>
+        {activeTab === 'documents' && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <Card>
             <CardContent className="p-4 text-center">
               <FileText className="h-8 w-8 text-primary mx-auto mb-2" />
               <h3 className="text-2xl font-bold" data-testid="text-total-documents">{totalDocuments}</h3>
@@ -239,10 +322,12 @@ export default function Documents() {
               <p className="text-sm text-muted-foreground">Documentos Expirados</p>
             </CardContent>
           </Card>
-        </div>
+          </div>
+        )}
 
-        {/* Documents Table */}
-        <Card>
+        {/* Documents Section */}
+        {activeTab === 'documents' && (
+          <Card>
           <CardHeader>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <CardTitle>Meus Documentos</CardTitle>
@@ -347,6 +432,120 @@ export default function Documents() {
             )}
           </CardContent>
         </Card>
+        )}
+
+        {/* Reports Section */}
+        {activeTab === 'reports' && (
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <CardTitle>Relatórios de Conformidade</CardTitle>
+                <div className="relative w-full sm:w-80">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Buscar relatórios..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                    data-testid="input-search-reports"
+                  />
+                </div>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="p-0">
+              {isReportsLoading ? (
+                <div className="p-8 text-center">
+                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
+                  <p className="text-muted-foreground">Carregando relatórios...</p>
+                </div>
+              ) : filteredReports.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground">
+                  <FileBarChart className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <p>
+                    {(reports as any)?.length === 0 
+                      ? "Nenhum relatório gerado ainda. Gere seu primeiro relatório no dashboard!" 
+                      : "Nenhum relatório corresponde à sua busca."}
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-muted/50">
+                      <tr>
+                        <th className="text-left p-4 font-medium">Título</th>
+                        <th className="text-left p-4 font-medium">Tipo</th>
+                        <th className="text-left p-4 font-medium">Score</th>
+                        <th className="text-left p-4 font-medium">Data</th>
+                        <th className="text-left p-4 font-medium">Tamanho</th>
+                        <th className="text-left p-4 font-medium">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredReports.map((report: any) => (
+                        <tr key={report.id} className="border-t hover:bg-muted/50">
+                          <td className="p-4">
+                            <div className="flex items-center">
+                              <FileBarChart className="h-5 w-5 text-blue-500 mr-3" />
+                              <span className="font-medium">{report.title}</span>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <Badge className="bg-blue-100 text-blue-800">
+                              {report.reportType === 'compliance_summary' ? 'Conformidade' : report.reportType}
+                            </Badge>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex items-center">
+                              <div className={`w-3 h-3 rounded-full mr-2 ${
+                                report.complianceScore >= 80 ? 'bg-green-500' :
+                                report.complianceScore >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                              }`} />
+                              {report.complianceScore}%
+                            </div>
+                          </td>
+                          <td className="p-4 text-sm text-muted-foreground">
+                            {new Date(report.createdAt).toLocaleDateString('pt-BR')}
+                          </td>
+                          <td className="p-4 text-sm">
+                            {formatFileSize(report.fileSize)}
+                          </td>
+                          <td className="p-4">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0" data-testid={`button-actions-${report.id}`}>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onClick={() => window.open(`/api/reports/${report.id}/download`, '_blank')}
+                                  data-testid={`action-download-${report.id}`}
+                                >
+                                  <Download className="mr-2 h-4 w-4" />
+                                  Download
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  className="text-destructive"
+                                  onClick={() => handleDeleteReport(report.id)}
+                                  data-testid={`action-delete-${report.id}`}
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Excluir
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         <DocumentUploadModal 
           isOpen={isUploadModalOpen}

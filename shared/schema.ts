@@ -96,6 +96,23 @@ export const complianceTasks = pgTable("compliance_tasks", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Compliance reports
+export const complianceReports = pgTable("compliance_reports", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  questionnaireResponseId: varchar("questionnaire_response_id").references(() => questionnaireResponses.id),
+  title: varchar("title").notNull(),
+  reportType: varchar("report_type").notNull(), // compliance_summary, full_report
+  complianceScore: integer("compliance_score").notNull(),
+  fileName: varchar("file_name").notNull(),
+  fileSize: integer("file_size").notNull(),
+  fileUrl: text("file_url").notNull(),
+  status: varchar("status").default("generated"), // generated, sent, archived
+  generatedAt: timestamp("generated_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Type exports
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -111,6 +128,9 @@ export type AuditLog = typeof auditLog.$inferSelect;
 
 export type InsertComplianceTask = typeof complianceTasks.$inferInsert;
 export type ComplianceTask = typeof complianceTasks.$inferSelect;
+
+export type InsertComplianceReport = typeof complianceReports.$inferInsert;
+export type ComplianceReport = typeof complianceReports.$inferSelect;
 
 // Zod schemas
 export const insertQuestionnaireResponseSchema = createInsertSchema(questionnaireResponses).omit({
@@ -129,6 +149,13 @@ export const insertComplianceTaskSchema = createInsertSchema(complianceTasks).om
   id: true,
   createdAt: true,
   updatedAt: true,
+});
+
+export const insertComplianceReportSchema = createInsertSchema(complianceReports).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  generatedAt: true,
 });
 
 export const updateUserProfileSchema = z.object({

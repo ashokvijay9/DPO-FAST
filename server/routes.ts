@@ -2,13 +2,15 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertQuestionnaireResponseSchema, insertDocumentSchema, updateUserProfileSchema } from "@shared/schema";
+import { insertQuestionnaireResponseSchema, insertDocumentSchema, updateUserProfileSchema, insertComplianceReportSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import Stripe from "stripe";
 import { attachUserPlan, checkDocumentLimits, checkReportLimits, requireAdvancedFeatures, getPlanLimits, type AuthenticatedRequest } from "./middleware/planLimits";
+import { generateComplianceReportPDF, type ReportData } from "./reportGenerator";
+import fs from "fs";
 
 // Initialize Stripe
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -586,6 +588,183 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching plan limits:", error);
       res.status(500).json({ message: "Failed to fetch plan limits" });
+    }
+  });
+
+  // Compliance report routes
+  app.post('/api/reports/generate', isAuthenticated, attachUserPlan, checkReportLimits, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get user information
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Get questionnaire response
+      const questionnaireResponse = await storage.getQuestionnaireResponse(userId);
+      if (!questionnaireResponse) {
+        return res.status(400).json({ message: "Questionário deve ser preenchido antes de gerar relatório" });
+      }
+
+      // Get compliance tasks
+      const complianceTasks = await storage.getComplianceTasks(userId);
+
+      // Prepare report data
+      const reportData: ReportData = {
+        user: {
+          firstName: user.firstName || undefined,
+          lastName: user.lastName || undefined,
+          email: user.email || undefined,
+          company: user.company || undefined,
+        },
+        questionnaireResponse,
+        complianceTasks,
+        questions: lgpdQuestions,
+      };
+
+      // Generate PDF
+      const { buffer, filename } = await generateComplianceReportPDF(reportData);
+      
+      // Create reports directory if it doesn't exist
+      const reportsDir = 'uploads/reports';
+      if (!fs.existsSync(reportsDir)) {
+        fs.mkdirSync(reportsDir, { recursive: true });
+      }
+
+      // Save PDF file
+      const filePath = path.join(reportsDir, filename);
+      fs.writeFileSync(filePath, buffer);
+
+      // Save report record to database
+      const reportRecord = await storage.createComplianceReport({
+        userId,
+        questionnaireResponseId: questionnaireResponse.id,
+        title: `Relatório de Conformidade LGPD - ${user.company || 'Empresa'}`,
+        reportType: 'compliance_summary',
+        complianceScore: questionnaireResponse.complianceScore || 0,
+        fileName: filename,
+        fileSize: buffer.length,
+        fileUrl: `/uploads/reports/${filename}`,
+        status: 'generated',
+      });
+
+      // Log the action
+      await storage.logAction({
+        userId,
+        action: 'compliance_report_generated',
+        resourceType: 'report',
+        resourceId: reportRecord.id,
+        details: { 
+          filename,
+          complianceScore: questionnaireResponse.complianceScore,
+          reportType: 'compliance_summary'
+        },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+
+      res.json({
+        message: "Relatório gerado com sucesso",
+        report: reportRecord,
+        downloadUrl: `/api/reports/${reportRecord.id}/download`
+      });
+    } catch (error) {
+      console.error("Error generating compliance report:", error);
+      res.status(500).json({ message: "Failed to generate compliance report" });
+    }
+  });
+
+  app.get('/api/reports', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const reports = await storage.getComplianceReports(userId);
+      res.json(reports);
+    } catch (error) {
+      console.error("Error fetching compliance reports:", error);
+      res.status(500).json({ message: "Failed to fetch compliance reports" });
+    }
+  });
+
+  app.get('/api/reports/:id/download', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const reportId = req.params.id;
+      
+      const report = await storage.getComplianceReport(reportId, userId);
+      if (!report) {
+        return res.status(404).json({ message: "Report not found" });
+      }
+
+      const filePath = path.join(process.cwd(), report.fileUrl);
+      
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ message: "Report file not found" });
+      }
+
+      // Set headers for PDF download
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${report.fileName}"`);
+      
+      // Stream the file
+      const fileStream = fs.createReadStream(filePath);
+      fileStream.pipe(res);
+
+      // Log the action
+      await storage.logAction({
+        userId,
+        action: 'compliance_report_downloaded',
+        resourceType: 'report',
+        resourceId: reportId,
+        details: { fileName: report.fileName },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+    } catch (error) {
+      console.error("Error downloading compliance report:", error);
+      res.status(500).json({ message: "Failed to download compliance report" });
+    }
+  });
+
+  app.delete('/api/reports/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const reportId = req.params.id;
+      
+      const report = await storage.getComplianceReport(reportId, userId);
+      if (!report) {
+        return res.status(404).json({ message: "Report not found" });
+      }
+
+      // Delete file from filesystem
+      const filePath = path.join(process.cwd(), report.fileUrl);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+
+      // Delete record from database
+      const deleted = await storage.deleteComplianceReport(reportId, userId);
+      
+      if (deleted) {
+        // Log the action
+        await storage.logAction({
+          userId,
+          action: 'compliance_report_deleted',
+          resourceType: 'report',
+          resourceId: reportId,
+          details: { fileName: report.fileName },
+          ipAddress: req.ip,
+          userAgent: req.get('User-Agent'),
+        });
+
+        res.json({ message: "Report deleted successfully" });
+      } else {
+        res.status(404).json({ message: "Report not found" });
+      }
+    } catch (error) {
+      console.error("Error deleting compliance report:", error);
+      res.status(500).json({ message: "Failed to delete compliance report" });
     }
   });
 
