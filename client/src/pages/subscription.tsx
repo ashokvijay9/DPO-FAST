@@ -103,7 +103,7 @@ export default function Subscription() {
       name: "Básico",
       price: "R$ 50",
       period: "/mês",
-      priceId: "basic_monthly", // You'll need to replace this with actual Stripe Price ID
+      priceId: "price_1RyeHjRaQMe180d0gTh4kxyh", // Stripe Price ID for Basic plan
       description: "Ideal para pequenas empresas iniciando na conformidade LGPD",
       features: [
         "Questionário LGPD com 10 perguntas",
@@ -125,7 +125,7 @@ export default function Subscription() {
       name: "Pro",
       price: "R$ 100",
       period: "/mês",
-      priceId: "pro_monthly", // You'll need to replace this with actual Stripe Price ID
+      priceId: "price_1RytVqRaQMe180d0A2GM5eMU", // Stripe Price ID for Pro plan
       description: "Para empresas que precisam de conformidade aprofundada",
       features: [
         "Questionário LGPD completo e ilimitado",
