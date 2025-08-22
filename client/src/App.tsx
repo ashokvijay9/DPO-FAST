@@ -9,6 +9,7 @@ import Home from "@/pages/home";
 import Questionnaire from "@/pages/questionnaire";
 import Documents from "@/pages/documents";
 import Subscription from "@/pages/subscription";
+import Profile from "@/pages/profile";
 import Navbar from "@/components/Navbar";
 import NotFound from "@/pages/not-found";
 
@@ -27,6 +28,7 @@ function Router() {
             <Route path="/questionnaire" component={Questionnaire} />
             <Route path="/documents" component={Documents} />
             <Route path="/subscription" component={Subscription} />
+            <Route path="/profile" component={Profile} />
           </>
         )}
         <Route component={NotFound} />

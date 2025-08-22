@@ -130,3 +130,12 @@ export const insertComplianceTaskSchema = createInsertSchema(complianceTasks).om
   createdAt: true,
   updatedAt: true,
 });
+
+export const updateUserProfileSchema = z.object({
+  firstName: z.string().min(1, "Nome é obrigatório").optional(),
+  lastName: z.string().min(1, "Sobrenome é obrigatório").optional(),
+  email: z.string().email("Email inválido").optional(),
+  company: z.string().optional(),
+});
+
+export type UpdateUserProfile = z.infer<typeof updateUserProfileSchema>;

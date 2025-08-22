@@ -111,7 +111,10 @@ export default function Navbar() {
                           </div>
                         </div>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem data-testid="menu-item-profile">
+                        <DropdownMenuItem 
+                          onClick={() => navigate("/profile")}
+                          data-testid="menu-item-profile"
+                        >
                           <User className="mr-2 h-4 w-4" />
                           Perfil
                         </DropdownMenuItem>
@@ -187,6 +190,17 @@ export default function Navbar() {
                             : (user as any)?.email}
                         </span>
                       </div>
+                      <button
+                        onClick={() => {
+                          navigate("/profile");
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="flex items-center space-x-2 w-full text-left px-3 py-2 rounded-md text-gray-600 hover:text-primary hover:bg-gray-50 transition-colors"
+                        data-testid="mobile-profile"
+                      >
+                        <User className="h-4 w-4" />
+                        <span>Perfil</span>
+                      </button>
                       <button
                         onClick={() => {
                           handleLogout();

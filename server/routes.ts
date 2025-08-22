@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertQuestionnaireResponseSchema, insertDocumentSchema } from "@shared/schema";
+import { insertQuestionnaireResponseSchema, insertDocumentSchema, updateUserProfileSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
@@ -329,6 +329,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Profile routes
+  app.put('/api/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const validatedData = updateUserProfileSchema.parse(req.body);
+
+      const updatedUser = await storage.updateUserProfile(userId, validatedData);
+
+      // Log the action
+      await storage.logAction({
+        userId,
+        action: 'profile_updated',
+        resourceType: 'user',
+        resourceId: userId,
+        details: { updatedFields: Object.keys(validatedData) },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Dados inválidos", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
+  // Password reset request (simulated for Replit Auth)
+  app.post('/api/profile/reset-password', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+
+      // Log the action
+      await storage.logAction({
+        userId,
+        action: 'password_reset_requested',
+        resourceType: 'user',
+        resourceId: userId,
+        details: { email: user?.email },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+
+      // Since we use Replit Auth, we can't actually reset passwords
+      // This is just for logging/audit purposes
+      res.json({ 
+        message: "Solicitação de redefinição de senha registrada. Como você está usando login do Replit, a alteração de senha deve ser feita diretamente na sua conta Replit.",
+        success: true 
+      });
+    } catch (error) {
+      console.error("Error processing password reset request:", error);
+      res.status(500).json({ message: "Failed to process password reset request" });
     }
   });
 

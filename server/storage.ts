@@ -14,6 +14,7 @@ import {
   type InsertAuditLog,
   type ComplianceTask,
   type InsertComplianceTask,
+  type UpdateUserProfile,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc } from "drizzle-orm";
@@ -24,6 +25,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserSubscription(userId: string, customerId: string, subscriptionId: string, plan: string): Promise<User>;
+  updateUserProfile(userId: string, updates: UpdateUserProfile): Promise<User>;
   
   // Questionnaire operations
   saveQuestionnaireResponse(response: InsertQuestionnaireResponse): Promise<QuestionnaireResponse>;
@@ -84,6 +86,18 @@ export class DatabaseStorage implements IStorage {
         subscriptionPlan: plan,
         stripeCustomerId: customerId,
         stripeSubscriptionId: subscriptionId,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async updateUserProfile(userId: string, updates: UpdateUserProfile): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({
+        ...updates,
         updatedAt: new Date(),
       })
       .where(eq(users.id, userId))
