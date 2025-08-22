@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
-import { ChevronLeft, ChevronRight, Save, Check, FileIcon, Upload, BookOpen, Target, ArrowRight, ArrowLeft, HelpCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Save, Check, FileIcon, Upload, BookOpen, Target, ArrowRight, ArrowLeft, HelpCircle, FileCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
