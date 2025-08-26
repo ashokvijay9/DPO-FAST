@@ -678,6 +678,21 @@ export default function Home() {
                   </Button>
                 )}
 
+                {complianceScore > 0 && (
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start gap-3 h-12 group"
+                    onClick={() => navigate("/sector-reports")}
+                    data-testid="button-sector-reports"
+                  >
+                    <div className="p-1 rounded-md bg-indigo-100 dark:bg-indigo-900/30">
+                      <BarChart3 className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <span className="flex-1 text-left">Relatórios por Setor</span>
+                    <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                )}
+
                 <Button 
                   variant="outline" 
                   className="w-full justify-start gap-3 h-12 group"

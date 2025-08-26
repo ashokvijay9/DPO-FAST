@@ -37,35 +37,46 @@ const upload = multer({
   },
 });
 
-// LGPD Questionnaire questions
-const lgpdQuestions = [
+// Base questions for all companies
+const baseLgpdQuestions = [
   {
     id: 1,
-    question: "Área da empresa:",
-    type: "text",
-    requiresDocument: false,
-    description: "dissertativa; não requer documento anexado obrigatório"
+    question: "A empresa possui uma política de privacidade documentada e atualizada?",
+    type: "single",
+    sector: "base",
+    requiresDocument: true,
+    documentCondition: "sim",
+    options: ["sim", "não", "parcial"],
+    description: "Documento obrigatório se 'sim'"
   },
   {
     id: 2,
-    question: "Processo de tratamento de dados a ser mapeado:",
-    type: "text",
+    question: "Existe um responsável designado para questões de proteção de dados (DPO ou equivalente)?",
+    type: "single", 
+    sector: "base",
     requiresDocument: false,
-    description: "dissertativa; não requer documento anexado obrigatório"
+    options: ["sim", "não"],
+    description: "alternativa - sim/não; não requer documento anexado obrigatório"
   },
   {
     id: 3,
-    question: "Qual a finalidade desse processo de tratamento de dados:",
-    type: "text",
-    requiresDocument: false,
-    description: "dissertativa; não requer documento anexado obrigatório"
+    question: "A empresa realiza mapeamento dos dados pessoais que coleta e processa?",
+    type: "single",
+    sector: "base", 
+    requiresDocument: true,
+    documentCondition: "sim",
+    options: ["sim", "não", "parcial"],
+    description: "Documento obrigatório se 'sim'"
   },
   {
     id: 4,
-    question: "Qual cargo é responsável pela realização desse processo de tratamento de dados:",
-    type: "text",
-    requiresDocument: false,
-    description: "dissertativa; não requer documento anexado obrigatório"
+    question: "A empresa possui procedimento para atender solicitações dos titulares (acesso, correção, exclusão)?",
+    type: "single",
+    sector: "base",
+    requiresDocument: true,
+    documentCondition: "sim",
+    options: ["sim", "não", "parcial"],
+    description: "Documento obrigatório se 'sim'"
   },
   {
     id: 5,
@@ -311,6 +322,255 @@ const lgpdQuestions = [
   }
 ];
 
+// Sector-specific questions
+const sectorQuestions = {
+  "Recursos Humanos": [
+    {
+      id: 101,
+      question: "Como a empresa coleta e armazena dados dos funcionários durante o processo de contratação?",
+      type: "text",
+      sector: "rh",
+      requiresDocument: true,
+      description: "Descreva os procedimentos de coleta de dados no processo seletivo. Documento obrigatório."
+    },
+    {
+      id: 102,
+      question: "Quais dados biométricos são coletados dos funcionários, se houver?",
+      type: "multiple",
+      sector: "rh",
+      requiresDocument: false,
+      options: ["Impressão digital", "Reconhecimento facial", "Íris", "Voz", "Nenhum", "Outros"],
+      description: "Selecione todas as opções aplicáveis"
+    },
+    {
+      id: 103,
+      question: "A empresa possui consentimento explícito para processamento de dados sensíveis dos funcionários (saúde, origem racial, etc.)?",
+      type: "single",
+      sector: "rh",
+      requiresDocument: true,
+      documentCondition: "sim",
+      options: ["sim", "não", "parcial"],
+      description: "Documento obrigatório se 'sim'"
+    },
+    {
+      id: 104,
+      question: "Como é realizado o controle de acesso aos dados dos funcionários?",
+      type: "text",
+      sector: "rh",
+      requiresDocument: false,
+      description: "Descreva os mecanismos de controle de acesso"
+    }
+  ],
+  "Finanças": [
+    {
+      id: 201,
+      question: "Como são protegidos os dados financeiros dos clientes (contas bancárias, cartões, etc.)?",
+      type: "text",
+      sector: "financas",
+      requiresDocument: true,
+      description: "Descreva as medidas de proteção. Documento obrigatório."
+    },
+    {
+      id: 202,
+      question: "A empresa possui certificação de segurança para processamento de pagamentos?",
+      type: "single",
+      sector: "financas",
+      requiresDocument: true,
+      documentCondition: "sim", 
+      options: ["sim", "não"],
+      description: "Documento obrigatório se 'sim'"
+    },
+    {
+      id: 203,
+      question: "Quais dados financeiros são compartilhados com terceiros?",
+      type: "multiple",
+      sector: "financas",
+      requiresDocument: false,
+      options: ["CPF", "Dados bancários", "Histórico de transações", "Score de crédito", "Nenhum", "Outros"],
+      description: "Selecione todas as opções aplicáveis"
+    },
+    {
+      id: 204,
+      question: "Por quanto tempo os dados financeiros são armazenados?",
+      type: "single",
+      sector: "financas",
+      requiresDocument: false,
+      options: ["Até 5 anos", "5-10 anos", "Mais de 10 anos", "Indefinidamente"],
+      description: "Selecione o período de retenção"
+    }
+  ],
+  "Marketing": [
+    {
+      id: 301,
+      question: "Como é obtido o consentimento para envio de comunicações de marketing?",
+      type: "text",
+      sector: "marketing",
+      requiresDocument: true,
+      description: "Descreva o processo de obtenção de consentimento. Documento obrigatório."
+    },
+    {
+      id: 302,
+      question: "A empresa possui mecanismo para opt-out de comunicações de marketing?",
+      type: "single",
+      sector: "marketing",
+      requiresDocument: false,
+      options: ["sim", "não"],
+      description: "alternativa - sim/não; não requer documento anexado obrigatório"
+    },
+    {
+      id: 303,
+      question: "Quais dados são utilizados para segmentação de campanhas de marketing?",
+      type: "multiple",
+      sector: "marketing",
+      requiresDocument: false,
+      options: ["Dados demográficos", "Comportamento de compra", "Localização", "Preferências", "Dados de redes sociais", "Outros"],
+      description: "Selecione todas as opções aplicáveis"
+    },
+    {
+      id: 304,
+      question: "São utilizados cookies ou tecnologias de rastreamento no site/app da empresa?",
+      type: "single",
+      sector: "marketing",
+      requiresDocument: true,
+      documentCondition: "sim",
+      options: ["sim", "não", "parcial"],
+      description: "Documento obrigatório se 'sim' (política de cookies)"
+    }
+  ],
+  "Vendas": [
+    {
+      id: 401,
+      question: "Como são coletados e armazenados os dados dos leads/prospects?",
+      type: "text",
+      sector: "vendas",
+      requiresDocument: false,
+      description: "Descreva o processo de coleta e armazenamento"
+    },
+    {
+      id: 402,
+      question: "A empresa possui CRM? Como os dados dos clientes são protegidos nele?",
+      type: "text",
+      sector: "vendas",
+      requiresDocument: true,
+      description: "Descreva as medidas de proteção no CRM. Documento obrigatório se possuir CRM."
+    },
+    {
+      id: 403,
+      question: "Os vendedores têm acesso a dados pessoais sensíveis dos clientes?",
+      type: "single",
+      sector: "vendas",
+      requiresDocument: false,
+      options: ["sim", "não", "parcial"],
+      description: "alternativa - sim/não/parcial; não requer documento anexado obrigatório"
+    }
+  ],
+  "Tecnologia da Informação": [
+    {
+      id: 501,
+      question: "Existe política de segurança da informação documentada e implementada?",
+      type: "single",
+      sector: "ti",
+      requiresDocument: true,
+      documentCondition: "sim",
+      options: ["sim", "não", "parcial"],
+      description: "Documento obrigatório se 'sim'"
+    },
+    {
+      id: 502,
+      question: "Como são realizados os backups dos dados pessoais?",
+      type: "text",
+      sector: "ti",
+      requiresDocument: false,
+      description: "Descreva a política e procedimentos de backup"
+    },
+    {
+      id: 503,
+      question: "A empresa possui plano de resposta a incidentes de segurança?",
+      type: "single",
+      sector: "ti",
+      requiresDocument: true,
+      documentCondition: "sim",
+      options: ["sim", "não", "parcial"],
+      description: "Documento obrigatório se 'sim'"
+    },
+    {
+      id: 504,
+      question: "São realizadas auditorias de segurança regularmente?",
+      type: "single",
+      sector: "ti",
+      requiresDocument: false,
+      options: ["sim", "não", "parcial"],
+      description: "alternativa - sim/não/parcial; não requer documento anexado obrigatório"
+    }
+  ],
+  "Atendimento ao Cliente": [
+    {
+      id: 601,
+      question: "Como são tratadas as solicitações dos titulares sobre seus dados pessoais (acesso, correção, exclusão)?",
+      type: "text",
+      sector: "atendimento",
+      requiresDocument: true,
+      description: "Descreva o processo de atendimento às solicitações. Documento obrigatório."
+    },
+    {
+      id: 602,
+      question: "Existe canal específico para solicitações relacionadas à LGPD?",
+      type: "single",
+      sector: "atendimento",
+      requiresDocument: false,
+      options: ["sim", "não"],
+      description: "alternativa - sim/não; não requer documento anexado obrigatório"
+    },
+    {
+      id: 603,
+      question: "Os atendentes são treinados sobre proteção de dados pessoais?",
+      type: "single",
+      sector: "atendimento",
+      requiresDocument: true,
+      documentCondition: "sim",
+      options: ["sim", "não", "parcial"],
+      description: "Documento obrigatório se 'sim' (certificados de treinamento)"
+    }
+  ]
+};
+
+// Function to generate dynamic questions based on company sectors
+async function generateDynamicQuestions(userId: string) {
+  try {
+    const companyProfile = await storage.getCompanyProfile(userId);
+    const sectors = (companyProfile?.sectors as string[]) || [];
+    const customSectors = (companyProfile?.customSectors as string[]) || [];
+    
+    // Start with base questions
+    let dynamicQuestions = [...baseLgpdQuestions];
+    
+    // Add sector-specific questions
+    sectors.forEach(sector => {
+      if (sectorQuestions[sector as keyof typeof sectorQuestions]) {
+        dynamicQuestions = [...dynamicQuestions, ...sectorQuestions[sector as keyof typeof sectorQuestions]];
+      }
+    });
+    
+    // For custom sectors, add generic questions
+    customSectors.forEach((customSector, index) => {
+      dynamicQuestions.push({
+        id: 700 + index,
+        question: `Como o setor "${customSector}" coleta e processa dados pessoais?`,
+        type: "text",
+        sector: "custom",
+        requiresDocument: false,
+        description: "Descreva os processos de tratamento de dados específicos deste setor"
+      });
+    });
+    
+    return dynamicQuestions;
+  } catch (error) {
+    console.error("Error generating dynamic questions:", error);
+    // Fallback to base questions if there's an error
+    return baseLgpdQuestions;
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
@@ -465,8 +725,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Questionnaire routes
-  app.get('/api/questionnaire/questions', (req, res) => {
-    res.json({ questions: lgpdQuestions });
+  app.get('/api/questionnaire/questions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const dynamicQuestions = await generateDynamicQuestions(userId);
+      res.json({ questions: dynamicQuestions });
+    } catch (error) {
+      console.error("Error generating dynamic questions:", error);
+      // Fallback to base questions
+      res.json({ questions: baseLgpdQuestions });
+    }
   });
 
   app.get('/api/questionnaire/response', async (req: any, res) => {
@@ -493,12 +761,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Calculate compliance score based on answers
       const answers = JSON.parse(validatedData.answer);
+      const dynamicQuestions = await generateDynamicQuestions(userId);
       let score = 0;
-      answers.forEach((answer: string) => {
+      answers.forEach((answer: string, index: number) => {
         if (answer === 'sim') score += 10;
         else if (answer === 'parcial') score += 5;
       });
-      validatedData.complianceScore = Math.min(score, 100);
+      validatedData.complianceScore = Math.min(score, Math.max(100, dynamicQuestions.length * 10));
 
       const response = await storage.saveQuestionnaireResponse(validatedData);
       
@@ -830,6 +1099,149 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Sector Analysis and Report endpoints
+  app.get('/api/reports/sector-analysis', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get questionnaire response
+      const questionnaireResponse = await storage.getQuestionnaireResponse(userId);
+      if (!questionnaireResponse) {
+        return res.status(400).json({ message: "Questionário deve ser preenchido antes de gerar análise por setor" });
+      }
+
+      // Get company profile to get sectors
+      const companyProfile = await storage.getCompanyProfile(userId);
+      if (!companyProfile) {
+        return res.status(400).json({ message: "Perfil da empresa deve ser configurado" });
+      }
+
+      const sectors = (companyProfile.sectors as string[]) || [];
+      const answers = JSON.parse(questionnaireResponse.answer);
+      
+      // Analyze compliance by sector
+      const sectorAnalysis = await analyzeSectorCompliance(userId, answers, sectors);
+      
+      res.json({
+        sectorAnalysis,
+        totalSectors: sectors.length,
+        companyName: companyProfile.companyName
+      });
+    } catch (error) {
+      console.error("Error generating sector analysis:", error);
+      res.status(500).json({ message: "Failed to generate sector analysis" });
+    }
+  });
+
+  app.post('/api/reports/generate-sector', isAuthenticated, attachUserPlan, checkReportLimits, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get user information
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Get questionnaire response
+      const questionnaireResponse = await storage.getQuestionnaireResponse(userId);
+      if (!questionnaireResponse) {
+        return res.status(400).json({ message: "Questionário deve ser preenchido antes de gerar relatório" });
+      }
+
+      // Get company profile
+      const companyProfile = await storage.getCompanyProfile(userId);
+      if (!companyProfile) {
+        return res.status(400).json({ message: "Perfil da empresa deve ser configurado" });
+      }
+
+      const sectors = (companyProfile.sectors as string[]) || [];
+      const answers = JSON.parse(questionnaireResponse.answer);
+      
+      // Get sector analysis
+      const sectorAnalysis = await analyzeSectorCompliance(userId, answers, sectors);
+      
+      // Get compliance tasks
+      const complianceTasks = await storage.getComplianceTasks(userId);
+      
+      // Get dynamic questions
+      const dynamicQuestions = await generateDynamicQuestions(userId);
+
+      // Prepare sector report data
+      const reportData = {
+        user: {
+          firstName: user.firstName || undefined,
+          lastName: user.lastName || undefined,
+          email: user.email || undefined,
+          company: companyProfile.companyName || undefined,
+        },
+        companyProfile,
+        questionnaireResponse,
+        complianceTasks,
+        questions: dynamicQuestions,
+        sectorAnalysis,
+        sectors
+      };
+
+      // Generate sector PDF - fallback to regular report for now
+      const { buffer, filename } = await generateComplianceReportPDF({
+        user: reportData.user,
+        questionnaireResponse: reportData.questionnaireResponse,
+        complianceTasks: reportData.complianceTasks,
+        questions: reportData.questions
+      });
+      
+      // Create reports directory if it doesn't exist
+      const reportsDir = 'uploads/reports';
+      if (!fs.existsSync(reportsDir)) {
+        fs.mkdirSync(reportsDir, { recursive: true });
+      }
+
+      // Save PDF file
+      const filePath = path.join(reportsDir, filename);
+      fs.writeFileSync(filePath, buffer);
+
+      // Save report record to database
+      const reportRecord = await storage.createComplianceReport({
+        userId,
+        questionnaireResponseId: questionnaireResponse.id,
+        title: `Relatório por Setores LGPD - ${companyProfile.companyName}`,
+        reportType: 'sector_analysis',
+        complianceScore: questionnaireResponse.complianceScore || 0,
+        fileName: filename,
+        fileSize: buffer.length,
+        fileUrl: `/uploads/reports/${filename}`,
+        status: 'generated',
+      });
+
+      // Log the action
+      await storage.logAction({
+        userId,
+        action: 'sector_report_generated',
+        resourceType: 'report',
+        resourceId: reportRecord.id,
+        details: { 
+          filename,
+          complianceScore: questionnaireResponse.complianceScore,
+          reportType: 'sector_analysis',
+          sectors: sectors.length
+        },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+
+      res.json({
+        message: "Relatório por setores gerado com sucesso",
+        report: reportRecord,
+        sectorAnalysis,
+        downloadUrl: `/api/reports/${reportRecord.id}/download`
+      });
+    } catch (error) {
+      console.error("Error generating sector compliance report:", error);
+      res.status(500).json({ message: "Failed to generate sector compliance report" });
+    }
+  });
+
   // Subscription routes
   app.get('/api/subscription/status', isAuthenticated, async (req: any, res) => {
     try {
@@ -963,6 +1375,131 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// Function to analyze compliance by sector
+async function analyzeSectorCompliance(userId: string, answers: string[], sectors: string[]) {
+  const dynamicQuestions = await generateDynamicQuestions(userId);
+  const sectorAnalysis: Record<string, any> = {};
+
+  // Base compliance analysis
+  const baseQuestions = dynamicQuestions.filter(q => q.sector === 'base');
+  let baseScore = 0;
+  let baseAnswered = 0;
+  
+  baseQuestions.forEach((question) => {
+    const globalIndex = dynamicQuestions.findIndex(q => q.id === question.id);
+    if (globalIndex !== -1 && answers[globalIndex]) {
+      baseAnswered++;
+      if (answers[globalIndex] === 'sim') baseScore += 10;
+      else if (answers[globalIndex] === 'parcial') baseScore += 5;
+    }
+  });
+
+  sectorAnalysis['base'] = {
+    name: 'Conformidade Geral',
+    score: baseAnswered > 0 ? Math.round(baseScore / (baseAnswered * 10) * 100) : 0,
+    questions: baseAnswered,
+    totalQuestions: baseQuestions.length,
+    issues: [],
+    recommendations: []
+  };
+
+  // Analyze each sector
+  sectors.forEach(sector => {
+    const sectorKey = getSectorKey(sector);
+    const sectorQs = dynamicQuestions.filter(q => q.sector === sectorKey);
+    
+    if (sectorQs.length === 0) return;
+
+    let sectorScore = 0;
+    let sectorAnswered = 0;
+    const issues: string[] = [];
+
+    sectorQs.forEach((question) => {
+      const globalIndex = dynamicQuestions.findIndex(q => q.id === question.id);
+      if (globalIndex !== -1 && answers[globalIndex]) {
+        sectorAnswered++;
+        const answer = answers[globalIndex];
+        
+        if (answer === 'sim') {
+          sectorScore += 10;
+        } else if (answer === 'parcial') {
+          sectorScore += 5;
+          issues.push(`Implementação parcial: ${question.question}`);
+        } else if (answer === 'não') {
+          issues.push(`Não implementado: ${question.question}`);
+        }
+      }
+    });
+
+    // Generate sector-specific recommendations
+    const sectorRecommendations = generateSectorRecommendations(sector, issues);
+    
+    sectorAnalysis[sectorKey] = {
+      name: sector,
+      score: sectorAnswered > 0 ? Math.round(sectorScore / (sectorAnswered * 10) * 100) : 0,
+      questions: sectorAnswered,
+      totalQuestions: sectorQs.length,
+      issues,
+      recommendations: sectorRecommendations
+    };
+  });
+
+  return sectorAnalysis;
+}
+
+// Function to generate sector-specific recommendations
+function generateSectorRecommendations(sector: string, issues: string[]): string[] {
+  const recommendations: string[] = [];
+  
+  switch (sector) {
+    case 'Recursos Humanos':
+      recommendations.push('Implementar política de acesso restrito aos dados de funcionários');
+      recommendations.push('Criar procedimento para coleta de consentimento de dados sensíveis');
+      recommendations.push('Documentar processo de seleção e armazenamento de dados');
+      break;
+    case 'Finanças':
+      recommendations.push('Implementar criptografia para dados financeiros sensíveis');
+      recommendations.push('Estabelecer política de retenção de dados financeiros');
+      recommendations.push('Certificar-se em padrões de segurança para pagamentos (PCI DSS)');
+      break;
+    case 'Marketing':
+      recommendations.push('Implementar mecanismo de opt-in/opt-out para comunicações');
+      recommendations.push('Criar política de cookies e rastreamento');
+      recommendations.push('Documentar processo de consentimento para marketing');
+      break;
+    case 'Vendas':
+      recommendations.push('Implementar controle de acesso no CRM');
+      recommendations.push('Criar política para coleta de dados de prospects');
+      recommendations.push('Documentar processo de proteção de dados de clientes');
+      break;
+    case 'Tecnologia da Informação':
+      recommendations.push('Implementar política de segurança da informação');
+      recommendations.push('Criar plano de resposta a incidentes');
+      recommendations.push('Estabelecer rotina de auditorias de segurança');
+      break;
+    case 'Atendimento ao Cliente':
+      recommendations.push('Criar canal específico para solicitações LGPD');
+      recommendations.push('Treinar equipe sobre direitos dos titulares');
+      recommendations.push('Documentar processo de atendimento às solicitações');
+      break;
+  }
+  
+  return recommendations;
+}
+
+// Helper function to get sector key
+function getSectorKey(sector: string): string {
+  const sectorMap: Record<string, string> = {
+    'Recursos Humanos': 'rh',
+    'Finanças': 'financas',
+    'Marketing': 'marketing',
+    'Vendas': 'vendas',
+    'Tecnologia da Informação': 'ti',
+    'Atendimento ao Cliente': 'atendimento'
+  };
+  return sectorMap[sector] || 'custom';
 }
 
 // Helper function to create compliance tasks based on questionnaire answers

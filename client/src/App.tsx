@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import Questionnaire from "@/pages/questionnaire";
+import SectorReports from "@/pages/sector-reports";
 import Documents from "@/pages/documents";
 import Reports from "@/pages/reports";
 import Subscription from "@/pages/subscription";
@@ -64,6 +65,7 @@ function Router() {
         <Route path="/questionnaire" component={Questionnaire} />
         <Route path="/documents" component={Documents} />
         <Route path="/reports" component={Reports} />
+        <Route path="/sector-reports" component={SectorReports} />
         <Route path="/subscription" component={Subscription} />
         <Route path="/profile" component={Profile} />
         <Route component={NotFound} />
