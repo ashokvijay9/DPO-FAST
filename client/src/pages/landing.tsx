@@ -24,7 +24,7 @@ export default function Landing() {
               <Button 
                 size="lg" 
                 variant="secondary"
-                className="bg-white text-primary hover:bg-gray-100"
+                className="bg-background text-primary hover:bg-secondary/80"
                 onClick={handleLogin}
                 data-testid="button-start-assessment"
               >
@@ -34,7 +34,7 @@ export default function Landing() {
               <Button 
                 size="lg" 
                 variant="outline"
-                className="border-white text-white hover:bg-white hover:text-primary"
+                className="border-white text-white hover:bg-background hover:text-primary"
                 onClick={handleLogin}
                 data-testid="button-login"
               >

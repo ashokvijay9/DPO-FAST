@@ -352,9 +352,15 @@
 .dark [data-radix-popover-content],
 .dark [data-radix-dialog-content],
 .dark [data-radix-select-content],
-.dark [data-radix-toast-root] {
+.dark [data-radix-toast-root],
+.dark [data-state="open"][data-radix-dropdown-menu-content],
+.dark [data-state="open"][data-radix-popover-content],
+.dark [data-state="open"][data-radix-select-content] {
   background-color: hsl(var(--popover)) !important;
   border: 1px solid hsl(var(--border)) !important;
+  color: hsl(var(--popover-foreground)) !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: 0 10px 38px -10px rgba(0, 0, 0, 0.8), 0 10px 20px -15px rgba(0, 0, 0, 0.6) !important;
 }
 
 .dark .bg-background {
@@ -365,24 +371,63 @@
   background-color: hsl(var(--card)) !important;
 }
 
-/* Force solid backgrounds for all radix components in dark mode */
+/* Force solid backgrounds and proper styling for all radix components in dark mode */
 .dark [data-radix-dropdown-menu-content] {
-  backdrop-filter: blur(20px);
-  box-shadow: 0 10px 38px -10px rgba(22, 23, 24, 0.35), 0 10px 20px -15px rgba(22, 23, 24, 0.2);
+  background: hsl(var(--popover)) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid hsl(var(--border)) !important;
 }
 
 .dark [data-radix-popover-content] {
-  backdrop-filter: blur(20px);
-  box-shadow: 0 10px 38px -10px rgba(22, 23, 24, 0.35), 0 10px 20px -15px rgba(22, 23, 24, 0.2);
+  background: hsl(var(--popover)) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid hsl(var(--border)) !important;
 }
 
 .dark [data-radix-select-content] {
-  backdrop-filter: blur(20px);
-  box-shadow: 0 10px 38px -10px rgba(22, 23, 24, 0.35), 0 10px 20px -15px rgba(22, 23, 24, 0.2);
+  background: hsl(var(--popover)) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+.dark [data-radix-dialog-content] {
+  background: hsl(var(--background)) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid hsl(var(--border)) !important;
 }
 
 /* Toast styling for dark mode */
 .dark [data-radix-toast-root] {
+  background: hsl(var(--background)) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+/* Fix any remaining transparent elements */
+.dark .glass-card {
+  background: hsl(var(--card) / 0.95) !important;
   backdrop-filter: blur(20px);
-  box-shadow: 0 10px 38px -10px rgba(22, 23, 24, 0.35), 0 10px 20px -15px rgba(22, 23, 24, 0.2);
+  border: 1px solid hsl(var(--border));
+}
+
+/* Override any potential transparent backgrounds in dark mode */
+.dark * {
+  --tw-bg-opacity: 1 !important;
+}
+
+.dark [data-radix-popper-content-wrapper] {
+  --tw-bg-opacity: 1 !important;
+}
+
+/* Specific fixes for common components */
+.dark .bg-muted {
+  background-color: hsl(var(--muted)) !important;
+}
+
+.dark .bg-secondary {
+  background-color: hsl(var(--secondary)) !important;
+}
+
+.dark .bg-accent {
+  background-color: hsl(var(--accent)) !important;
 }

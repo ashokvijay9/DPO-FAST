@@ -422,7 +422,7 @@ export default function Questionnaire() {
                 value={currentAnswer as string}
                 onChange={(e) => handleAnswerChange(currentQuestion, e.target.value)}
                 rows={5}
-                className="w-full resize-none border-0 bg-white dark:bg-slate-900 shadow-sm rounded-lg focus:ring-2 focus:ring-blue-500 transition-all"
+                className="w-full resize-none border-0 bg-card shadow-sm rounded-lg focus:ring-2 focus:ring-blue-500 transition-all"
                 data-testid={`textarea-answer-${currentQuestion + 1}`}
               />
             </div>
@@ -566,7 +566,7 @@ export default function Questionnaire() {
               value={currentObservation}
               onChange={(e) => handleObservationChange(currentQuestion, e.target.value)}
               rows={3}
-              className="w-full resize-none border-0 bg-white dark:bg-slate-900 shadow-sm rounded-lg focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+              className="w-full resize-none border-0 bg-card shadow-sm rounded-lg focus:ring-2 focus:ring-blue-500 transition-all text-sm"
               data-testid={`textarea-observation-${currentQuestion + 1}`}
             />
           </div>
@@ -578,7 +578,7 @@ export default function Questionnaire() {
   return (
     <div className="min-h-screen hero-gradient">
       {/* Modern Header */}
-      <div className="border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+      <div className="border-b bg-background/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -636,7 +636,7 @@ export default function Questionnaire() {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto p-4">
         <div className="mt-8">
-          <Card className="border-0 shadow-xl bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg overflow-hidden">
+          <Card className="glass-card shadow-xl backdrop-blur-lg overflow-hidden">
             {/* Question Header */}
             <div className="bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-purple-500/10 p-6 border-b">
               <div className="flex items-start gap-4">
