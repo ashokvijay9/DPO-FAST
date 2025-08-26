@@ -1,0 +1,101 @@
+# Plano de Desenvolvimento Modular Avançado do Micro-SaaS DPO Fast para Replit
+
+Este plano de desenvolvimento é uma versão mais completa e refinada do anterior, incorporando o funcionamento dos planos de assinatura de forma integrada. Os planos afetam o acesso e limites das funcionalidades: 
+- **Básico**: Limites baixos (ex.: 1 questionário/mês, 5 documentos, relatórios básicos sem to-do personalizada).
+- **Pro**: Limites médios/ilimitados (ex.: questionários ilimitados, documentos ilimitados, relatórios avançados com percentual e e-mails automáticos).
+- **Personalizado (Enterprise)**: Para grandes empresas, com análise e acompanhamento aprofundado. Inclui features exclusivas como suporte dedicado (via chat integrado ou e-mail prioritário), análises customizadas (ex.: relatórios com IA para recomendações personalizadas), múltiplos usuários por conta (equipes), integração com APIs externas (ex.: para importação de dados corporativos), relatórios em tempo real, auditoria avançada e acompanhamento mensal (ex.: relatórios de progresso via webhook ou agendamento). Preço: Sob consulta (ex.: R$ 2.000/mês ou anual), gerenciado manualmente via Stripe ou contato direto, com campo 'plano' no Firestore setado para 'enterprise' após aprovação.
+
+**Funcionamento dos Planos de Assinatura**:
+- **Verificação**: Em cada módulo JS, use auth.js para checar Firestore (coleção 'users'): campo 'statusAssinatura' ('ativo'/'inativo') e 'plano' ('basic', 'pro', 'enterprise'). Aplique limites (ex.: contadores no Firestore para relatórios usados/mês).
+- **Atualização**: Pós-pagamento via Stripe webhook, atualize Firestore com Bundle Builder. Para Personalizado, adicione fluxo de aprovação manual (ex.: e-mail para admin).
+- **Restrições**: Redirecione ou bloqueie features se limite excedido (ex.: mensagem "Atualize seu plano"). Para Enterprise, habilite extras como multi-usuário (subcoleção 'equipe' em users).
+- **Integração Geral**: Use Stripe para todos planos, com webhooks para sincronização. Adicione dashboard com visão de uso vs. limites.
+
+O plano mantém modularidade para Replit, com prompts para IA. Adicionei etapas para: Integração de Limites de Planos, Features Enterprise, Internacionalização (para expansão), Segurança Avançada e Manutenção Contínua.
+
+**Pré-Requisitos no Replit**: Mesmos do plano anterior, mais `npm install stripe jest firebase-admin` para webhooks e testes. Configure webhooks Stripe no Replit com ngrok para testes locais.
+
+**Etapas de Desenvolvimento**
+
+### Etapa 1: Configuração do Projeto e Estrutura Inicial no Replit
+**Objetivo**: Base do projeto, incluindo setup para planos de assinatura (ex.: campos iniciais no Firestore).
+**Dependências**: Nenhuma.
+**Instruções no Replit**: Crie estrutura, adicione Stripe SDK.
+**Prompt para IA**:  
+"Você é um desenvolvedor especialista em Replit. Crie a estrutura inicial do Micro-SaaS DPO Fast no Replit com HTML, CSS, JavaScript, Bootstrap 5 e Firebase (Authentication, Firestore, Storage, Hosting). Configure firebase.js exportando auth, db, storage. Inclua Stripe SDK. Crie index.html com navbar Bootstrap: logotipo 'DPO Fast', links 'Login', 'Cadastro', 'Dashboard' (condicional). Adicione styles.css com paleta azul/branco. Estrutura: assets/, js/, css/. Prepare Firestore para planos: coleção 'users' com 'plano' default 'basic'. Forneça códigos para index.html, styles.css, firebase.js, package.json. Instrua rodar: npm install firebase bootstrap stripe."
+
+### Etapa 2: Implementação de Autenticação, Perfil e Verificação de Planos
+**Objetivo**: Autenticação com verificação inicial de planos e limites.
+**Dependências**: Etapa 1.
+**Instruções no Replit**: Teste com Emulator, adicione função para checar plano.
+**Prompt para IA**:  
+"Desenvolva autenticação para DPO Fast no Replit com Firebase. Crie login.html, signup.html com Bootstrap, e-mail/senha/Google, validação. Crie auth.js: signup/login/googleLogin/logout/onAuthStateChanged (redirecione dashboard se ativo). Configure Firestore User Document para 'users': uid, email, nome, dataCriacao, statusAssinatura='inativo', plano='basic'. Adicione função checkPlan() para verificar 'plano' e limites (ex.: contadores mensais). Crie profile.html para editar dados e visualizar plano/atualizações. Forneça códigos para login.html, signup.html, profile.html, auth.js. Instrua testes com Emulator e ngrok para webhooks."
+
+### Etapa 3: Desenvolvimento do Dashboard com Visão de Planos
+**Objetivo**: Dashboard central com resumo de uso por plano (ex.: "Relatórios usados: 1/1 no Básico").
+**Dependências**: Etapa 2.
+**Instruções no Replit**: Integre checkPlan() de auth.js.
+**Prompt para IA**:  
+"Crie dashboard para DPO Fast no Replit. dashboard.html com Bootstrap sidebar: links para módulos, seção com resumo conformidade e uso por plano (recuperado Firestore: ex. relatoriosUsados / limitePlano). Crie dashboard.js: carregar dados, calcular resumo, exibir limites baseados em 'plano' ('basic':1 relatório, 'pro':ilimitado, 'enterprise':custom). Use loaders. Forneça códigos para dashboard.html, dashboard.js. Instrua integração e testes locais."
+
+### Etapa 4: Desenvolvimento do Questionário Iterativo com Limites por Plano
+**Objetivo**: Questionário com limites (ex.: Básico: 10 perguntas, Pro: 20, Enterprise: custom).
+**Dependências**: Etapa 3.
+**Instruções no Replit**: Verifique plano antes de carregar.
+**Prompt para IA**:  
+"Crie questionário iterativo para DPO Fast no Replit. questionario.html com Bootstrap: 20 perguntas LGPD, iterativo, anexos Storage (PDF/JPG/PNG). Salve em 'respostas'. Crie questionario.js: validação, upload com Know Malware Detection, checar limite por plano (bloqueie se excedido). Para 'enterprise', adicione campos custom (ex.: análise aprofundada). Forneça códigos para questionario.html, questionario.js. Instrua testes com uploads."
+
+### Etapa 5: Geração de Relatórios e To-Do List com Customizações por Plano
+**Objetivo**: Relatórios com features extras para Pro/Enterprise (ex.: to-do personalizada, análise IA).
+**Dependências**: Etapa 4.
+**Instruções no Replit**: Configure extensões no Console.
+**Prompt para IA**:  
+"Desenvolva relatórios para DPO Fast no Replit. relatorio.html: exibir respostas, botão PDF via Generate PDF (resumo + to-do). relatorio.js: calcular conformidade, formatar por plano ('basic': básico, 'pro': percentual, 'enterprise': recomendações IA via code_execution tool se needed). Envie e-mail Trigger Email. Aplicar limites (contador em Firestore). Forneça códigos para relatorio.html, relatorio.js. Instrua setup extensões."
+
+### Etapa 6: Gerenciamento de Documentos com Auditoria Avançada
+**Objetivo**: Documentos com logs extras para Enterprise.
+**Dependências**: Etapa 5.
+**Instruções no Replit**: Use Document Auditing.
+**Prompt para IA**:  
+"Crie gerenciamento documentos para DPO Fast no Replit. documentos.html: tabela Bootstrap para listar/anexar/excluir. documentos.js: recuperar Storage/Firestore, auditoria via Document Auditing ('auditoria' coleção), malware check. Para 'enterprise', adicione compartilhamento equipe. Aplicar limites storage por plano. Forneça códigos para documentos.html, documentos.js. Instrua testes."
+
+### Etapa 7: Integração com Stripe para Assinaturas, Incluindo Plano Personalizado
+**Objetivo**: Stripe com novo plano Enterprise (sob consulta).
+**Dependências**: Etapa 6.
+**Instruções no Replit**: Configure webhooks com ngrok.
+**Prompt para IA**:  
+"Integre Stripe ao DPO Fast no Replit. assinatura.html: cartões Bootstrap para Básico (R$50/mês, R$500/ano), Pro (R$100/mês, R$1000/ano), Personalizado (sob consulta, botão 'Contato'). assinatura.js: checkout sessões, webhooks para atualizar 'plano'/'statusAssinatura', limites iniciais. Para Personalizado, envie e-mail admin para aprovação manual. Restrinja módulos por plano. Envie confirmações Trigger Email. Forneça códigos para assinatura.html, assinatura.js. Instrua webhooks com ngrok."
+
+### Etapa 8: Features para Plano Personalizado (Enterprise)
+**Objetivo**: Adicionar análise aprofundada e acompanhamento (ex.: chat suporte, relatórios mensais automáticos).
+**Dependências**: Etapa 7.
+**Instruções no Replit**: Crie enterprise.html para extras.
+**Prompt para IA**:  
+"Desenvolva features para plano Personalizado no DPO Fast no Replit. Crie enterprise.html: seção para análise aprofundada (form para upload dados custom, gerar relatório IA), acompanhamento (agenda relatórios mensais via Cloud Functions), multi-usuário (adicionar/gerenciar equipe em 'users/equipe'). Crie enterprise.js: lógica com Firestore, e-mails prioritários. Integre checkPlan para habilitar só em 'enterprise'. Forneça códigos para enterprise.html, enterprise.js. Instrua setup Cloud Functions no Replit/Firestore."
+
+### Etapa 9: Configuração de Regras de Segurança, Auditoria e Testes Unitários
+**Objetivo**: Segurança com foco em Enterprise (ex.: acessos multi-usuário).
+**Dependências**: Etapa 8.
+**Instruções no Replit**: Use Jest.
+**Prompt para IA**:  
+"Configure segurança para DPO Fast no Replit. firestore.rules/storage.rules: acesso por uid/plano, multi-usuário para Enterprise. Use Document Auditing/Know Malware. Crie tests.js com Jest: testes para auth, planos limites, enterprise features. Forneça rules arquivos, tests.js. Instrua npm test."
+
+### Etapa 10: Otimização de Performance, Usabilidade e Internacionalização
+**Objetivo**: Otimizar para grandes empresas (ex.: suporte multi-idioma para expansão).
+**Dependências**: Etapa 9.
+**Instruções no Replit**: Adicione i18n library se needed.
+**Prompt para IA**:  
+"Otimize DPO Fast no Replit. Adicione loaders/tooltips UX, otimize Firestore (índices, Bundle Builder). Para usabilidade: temas, feedback. Internacionalize: suporte PT/EN em textos (use JSON strings). Atualize js com checks performance por plano. Forneça códigos atualizados, instrua benchmarks."
+
+### Etapa 11: Deploy com Firebase Hosting, Monitoramento e Manutenção
+**Objetivo**: Deploy com alertas para uso Enterprise.
+**Dependências**: Todas.
+**Instruções no Replit**: Use Shell para deploy.
+**Prompt para IA**:  
+"Prepare deploy DPO Fast no Replit para Firebase Hosting. firebase.json: hosting config, rewrites. deploy.sh para automatizar. Configure Analytics/alertas para limites/erros, webhooks para manutenção planos. Forneça códigos para firebase.json, deploy.sh. Instrua deploy, testes produção, manutenção (ex.: atualizações via CI)."
+
+**Notas Finais**:
+- **Modularidade**: Mantenha imports JS para reutilização.
+- **Planos em Ação**: Cada módulo verifica plano para personalização/escalabilidade.
+- **Custos**: Otimize para Enterprise com caches.
+- **Expansão**: Plano permite crescimento para grandes empresas.

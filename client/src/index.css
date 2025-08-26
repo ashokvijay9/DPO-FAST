@@ -56,7 +56,7 @@
   --foreground: hsl(0, 0%, 95%);
   --card: hsl(211, 20%, 12%);
   --card-foreground: hsl(0, 0%, 95%);
-  --popover: hsl(211, 20%, 8%);
+  --popover: hsl(211, 20%, 12%);
   --popover-foreground: hsl(0, 0%, 95%);
   --primary: hsl(211, 82%, 60%);
   --primary-foreground: hsl(0, 0%, 100%);
@@ -95,6 +95,8 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
     font-family: 'Inter', sans-serif;
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--background));
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -247,7 +249,7 @@
 
 /* Modern card styles */
 .glass-card {
-  @apply backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border border-white/20 dark:border-slate-700/30;
+  @apply backdrop-blur-xl bg-card/90 border border-border;
 }
 
 .gradient-border {
@@ -287,47 +289,100 @@
     hsl(var(--accent) / 0.15) 75%,
     hsl(var(--background)) 100%
   );
+  min-height: 100vh;
 }
 
 /* Status pills with better colors */
 .status-success {
-  @apply bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800;
+  @apply bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800;
 }
 
 .status-warning {
-  @apply bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800;
+  @apply bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800;
 }
 
 .status-error {
-  @apply bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800;
+  @apply bg-red-100 text-red-800 border-red-200 dark:bg-red-950/50 dark:text-red-300 dark:border-red-800;
 }
 
 .status-info {
-  @apply bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800;
+  @apply bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800;
 }
 
 /* Status indicators */
 .status-valid {
-  @apply bg-green-100 text-green-800 border-green-200;
+  @apply bg-green-100 text-green-800 border-green-200 dark:bg-green-950/50 dark:text-green-300 dark:border-green-800;
 }
 
 .status-pending {
-  @apply bg-yellow-100 text-yellow-800 border-yellow-200;
+  @apply bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-950/50 dark:text-yellow-300 dark:border-yellow-800;
 }
 
 .status-expired {
-  @apply bg-red-100 text-red-800 border-red-200;
+  @apply bg-red-100 text-red-800 border-red-200 dark:bg-red-950/50 dark:text-red-300 dark:border-red-800;
 }
 
 /* Priority indicators */
 .priority-high {
-  @apply bg-red-100 text-red-800 border-red-200;
+  @apply bg-red-100 text-red-800 border-red-200 dark:bg-red-950/50 dark:text-red-300 dark:border-red-800;
 }
 
 .priority-medium {
-  @apply bg-yellow-100 text-yellow-800 border-yellow-200;
+  @apply bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-950/50 dark:text-yellow-300 dark:border-yellow-800;
 }
 
 .priority-low {
-  @apply bg-blue-100 text-blue-800 border-blue-200;
+  @apply bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800;
+}
+
+/* Dark mode overrides for better visibility */
+.dark .glass-card {
+  background: hsl(var(--card) / 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid hsl(var(--border));
+}
+
+.dark [data-radix-popper-content-wrapper] {
+  z-index: 60 !important;
+}
+
+/* Ensure modal/popover backgrounds are solid in dark mode */
+.dark .bg-popover,
+.dark [data-radix-dropdown-menu-content],
+.dark [data-radix-popover-content],
+.dark [data-radix-dialog-content],
+.dark [data-radix-select-content],
+.dark [data-radix-toast-root] {
+  background-color: hsl(var(--popover)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+.dark .bg-background {
+  background-color: hsl(var(--background)) !important;
+}
+
+.dark .bg-card {
+  background-color: hsl(var(--card)) !important;
+}
+
+/* Force solid backgrounds for all radix components in dark mode */
+.dark [data-radix-dropdown-menu-content] {
+  backdrop-filter: blur(20px);
+  box-shadow: 0 10px 38px -10px rgba(22, 23, 24, 0.35), 0 10px 20px -15px rgba(22, 23, 24, 0.2);
+}
+
+.dark [data-radix-popover-content] {
+  backdrop-filter: blur(20px);
+  box-shadow: 0 10px 38px -10px rgba(22, 23, 24, 0.35), 0 10px 20px -15px rgba(22, 23, 24, 0.2);
+}
+
+.dark [data-radix-select-content] {
+  backdrop-filter: blur(20px);
+  box-shadow: 0 10px 38px -10px rgba(22, 23, 24, 0.35), 0 10px 20px -15px rgba(22, 23, 24, 0.2);
+}
+
+/* Toast styling for dark mode */
+.dark [data-radix-toast-root] {
+  backdrop-filter: blur(20px);
+  box-shadow: 0 10px 38px -10px rgba(22, 23, 24, 0.35), 0 10px 20px -15px rgba(22, 23, 24, 0.2);
 }
