@@ -71,6 +71,15 @@ export interface IStorage {
     validDocuments: number;
     pendingDocuments: number;
     lastReportDate?: Date;
+    companyProfile?: CompanyProfile;
+    user?: User;
+    suggestedPlan?: string;
+    currentPlanLimits?: {
+      maxDocuments: number;
+      maxReports: number;
+      maxTasks: number;
+      hasAdvancedFeatures: boolean;
+    };
   }>;
 }
 
@@ -282,6 +291,56 @@ export class DatabaseStorage implements IStorage {
     return updated;
   }
 
+  // Plan suggestion logic based on company sectors
+  private getSuggestedPlan(companyProfile: CompanyProfile | undefined, currentPlan: string): string {
+    if (!companyProfile) return "basic";
+    
+    const sectors = (companyProfile.sectors as string[]) || [];
+    const customSectors = (companyProfile.customSectors as string[]) || [];
+    const totalSectors = sectors.length + customSectors.length;
+    const companySize = companyProfile.companySize;
+    
+    // If already on pro, keep pro
+    if (currentPlan === "pro") return "pro";
+    
+    // Suggest pro for large companies or many sectors
+    if (companySize === "large" || totalSectors >= 5) {
+      return "pro";
+    }
+    
+    // Suggest basic for medium companies or moderate sectors
+    if (companySize === "medium" || totalSectors >= 3) {
+      return "basic";
+    }
+    
+    return "basic";
+  }
+  
+  private getPlanLimits(plan: string) {
+    const limits = {
+      free: {
+        maxDocuments: 5,
+        maxReports: 1,
+        maxTasks: 10,
+        hasAdvancedFeatures: false
+      },
+      basic: {
+        maxDocuments: 25,
+        maxReports: 5,
+        maxTasks: 50,
+        hasAdvancedFeatures: false
+      },
+      pro: {
+        maxDocuments: -1, // unlimited
+        maxReports: -1, // unlimited
+        maxTasks: -1, // unlimited
+        hasAdvancedFeatures: true
+      }
+    };
+    
+    return limits[plan as keyof typeof limits] || limits.free;
+  }
+
   // Dashboard data
   async getDashboardData(userId: string): Promise<{
     complianceScore: number;
@@ -290,6 +349,15 @@ export class DatabaseStorage implements IStorage {
     validDocuments: number;
     pendingDocuments: number;
     lastReportDate?: Date;
+    companyProfile?: CompanyProfile;
+    user?: User;
+    suggestedPlan?: string;
+    currentPlanLimits?: {
+      maxDocuments: number;
+      maxReports: number;
+      maxTasks: number;
+      hasAdvancedFeatures: boolean;
+    };
   }> {
     const [questionnaireResponse] = await db
       .select()
@@ -315,13 +383,26 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(complianceReports.createdAt))
       .limit(1);
 
+    // Get user and company profile data
+    const user = await this.getUser(userId);
+    const companyProfile = await this.getCompanyProfile(userId);
+    
+    // Calculate suggested plan and current limits
+    const currentPlan = user?.subscriptionPlan || "free";
+    const suggestedPlan = this.getSuggestedPlan(companyProfile, currentPlan);
+    const currentPlanLimits = this.getPlanLimits(currentPlan);
+
     return {
       complianceScore: questionnaireResponse?.complianceScore || 0,
       pendingTasks: userTasks.length,
       documentsCount: userDocuments.length,
       validDocuments: userDocuments.filter(d => d.status === "valid").length,
       pendingDocuments: userDocuments.filter(d => d.status === "pending").length,
-      lastReportDate: lastReport?.createdAt,
+      lastReportDate: lastReport?.createdAt || undefined,
+      companyProfile,
+      user,
+      suggestedPlan,
+      currentPlanLimits,
     };
   }
 }
