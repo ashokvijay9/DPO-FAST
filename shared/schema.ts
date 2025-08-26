@@ -120,12 +120,14 @@ export const companyProfiles = pgTable("company_profiles", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id).unique(),
   companyName: varchar("company_name").notNull(),
-  sectors: jsonb("sectors").notNull(), // Array of selected business sectors
+  departments: jsonb("departments").notNull(), // Array of departments - required field
+  sectors: jsonb("sectors"), // Array of selected business sectors
   customSectors: jsonb("custom_sectors").default('[]'), // Array of custom sectors added by user
   companySize: varchar("company_size").notNull(), // small, medium, large
   employeeCount: varchar("employee_count"), // Can be exact number or range
   employeeCountType: varchar("employee_count_type").default("range"), // exact, range
-  primaryContact: varchar("primary_contact").notNull(),
+  industry: varchar("industry"), // Industry field from database
+  primaryContact: varchar("primary_contact"),
   phone: varchar("phone"),
   address: text("address"),
   isCompleted: boolean("is_completed").default(true),
@@ -196,6 +198,7 @@ export const updateUserProfileSchema = z.object({
 
 export const companyOnboardingSchema = z.object({
   companyName: z.string().min(1, "Nome da empresa é obrigatório"),
+  departments: z.array(z.string()).min(1, "Selecione pelo menos um departamento"),
   sectors: z.array(z.string()).min(1, "Selecione pelo menos um setor"),
   customSectors: z.array(z.string()).default([]),
   companySize: z.enum(["small", "medium", "large"], {
@@ -206,6 +209,7 @@ export const companyOnboardingSchema = z.object({
     z.string().min(1, "Selecione uma faixa de funcionários")
   ]).optional(),
   employeeCountType: z.enum(["exact", "range"]).default("range"),
+  industry: z.string().optional(),
   primaryContact: z.string().min(1, "Nome do contato principal é obrigatório"),
   phone: z.string().optional(),
   address: z.string().optional(),

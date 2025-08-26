@@ -37,6 +37,25 @@ const businessSectors = [
   "ONGs e Terceiro Setor"
 ];
 
+const companyDepartments = [
+  "Recursos Humanos",
+  "Tecnologia da Informação",
+  "Marketing",
+  "Vendas",
+  "Financeiro",
+  "Operações",
+  "Jurídico",
+  "Compras",
+  "Atendimento ao Cliente",
+  "Qualidade",
+  "Pesquisa e Desenvolvimento",
+  "Logística",
+  "Administração",
+  "Contabilidade",
+  "Segurança",
+  "Produção"
+];
+
 const employeeRanges = [
   "1-10 funcionários",
   "11-50 funcionários", 
@@ -57,6 +76,7 @@ export default function CompanyOnboarding() {
     resolver: zodResolver(companyOnboardingSchema),
     defaultValues: {
       companyName: "",
+      departments: [],
       sectors: [],
       customSectors: [],
       companySize: "small",
@@ -117,7 +137,8 @@ export default function CompanyOnboarding() {
 
   const nextStep = async () => {
     const fields = currentStep === 1 ? ['companyName', 'companySize'] : 
-                   currentStep === 2 ? ['sectors'] :
+                   currentStep === 2 ? ['departments'] :
+                   currentStep === 3 ? ['sectors'] :
                    ['primaryContact'];
     
     const isValid = await form.trigger(fields as any);
@@ -149,7 +170,7 @@ export default function CompanyOnboarding() {
         {/* Progress Steps */}
         <div className="flex justify-center mb-8">
           <div className="flex items-center space-x-4">
-            {[1, 2, 3, 4].map((step) => (
+            {[1, 2, 3, 4, 5].map((step) => (
               <React.Fragment key={step}>
                 <div className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors ${
                   step <= currentStep
@@ -162,7 +183,7 @@ export default function CompanyOnboarding() {
                     <span className="text-sm font-medium">{step}</span>
                   )}
                 </div>
-                {step < 4 && (
+                {step < 5 && (
                   <ChevronRight className={`w-5 h-5 transition-colors ${
                     step < currentStep ? 'text-white' : 'text-blue-400'
                   }`} />
@@ -177,9 +198,10 @@ export default function CompanyOnboarding() {
           <CardHeader className="text-center">
             <CardTitle className="text-xl text-foreground">
               {currentStep === 1 && "Informações Básicas"}
-              {currentStep === 2 && "Setores de Atuação"}
-              {currentStep === 3 && "Funcionários"}
-              {currentStep === 4 && "Contato Principal"}
+              {currentStep === 2 && "Departamentos"}
+              {currentStep === 3 && "Setores de Atuação"}
+              {currentStep === 4 && "Funcionários"}
+              {currentStep === 5 && "Contato Principal"}
             </CardTitle>
           </CardHeader>
 
@@ -295,8 +317,63 @@ export default function CompanyOnboarding() {
                   </div>
                 )}
 
-                {/* Step 2: Business Sectors */}
+                {/* Step 2: Departments */}
                 {currentStep === 2 && (
+                  <div className="space-y-6">
+                    <FormField
+                      control={form.control}
+                      name="departments"
+                      render={() => (
+                        <FormItem>
+                          <FormLabel>Departamentos da Empresa *</FormLabel>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Selecione os departamentos que existem em sua empresa:
+                          </p>
+                          <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto border rounded-lg p-4">
+                            {companyDepartments.map((department) => (
+                              <FormField
+                                key={department}
+                                control={form.control}
+                                name="departments"
+                                render={({ field }) => {
+                                  return (
+                                    <FormItem
+                                      key={department}
+                                      className="flex flex-row items-start space-x-3 space-y-0"
+                                    >
+                                      <FormControl>
+                                        <Checkbox
+                                          checked={field.value?.includes(department)}
+                                          onCheckedChange={(checked) => {
+                                            return checked
+                                              ? field.onChange([...field.value, department])
+                                              : field.onChange(
+                                                  field.value?.filter(
+                                                    (value) => value !== department
+                                                  )
+                                                )
+                                          }}
+                                          data-testid={`checkbox-department-${department.toLowerCase().replace(/ /g, '-')}`}
+                                        />
+                                      </FormControl>
+                                      <FormLabel className="text-sm font-normal">
+                                        {department}
+                                      </FormLabel>
+                                    </FormItem>
+                                  )
+                                }}
+                              />
+                            ))}
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+
+                {/* Step 3: Business Sectors */}
+                {currentStep === 3 && (
                   <div className="space-y-6">
                     <FormField
                       control={form.control}
@@ -406,8 +483,8 @@ export default function CompanyOnboarding() {
                   </div>
                 )}
 
-                {/* Step 3: Employee Count */}
-                {currentStep === 3 && (
+                {/* Step 4: Employee Count */}
+                {currentStep === 4 && (
                   <div className="space-y-4">
                     <FormField
                       control={form.control}
@@ -447,8 +524,8 @@ export default function CompanyOnboarding() {
                   </div>
                 )}
 
-                {/* Step 4: Contact and Additional Info */}
-                {currentStep === 4 && (
+                {/* Step 5: Contact and Additional Info */}
+                {currentStep === 5 && (
                   <div className="space-y-4">
                     <FormField
                       control={form.control}
@@ -522,7 +599,7 @@ export default function CompanyOnboarding() {
                     <div></div>
                   )}
 
-                  {currentStep < 4 ? (
+                  {currentStep < 5 ? (
                     <Button
                       type="button"
                       onClick={nextStep}
