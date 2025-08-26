@@ -8,7 +8,7 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
+    <div className="min-h-screen hero-gradient">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-r from-primary to-primary-dark text-primary-foreground">
         <div className="container mx-auto px-4 py-20 md:py-32">
