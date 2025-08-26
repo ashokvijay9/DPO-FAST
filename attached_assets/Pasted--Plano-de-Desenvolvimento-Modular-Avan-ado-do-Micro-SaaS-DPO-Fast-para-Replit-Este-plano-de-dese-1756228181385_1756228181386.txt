@@ -1,0 +1,107 @@
+# Plano de Desenvolvimento Modular Avançado do Micro-SaaS DPO Fast para Replit
+
+Este plano de desenvolvimento é uma versão ainda mais completa e refinada, incorporando as novas exigências: 
+- O sistema deve ter telas de login e cadastro como pontos de entrada obrigatórios antes de acessar qualquer funcionalidade interna (ex.: dashboard, questionários). Usuários não autenticados são redirecionados para login.
+- Após o cadastro (signup), o usuário é redirecionado obrigatoriamente para um questionário inicial sobre a empresa (perfil da empresa), coletando: mapeamento de setores (ex.: multi-select ou lista dinâmica para setores como RH, Finanças, TI, Marketing, etc.), porte da empresa (pequeno, médio, grande), quantidade de funcionários (faixas ou número exato). Esses dados são armazenados no Firestore (coleção 'companies', vinculada ao uid do usuário).
+- Os questionários de adequação à LGPD (questionário iterativo principal) devem ser gerados dinamicamente com base nas particularidades dos setores mapeados. Por exemplo: se a empresa tem setor de RH, adicionar perguntas específicas sobre proteção de dados de funcionários; se Finanças, sobre dados financeiros sensíveis. Use lógica em JS para gerar perguntas adaptativas, baseadas em um banco de perguntas predefinido no Firestore ou código, filtrado por setores.
+
+**Integração com Planos de Assinatura**:
+- No questionário da empresa, colete dados que influenciem sugestões de planos (ex.: grandes empresas com muitos setores sugerem Plano Personalizado/Enterprise).
+- Limites por plano permanecem: Básico (questionários básicos, setores limitados), Pro (mais setores, customizações), Enterprise (análise aprofundada por setor, acompanhamento personalizado com relatórios mensais automáticos e suporte dedicado).
+- Verificação de autenticação e plano em todas as telas internas: redirecione para login se não autenticado, ou para assinatura se inativo.
+
+O plano mantém modularidade para Replit, com prompts para IA. Adicionei etapas para: Questionário Inicial da Empresa, Geração Dinâmica de Questionários, Fluxo de Onboarding (pós-cadastro), Segurança de Dados Sensíveis da Empresa, e Análise Avançada para Enterprise. Incluí internacionalização expandida e CI/CD básico no Replit.
+
+**Pré-Requisitos no Replit**: Mesmos anteriores, mais `npm install uuid` para IDs únicos em setores. Configure regras Firestore para proteger dados da empresa.
+
+**Etapas de Desenvolvimento**
+
+### Etapa 1: Configuração do Projeto e Estrutura Inicial no Replit
+**Objetivo**: Base do projeto, com setup para autenticação como entrada e campos para dados da empresa no Firestore.
+**Dependências**: Nenhuma.
+**Instruções no Replit**: Crie estrutura, adicione redirecionamentos iniciais para login.
+**Prompt para IA**:  
+"Você é um desenvolvedor especialista em Replit. Crie a estrutura inicial do Micro-SaaS DPO Fast no Replit com HTML, CSS, JavaScript, Bootstrap 5 e Firebase (Authentication, Firestore, Storage, Hosting). Configure firebase.js exportando auth, db, storage. Inclua Stripe SDK. Crie index.html com navbar Bootstrap: logotipo 'DPO Fast', links 'Login', 'Cadastro' (redirecione não autenticados para login.html). Adicione styles.css com paleta azul/branco. Estrutura: assets/, js/, css/. Prepare Firestore para empresas: coleção 'companies' com uid, setores (array), porte, numFuncionarios. Forneça códigos para index.html, styles.css, firebase.js, package.json. Instrua rodar: npm install firebase bootstrap stripe uuid."
+
+### Etapa 2: Implementação de Autenticação, Login/Cadastro como Entrada e Fluxo de Onboarding
+**Objetivo**: Telas de login e cadastro como obrigatórias; pós-cadastro, redirecione para questionário da empresa.
+**Dependências**: Etapa 1.
+**Instruções no Replit**: Teste fluxo: signup -> empresa-questionario -> dashboard.
+**Prompt para IA**:  
+"Desenvolva autenticação para DPO Fast no Replit com Firebase. Crie login.html e signup.html com Bootstrap, e-mail/senha/Google, validação. Essas telas são entradas obrigatórias: redirecione não autenticados para login.html em todas as páginas internas. Crie auth.js: signup/login/googleLogin/logout/onAuthStateChanged (pós-signup, redirecione para empresa-questionario.html se 'companies' não existir). Configure Firestore User Document para 'users': uid, email, nome, dataCriacao, statusAssinatura='inativo', plano='basic'. Adicione função checkAuthAndPlan() para verificar autenticação/plano em módulos. Crie profile.html para editar dados. Forneça códigos para login.html, signup.html, profile.html, auth.js. Instrua testes com Emulator e fluxo onboarding."
+
+### Etapa 3: Desenvolvimento do Questionário Inicial da Empresa (Onboarding)
+**Objetivo**: Coletar dados da empresa pós-cadastro: setores (mapeamento dinâmico), porte, numFuncionarios.
+**Dependências**: Etapa 2.
+**Instruções no Replit**: Crie empresa-questionario.html; obrigatório antes de dashboard.
+**Prompt para IA**:  
+"Crie módulo de questionário inicial da empresa para DPO Fast no Replit. empresa-questionario.html com Bootstrap: formulário para mapeamento de setores (multi-select: RH, Finanças, TI, Marketing, etc., permita adicionar custom), porte (select: pequeno/médio/grande), numFuncionarios (input numérico ou faixas). Salve em Firestore 'companies': uid, setores (array), porte, numFuncionarios, timestamp. Crie empresa-questionario.js: validação (obrigatórios), redirecione para dashboard.html após submissão. Integre com auth.js para check autenticação. Use identidade DPO Fast. Forneça códigos para empresa-questionario.html, empresa-questionario.js. Instrua testes: simule cadastro -> questionário."
+
+### Etapa 4: Desenvolvimento do Dashboard com Visão de Planos e Dados da Empresa
+**Objetivo**: Dashboard exibindo resumo, incluindo setores mapeados e sugestões baseadas neles.
+**Dependências**: Etapa 3.
+**Instruções no Replit**: Carregue dados de 'companies' para personalizar visão.
+**Prompt para IA**:  
+"Crie dashboard para DPO Fast no Replit. dashboard.html com Bootstrap sidebar: links para módulos, seção com resumo conformidade, dados empresa (setores, porte, funcionários) e uso por plano. Crie dashboard.js: carregar de Firestore ('companies' e 'respostas'), calcular resumo, exibir limites ('basic':1 relatório, 'pro':ilimitado, 'enterprise':custom). Sugira upgrade baseado em setores (ex.: muitos setores -> Enterprise). Use loaders. Forneça códigos para dashboard.html, dashboard.js. Instrua integração e testes."
+
+### Etapa 5: Desenvolvimento do Questionário Iterativo Dinâmico
+**Objetivo**: Questionário gerado dinamicamente baseado em setores da empresa (ex.: perguntas específicas por setor).
+**Dependências**: Etapa 4.
+**Instruções no Replit**: Use banco de perguntas em JS ou Firestore, filtre por setores.
+**Prompt para IA**:  
+"Crie questionário iterativo dinâmico para DPO Fast no Replit. questionario.html com Bootstrap: gere perguntas LGPD baseadas em setores de 'companies' (ex.: RH -> perguntas dados funcionários; Finanças -> dados financeiros). Banco de 30+ perguntas categorizadas por setor, exibidas iterativamente. Anexos Storage. Salve em 'respostas'. Crie questionario.js: carregar setores, gerar perguntas adaptativas, validação, upload com Know Malware Detection, checar limite por plano. Para 'enterprise', adicione análise aprofundada. Forneça códigos para questionario.html, questionario.js. Instrua testes com dados empresa simulados."
+
+### Etapa 6: Geração de Relatórios e To-Do List com Customizações por Setor/Plano
+**Objetivo**: Relatórios adaptados aos setores, com to-do personalizada.
+**Dependências**: Etapa 5.
+**Instruções no Replit**: Use dados de 'companies' para personalizar.
+**Prompt para IA**:  
+"Desenvolva relatórios para DPO Fast no Replit. relatorio.html: exibir respostas, botão PDF via Generate PDF (resumo por setor + to-do adaptada ex.: 'Ajustar RH para LGPD'). relatorio.js: calcular conformidade por setor, formatar por plano ('enterprise': recomendações IA). Envie e-mail Trigger Email. Aplicar limites. Forneça códigos para relatorio.html, relatorio.js. Instrua setup extensões."
+
+### Etapa 7: Gerenciamento de Documentos com Auditoria Avançada
+**Objetivo**: Documentos filtrados por setor, com logs extras para Enterprise.
+**Dependências**: Etapa 6.
+**Instruções no Replit**: Associe documentos a setores.
+**Prompt para IA**:  
+"Crie gerenciamento documentos para DPO Fast no Replit. documentos.html: tabela Bootstrap, filtre por setor de 'companies'. documentos.js: recuperar Storage/Firestore, auditoria via Document Auditing, malware check. Para 'enterprise', compartilhamento equipe por setor. Aplicar limites. Forneça códigos para documentos.html, documentos.js. Instrua testes."
+
+### Etapa 8: Integração com Stripe para Assinaturas, Incluindo Plano Personalizado
+**Objetivo**: Sugestões de plano baseadas em dados da empresa (ex.: muitos setores -> Enterprise).
+**Dependências**: Etapa 7.
+**Instruções no Replit**: Use dados de 'companies' em sugestões.
+**Prompt para IA**:  
+"Integre Stripe ao DPO Fast no Replit. assinatura.html: cartões para Básico, Pro, Personalizado (sob consulta). assinatura.js: checkout, webhooks atualizar 'plano'/'statusAssinatura', sugerir plano baseado em setores/porte. Para Personalizado, e-mail admin. Restrinja módulos. Envie Trigger Email. Forneça códigos para assinatura.html, assinatura.js. Instrua webhooks com ngrok."
+
+### Etapa 9: Features para Plano Personalizado (Enterprise)
+**Objetivo**: Análise aprofundada por setor, acompanhamento (ex.: relatórios mensais por setor).
+**Dependências**: Etapa 8.
+**Instruções no Replit**: Crie enterprise.html para extras setor-específicos.
+**Prompt para IA**:  
+"Desenvolva features Enterprise no DPO Fast no Replit. enterprise.html: análise por setor (upload dados custom), acompanhamento mensal (Cloud Functions para relatórios auto). enterprise.js: lógica Firestore, e-mails prioritários, multi-usuário por setor. Habilitar só em 'enterprise'. Forneça códigos para enterprise.html, enterprise.js. Instrua setup Functions."
+
+### Etapa 10: Configuração de Regras de Segurança, Auditoria e Testes Unitários
+**Objetivo**: Segurança extra para dados da empresa (ex.: acesso restrito por setor).
+**Dependências**: Etapa 9.
+**Instruções no Replit**: Atualize rules para 'companies'.
+**Prompt para IA**:  
+"Configure segurança para DPO Fast no Replit. firestore.rules/storage.rules: acesso por uid/plano, proteger 'companies'. Use Document Auditing/Know Malware. Crie tests.js com Jest: testes auth, questionário dinâmico, limites. Forneça rules, tests.js. Instrua npm test."
+
+### Etapa 11: Otimização de Performance, Usabilidade e Internacionalização
+**Objetivo**: Otimizar para empresas grandes (muitos setores), com suporte multi-idioma.
+**Dependências**: Etapa 10.
+**Instruções no Replit**: Adicione i18n para PT/EN.
+**Prompt para IA**:  
+"Otimize DPO Fast no Replit. Adicione loaders/tooltips, otimize Firestore (índices por setor). Internacionalize: PT/EN em textos/questionários. Atualize js com performance por plano. Forneça códigos atualizados, instrua benchmarks."
+
+### Etapa 12: Deploy com Firebase Hosting, Monitoramento e Manutenção Contínua
+**Objetivo**: Deploy com alertas para dados da empresa, manutenção para updates dinâmicos.
+**Dependências**: Todas.
+**Instruções no Replit**: Integre CI com Git no Replit.
+**Prompt para IA**:  
+"Prepare deploy DPO Fast no Replit para Hosting. firebase.json: config, rewrites. deploy.sh automatizar. Configure Analytics/alertas por setor/erros. Forneça códigos para firebase.json, deploy.sh. Instrua deploy, testes produção, manutenção (CI para updates questionários)."
+
+**Notas Finais**:
+- **Fluxo Geral**: Login/Cadastro -> (pós-cadastro) Questionário Empresa -> Dashboard -> Módulos internos (com checks).
+- **Dinâmica por Setor**: Use arrays em Firestore para escalabilidade; gere relatórios/questionários adaptativos para personalização.
+- **Segurança**: Dados da empresa criptografados se possível; auditoria em acessos.
+- **Expansão**: Plano suporta crescimento, com Enterprise para análises profundas.
