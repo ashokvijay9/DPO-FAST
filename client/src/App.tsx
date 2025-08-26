@@ -12,28 +12,60 @@ import Documents from "@/pages/documents";
 import Reports from "@/pages/reports";
 import Subscription from "@/pages/subscription";
 import Profile from "@/pages/profile";
+import CompanyOnboarding from "@/pages/company-onboarding";
 import Navbar from "@/components/Navbar";
 import NotFound from "@/pages/not-found";
 
-function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen hero-gradient flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin w-12 h-12 border-4 border-white border-t-transparent rounded-full mx-auto mb-4"></div>
+        <p className="text-white text-lg">Carregando...</p>
+      </div>
+    </div>
+  );
+}
 
+function Router() {
+  const { isAuthenticated, isLoading, hasCompanyProfile } = useAuth();
+
+  // Loading state
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  // Not authenticated
+  if (!isAuthenticated) {
+    return (
+      <Switch>
+        <Route path="/" component={Landing} />
+        <Route path="*" component={Landing} />
+      </Switch>
+    );
+  }
+
+  // Authenticated but no company profile
+  if (!hasCompanyProfile) {
+    return (
+      <Switch>
+        <Route path="/company-onboarding" component={CompanyOnboarding} />
+        <Route path="*" component={CompanyOnboarding} />
+      </Switch>
+    );
+  }
+
+  // Fully authenticated with company profile
   return (
     <>
       <Navbar />
       <Switch>
-        {isLoading || !isAuthenticated ? (
-          <Route path="/" component={Landing} />
-        ) : (
-          <>
-            <Route path="/" component={Home} />
-            <Route path="/questionnaire" component={Questionnaire} />
-            <Route path="/documents" component={Documents} />
-            <Route path="/reports" component={Reports} />
-            <Route path="/subscription" component={Subscription} />
-            <Route path="/profile" component={Profile} />
-          </>
-        )}
+        <Route path="/" component={Home} />
+        <Route path="/questionnaire" component={Questionnaire} />
+        <Route path="/documents" component={Documents} />
+        <Route path="/reports" component={Reports} />
+        <Route path="/subscription" component={Subscription} />
+        <Route path="/profile" component={Profile} />
         <Route component={NotFound} />
       </Switch>
     </>

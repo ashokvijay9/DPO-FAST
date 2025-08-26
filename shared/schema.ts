@@ -115,6 +115,23 @@ export const complianceReports = pgTable("compliance_reports", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Company profiles (collected after signup)
+export const companyProfiles = pgTable("company_profiles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id).unique(),
+  companyName: varchar("company_name").notNull(),
+  departments: jsonb("departments").notNull(), // Array of selected departments: ['RH', 'Finanças', 'TI', 'Marketing', etc.]
+  companySize: varchar("company_size").notNull(), // small, medium, large
+  employeeCount: integer("employee_count"),
+  industry: varchar("industry"),
+  primaryContact: varchar("primary_contact"),
+  phone: varchar("phone"),
+  address: text("address"),
+  isCompleted: boolean("is_completed").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Type exports
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -133,6 +150,9 @@ export type ComplianceTask = typeof complianceTasks.$inferSelect;
 
 export type InsertComplianceReport = typeof complianceReports.$inferInsert;
 export type ComplianceReport = typeof complianceReports.$inferSelect;
+
+export type InsertCompanyProfile = typeof companyProfiles.$inferInsert;
+export type CompanyProfile = typeof companyProfiles.$inferSelect;
 
 // Zod schemas
 export const insertQuestionnaireResponseSchema = createInsertSchema(questionnaireResponses).omit({
@@ -160,6 +180,12 @@ export const insertComplianceReportSchema = createInsertSchema(complianceReports
   generatedAt: true,
 });
 
+export const insertCompanyProfileSchema = createInsertSchema(companyProfiles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const updateUserProfileSchema = z.object({
   firstName: z.string().min(1, "Nome é obrigatório").optional(),
   lastName: z.string().min(1, "Sobrenome é obrigatório").optional(),
@@ -167,4 +193,18 @@ export const updateUserProfileSchema = z.object({
   company: z.string().optional(),
 });
 
+export const companyOnboardingSchema = z.object({
+  companyName: z.string().min(1, "Nome da empresa é obrigatório"),
+  departments: z.array(z.string()).min(1, "Selecione pelo menos um departamento"),
+  companySize: z.enum(["small", "medium", "large"], {
+    required_error: "Selecione o porte da empresa",
+  }),
+  employeeCount: z.number().min(1, "Número de funcionários deve ser maior que 0").optional(),
+  industry: z.string().optional(),
+  primaryContact: z.string().min(1, "Nome do contato principal é obrigatório"),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+});
+
 export type UpdateUserProfile = z.infer<typeof updateUserProfileSchema>;
+export type CompanyOnboarding = z.infer<typeof companyOnboardingSchema>;

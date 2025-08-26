@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertQuestionnaireResponseSchema, insertDocumentSchema, updateUserProfileSchema, insertComplianceReportSchema } from "@shared/schema";
+import { insertQuestionnaireResponseSchema, insertDocumentSchema, updateUserProfileSchema, insertComplianceReportSchema, insertCompanyProfileSchema, companyOnboardingSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
@@ -331,6 +331,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Company profile routes
+  app.post('/api/company-profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const companyData = companyOnboardingSchema.parse(req.body);
+      
+      const profile = await storage.createCompanyProfile({
+        userId,
+        ...companyData,
+        departments: companyData.departments as any, // Cast to jsonb
+      });
+      
+      res.json(profile);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error("Error creating company profile:", error);
+      res.status(500).json({ message: "Failed to create company profile" });
+    }
+  });
+
+  app.get('/api/company-profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const profile = await storage.getCompanyProfile(userId);
+      res.json(profile);
+    } catch (error) {
+      console.error("Error fetching company profile:", error);
+      res.status(500).json({ message: "Failed to fetch company profile" });
+    }
+  });
+
+  app.put('/api/company-profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const updates = companyOnboardingSchema.partial().parse(req.body);
+      
+      const profile = await storage.updateCompanyProfile(userId, {
+        ...updates,
+        departments: updates.departments as any, // Cast to jsonb
+      });
+      
+      res.json(profile);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error("Error updating company profile:", error);
+      res.status(500).json({ message: "Failed to update company profile" });
     }
   });
 

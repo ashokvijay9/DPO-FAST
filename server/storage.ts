@@ -5,6 +5,7 @@ import {
   auditLog,
   complianceTasks,
   complianceReports,
+  companyProfiles,
   type User,
   type UpsertUser,
   type QuestionnaireResponse,
@@ -17,6 +18,8 @@ import {
   type InsertComplianceTask,
   type ComplianceReport,
   type InsertComplianceReport,
+  type CompanyProfile,
+  type InsertCompanyProfile,
   type UpdateUserProfile,
 } from "@shared/schema";
 import { db } from "./db";
@@ -29,6 +32,11 @@ export interface IStorage {
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserSubscription(userId: string, customerId: string, subscriptionId: string, plan: string): Promise<User>;
   updateUserProfile(userId: string, updates: UpdateUserProfile): Promise<User>;
+  
+  // Company profile operations
+  createCompanyProfile(profile: InsertCompanyProfile): Promise<CompanyProfile>;
+  getCompanyProfile(userId: string): Promise<CompanyProfile | undefined>;
+  updateCompanyProfile(userId: string, updates: Partial<InsertCompanyProfile>): Promise<CompanyProfile>;
   
   // Questionnaire operations
   saveQuestionnaireResponse(response: InsertQuestionnaireResponse): Promise<QuestionnaireResponse>;
@@ -246,6 +254,32 @@ export class DatabaseStorage implements IStorage {
       .delete(complianceReports)
       .where(and(eq(complianceReports.id, id), eq(complianceReports.userId, userId)));
     return (result.rowCount ?? 0) > 0;
+  }
+
+  // Company profile operations
+  async createCompanyProfile(profile: InsertCompanyProfile): Promise<CompanyProfile> {
+    const [created] = await db
+      .insert(companyProfiles)
+      .values(profile)
+      .returning();
+    return created;
+  }
+
+  async getCompanyProfile(userId: string): Promise<CompanyProfile | undefined> {
+    const [profile] = await db
+      .select()
+      .from(companyProfiles)
+      .where(eq(companyProfiles.userId, userId));
+    return profile;
+  }
+
+  async updateCompanyProfile(userId: string, updates: Partial<InsertCompanyProfile>): Promise<CompanyProfile> {
+    const [updated] = await db
+      .update(companyProfiles)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(companyProfiles.userId, userId))
+      .returning();
+    return updated;
   }
 
   // Dashboard data
