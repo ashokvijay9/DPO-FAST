@@ -343,7 +343,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const profile = await storage.createCompanyProfile({
         userId,
         ...companyData,
-        departments: companyData.departments as any, // Cast to jsonb
+        sectors: companyData.sectors as any, // Cast to jsonb
+        customSectors: companyData.customSectors as any, // Cast to jsonb
       });
       
       res.json(profile);
@@ -374,7 +375,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const profile = await storage.updateCompanyProfile(userId, {
         ...updates,
-        departments: updates.departments as any, // Cast to jsonb
+        sectors: updates.sectors as any, // Cast to jsonb
+        customSectors: updates.customSectors as any, // Cast to jsonb
       });
       
       res.json(profile);

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Building2, Users, Phone, MapPin, Check, ChevronRight } from "lucide-react";
+import { Building2, Users, Phone, MapPin, Check, ChevronRight, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -15,23 +15,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { companyOnboardingSchema, type CompanyOnboarding } from "@shared/schema";
 import { useLocation } from "wouter";
 
-const departments = [
-  "Recursos Humanos",
-  "Tecnologia da Informação", 
-  "Marketing",
-  "Vendas",
-  "Financeiro",
-  "Jurídico",
-  "Operações",
-  "Atendimento ao Cliente",
-  "Compras",
-  "Produção",
-  "Qualidade",
-  "Logística",
-  "Outros"
-];
-
-const industries = [
+const businessSectors = [
   "Tecnologia",
   "Saúde",
   "Educação",
@@ -44,11 +28,27 @@ const industries = [
   "Alimentício",
   "Automotivo",
   "Energia",
-  "Outros"
+  "Agricultura",
+  "Construção Civil",
+  "Transporte e Logística",
+  "Turismo e Hospitalidade",
+  "Mídia e Entretenimento",
+  "Serviços Profissionais",
+  "ONGs e Terceiro Setor"
+];
+
+const employeeRanges = [
+  "1-10 funcionários",
+  "11-50 funcionários", 
+  "51-100 funcionários",
+  "101-500 funcionários",
+  "501-1000 funcionários",
+  "1001+ funcionários"
 ];
 
 export default function CompanyOnboarding() {
   const [currentStep, setCurrentStep] = useState(1);
+  const [customSector, setCustomSector] = useState("");
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
@@ -57,15 +57,40 @@ export default function CompanyOnboarding() {
     resolver: zodResolver(companyOnboardingSchema),
     defaultValues: {
       companyName: "",
-      departments: [],
+      sectors: [],
+      customSectors: [],
       companySize: "small",
-      employeeCount: 1,
-      industry: "",
+      employeeCount: "11-50 funcionários",
+      employeeCountType: "range",
       primaryContact: "",
       phone: "",
       address: "",
     },
   });
+
+  const addCustomSector = () => {
+    if (customSector.trim() && !form.getValues("customSectors").includes(customSector.trim())) {
+      const currentCustomSectors = form.getValues("customSectors");
+      form.setValue("customSectors", [...currentCustomSectors, customSector.trim()]);
+      
+      // Also add to main sectors list
+      const currentSectors = form.getValues("sectors");
+      if (!currentSectors.includes(customSector.trim())) {
+        form.setValue("sectors", [...currentSectors, customSector.trim()]);
+      }
+      
+      setCustomSector("");
+    }
+  };
+
+  const removeCustomSector = (sectorToRemove: string) => {
+    const updatedCustomSectors = form.getValues("customSectors").filter(s => s !== sectorToRemove);
+    form.setValue("customSectors", updatedCustomSectors);
+    
+    // Also remove from main sectors list
+    const updatedSectors = form.getValues("sectors").filter(s => s !== sectorToRemove);
+    form.setValue("sectors", updatedSectors);
+  };
 
   const createCompanyProfileMutation = useMutation({
     mutationFn: (data: CompanyOnboarding) => apiRequest("POST", "/api/company-profile", data),
@@ -92,7 +117,7 @@ export default function CompanyOnboarding() {
 
   const nextStep = async () => {
     const fields = currentStep === 1 ? ['companyName', 'companySize'] : 
-                   currentStep === 2 ? ['departments'] :
+                   currentStep === 2 ? ['sectors'] :
                    ['primaryContact'];
     
     const isValid = await form.trigger(fields as any);
@@ -152,9 +177,9 @@ export default function CompanyOnboarding() {
           <CardHeader className="text-center">
             <CardTitle className="text-xl text-foreground">
               {currentStep === 1 && "Informações Básicas"}
-              {currentStep === 2 && "Departamentos"}
-              {currentStep === 3 && "Contato Principal"}
-              {currentStep === 4 && "Informações Adicionais"}
+              {currentStep === 2 && "Setores de Atuação"}
+              {currentStep === 3 && "Funcionários"}
+              {currentStep === 4 && "Contato Principal"}
             </CardTitle>
           </CardHeader>
 
@@ -208,18 +233,60 @@ export default function CompanyOnboarding() {
 
                     <FormField
                       control={form.control}
+                      name="employeeCountType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tipo de Contagem de Funcionários</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid="select-employee-count-type">
+                                <SelectValue placeholder="Selecione o tipo" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="range">Faixa de funcionários</SelectItem>
+                              <SelectItem value="exact">Número exato</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
                       name="employeeCount"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Número de Funcionários</FormLabel>
+                          <FormLabel>
+                            {form.watch("employeeCountType") === "exact" 
+                              ? "Número Exato de Funcionários"
+                              : "Faixa de Funcionários"
+                            }
+                          </FormLabel>
                           <FormControl>
-                            <Input
-                              type="number"
-                              placeholder="Ex: 50"
-                              {...field}
-                              onChange={(e) => field.onChange(Number(e.target.value))}
-                              data-testid="input-employee-count"
-                            />
+                            {form.watch("employeeCountType") === "exact" ? (
+                              <Input
+                                type="number"
+                                placeholder="Ex: 50"
+                                {...field}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                                data-testid="input-employee-count-exact"
+                              />
+                            ) : (
+                              <Select onValueChange={field.onChange} value={field.value as string}>
+                                <SelectTrigger data-testid="select-employee-count-range">
+                                  <SelectValue placeholder="Selecione a faixa" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {employeeRanges.map((range) => (
+                                    <SelectItem key={range} value={range}>
+                                      {range}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )}
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -228,60 +295,118 @@ export default function CompanyOnboarding() {
                   </div>
                 )}
 
-                {/* Step 2: Departments */}
+                {/* Step 2: Business Sectors */}
                 {currentStep === 2 && (
-                  <FormField
-                    control={form.control}
-                    name="departments"
-                    render={() => (
-                      <FormItem>
-                        <FormLabel>Departamentos da Empresa *</FormLabel>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          Selecione os departamentos que existem na sua empresa:
-                        </p>
-                        <div className="grid grid-cols-2 gap-3 max-h-80 overflow-y-auto">
-                          {departments.map((department) => (
-                            <FormField
-                              key={department}
-                              control={form.control}
-                              name="departments"
-                              render={({ field }) => {
-                                return (
-                                  <FormItem
-                                    key={department}
-                                    className="flex flex-row items-start space-x-3 space-y-0"
-                                  >
-                                    <FormControl>
-                                      <Checkbox
-                                        checked={field.value?.includes(department)}
-                                        onCheckedChange={(checked) => {
-                                          return checked
-                                            ? field.onChange([...field.value, department])
-                                            : field.onChange(
-                                                field.value?.filter(
-                                                  (value) => value !== department
+                  <div className="space-y-6">
+                    <FormField
+                      control={form.control}
+                      name="sectors"
+                      render={() => (
+                        <FormItem>
+                          <FormLabel>Setores de Atuação da Empresa *</FormLabel>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Selecione os setores em que sua empresa atua:
+                          </p>
+                          <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto border rounded-lg p-4">
+                            {businessSectors.map((sector) => (
+                              <FormField
+                                key={sector}
+                                control={form.control}
+                                name="sectors"
+                                render={({ field }) => {
+                                  return (
+                                    <FormItem
+                                      key={sector}
+                                      className="flex flex-row items-start space-x-3 space-y-0"
+                                    >
+                                      <FormControl>
+                                        <Checkbox
+                                          checked={field.value?.includes(sector)}
+                                          onCheckedChange={(checked) => {
+                                            return checked
+                                              ? field.onChange([...field.value, sector])
+                                              : field.onChange(
+                                                  field.value?.filter(
+                                                    (value) => value !== sector
+                                                  )
                                                 )
-                                              )
-                                        }}
-                                        data-testid={`checkbox-department-${department.toLowerCase().replace(/ /g, '-')}`}
-                                      />
-                                    </FormControl>
-                                    <FormLabel className="text-sm font-normal">
-                                      {department}
-                                    </FormLabel>
-                                  </FormItem>
-                                )
-                              }}
-                            />
-                          ))}
+                                          }}
+                                          data-testid={`checkbox-sector-${sector.toLowerCase().replace(/ /g, '-')}`}
+                                        />
+                                      </FormControl>
+                                      <FormLabel className="text-sm font-normal">
+                                        {sector}
+                                      </FormLabel>
+                                    </FormItem>
+                                  )
+                                }}
+                              />
+                            ))}
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Custom Sectors */}
+                    <div className="space-y-3">
+                      <FormLabel>Adicionar Setor Personalizado</FormLabel>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Digite um setor não listado acima"
+                          value={customSector}
+                          onChange={(e) => setCustomSector(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              addCustomSector();
+                            }
+                          }}
+                          data-testid="input-custom-sector"
+                        />
+                        <Button 
+                          type="button" 
+                          onClick={addCustomSector}
+                          variant="outline"
+                          size="sm"
+                          disabled={!customSector.trim()}
+                          data-testid="button-add-custom-sector"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      {/* Display Custom Sectors */}
+                      {form.watch("customSectors").length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium">Setores Personalizados:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {form.watch("customSectors").map((sector) => (
+                              <div
+                                key={sector}
+                                className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm"
+                              >
+                                <span>{sector}</span>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removeCustomSector(sector)}
+                                  className="h-4 w-4 p-0 hover:bg-blue-200"
+                                  data-testid={`button-remove-custom-sector-${sector.toLowerCase().replace(/ /g, '-')}`}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      )}
+                    </div>
+                  </div>
                 )}
 
-                {/* Step 3: Primary Contact */}
+                {/* Step 3: Employee Count */}
                 {currentStep === 3 && (
                   <div className="space-y-4">
                     <FormField
@@ -322,29 +447,40 @@ export default function CompanyOnboarding() {
                   </div>
                 )}
 
-                {/* Step 4: Additional Info */}
+                {/* Step 4: Contact and Additional Info */}
                 {currentStep === 4 && (
                   <div className="space-y-4">
                     <FormField
                       control={form.control}
-                      name="industry"
+                      name="primaryContact"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Setor de Atuação</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger data-testid="select-industry">
-                                <SelectValue placeholder="Selecione o setor" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {industries.map((industry) => (
-                                <SelectItem key={industry} value={industry}>
-                                  {industry}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <FormLabel>Nome do Contato Principal *</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Digite o nome do responsável"
+                              {...field}
+                              data-testid="input-primary-contact"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Telefone</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="(11) 99999-9999"
+                              {...field}
+                              data-testid="input-phone"
+                            />
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -355,7 +491,7 @@ export default function CompanyOnboarding() {
                       name="address"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Endereço</FormLabel>
+                          <FormLabel>Endereço da Empresa</FormLabel>
                           <FormControl>
                             <Textarea
                               placeholder="Endereço completo da empresa"
