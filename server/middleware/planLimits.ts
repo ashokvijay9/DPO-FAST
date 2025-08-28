@@ -10,18 +10,24 @@ interface PlanLimits {
 
 const PLAN_LIMITS: Record<string, PlanLimits> = {
   free: {
-    reportsPerMonth: 1,
+    reportsPerMonth: 5,
     maxDocuments: 3,
     hasAdvancedFeatures: false,
     hasPrioritySupport: false,
   },
   basic: {
-    reportsPerMonth: 1,
+    reportsPerMonth: -1, // unlimited
     maxDocuments: 5,
     hasAdvancedFeatures: false,
     hasPrioritySupport: false,
   },
   pro: {
+    reportsPerMonth: -1, // unlimited
+    maxDocuments: -1, // unlimited
+    hasAdvancedFeatures: true,
+    hasPrioritySupport: true,
+  },
+  personalite: {
     reportsPerMonth: -1, // unlimited
     maxDocuments: -1, // unlimited
     hasAdvancedFeatures: true,

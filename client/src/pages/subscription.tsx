@@ -107,15 +107,15 @@ export default function Subscription() {
       description: "Ideal para pequenas empresas iniciando na conformidade LGPD",
       features: [
         "Questionário LGPD com 10 perguntas",
-        "1 relatório PDF por mês",
+        "Relatórios PDF ilimitados",
         "Gerenciamento de até 5 documentos",
         "Lista de tarefas básica",
         "Suporte por e-mail"
       ],
       notIncluded: [
-        "Relatórios ilimitados",
         "Documentos ilimitados",
-        "Suporte prioritário"
+        "Suporte prioritário",
+        "Funcionalidades avançadas"
       ],
       popular: false,
       color: "border-gray-200"
@@ -140,6 +140,29 @@ export default function Subscription() {
       notIncluded: [],
       popular: true,
       color: "border-primary"
+    },
+    {
+      id: "personalite",
+      name: "Personalité",
+      price: "Sob Consulta",
+      period: "",
+      priceId: "", // No Stripe Price ID - contact only
+      description: "Plano personalizado para empresas de grande porte com demandas específicas",
+      features: [
+        "Tudo do plano Pro incluído",
+        "Questionários personalizados por setor",
+        "Relatórios customizados",
+        "Integração com sistemas internos",
+        "Consultoria especializada em LGPD",
+        "Treinamento da equipe",
+        "Suporte dedicado 24/7",
+        "SLA garantido",
+        "Implementação assistida"
+      ],
+      notIncluded: [],
+      popular: false,
+      color: "border-purple-200 bg-gradient-to-br from-purple-50 to-indigo-50",
+      isCustom: true
     }
   ];
 
@@ -186,7 +209,7 @@ export default function Subscription() {
                   <div>
                     <h3 className="font-semibold text-green-800">Assinatura Ativa</h3>
                     <p className="text-green-600">
-                      Plano {currentPlan === 'basic' ? 'Básico' : 'Pro'} • Status: Ativo
+                      Plano {currentPlan === 'basic' ? 'Básico' : currentPlan === 'pro' ? 'Pro' : currentPlan === 'personalite' ? 'Personalité' : 'Gratuito'} • Status: Ativo
                     </p>
                   </div>
                 </div>
@@ -205,8 +228,34 @@ export default function Subscription() {
         </div>
       )}
 
+      {/* Free Plan Banner */}
+      <div className="mb-8">
+        <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <h3 className="text-2xl font-bold text-green-800 mb-2">Plano Gratuito</h3>
+              <p className="text-green-600 text-lg mb-4">Teste nosso sistema sem custo</p>
+              <div className="grid md:grid-cols-3 gap-4 text-sm">
+                <div className="flex items-center justify-center space-x-2">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span>5 relatórios por mês</span>
+                </div>
+                <div className="flex items-center justify-center space-x-2">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span>Até 3 documentos</span>
+                </div>
+                <div className="flex items-center justify-center space-x-2">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span>Questionário básico</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Plans Grid */}
-      <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
         {plans.map((plan) => {
           const isCurrent = isActive && currentPlan === plan.id;
           const isDowngrade = isActive && currentPlan === 'pro' && plan.id === 'basic';
@@ -230,6 +279,8 @@ export default function Subscription() {
                 <div className="flex items-center justify-center space-x-2 mb-2">
                   {plan.id === 'basic' ? (
                     <Shield className="h-6 w-6 text-blue-600" />
+                  ) : plan.id === 'personalite' ? (
+                    <Star className="h-6 w-6 text-purple-600" />
                   ) : (
                     <Crown className="h-6 w-6 text-yellow-600" />
                   )}
@@ -268,6 +319,20 @@ export default function Subscription() {
                 ) : isDowngrade ? (
                   <Button disabled variant="outline" className="w-full" data-testid={`button-downgrade-${plan.id}`}>
                     Downgrade Não Disponível
+                  </Button>
+                ) : plan.isCustom ? (
+                  <Button
+                    variant="outline"
+                    className="w-full border-purple-200 text-purple-600 hover:bg-purple-50"
+                    onClick={() => {
+                      window.open('mailto:contato@dpofast.com?subject=Interesse no Plano Personalité&body=Olá, tenho interesse no plano Personalité para minha empresa de grande porte. Gostaria de agendar uma conversa para discutir nossas necessidades específicas.', '_blank');
+                    }}
+                    data-testid={`button-contact-${plan.id}`}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <Star className="h-4 w-4" />
+                      <span>Entrar em Contato</span>
+                    </div>
                   </Button>
                 ) : (
                   <Button
