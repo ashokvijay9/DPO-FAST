@@ -251,12 +251,9 @@ const DPOFastLanding = () => {
             </button>
             <button 
               className="border border-indigo-600 text-indigo-600 px-6 py-3.5 rounded-xl hover:bg-indigo-50 transition-all font-medium flex items-center transform hover:-translate-y-1"
-              onClick={() => {
-                // Simulação de demonstração - poderia abrir um modal ou vídeo
-                window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
-              }}
+              onClick={() => scrollToSection('features')}
             >
-              Ver Demonstração
+              Ver Recursos
               <ArrowRight className="ml-2 h-5 w-5" />
             </button>
           </div>
@@ -534,7 +531,17 @@ const DPOFastLanding = () => {
           </div>
 
           <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400 text-sm">
-            <p>© {new Date().getFullYear()} DPO Fast. Todos os direitos reservados.</p>
+            <p>
+              © {new Date().getFullYear()} DPO Fast. Todos os direitos reservados | Desenvolvido por{' '}
+              <a 
+                href="https://felipe-84bca.web.app/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-indigo-400 hover:text-indigo-300 transition-colors"
+              >
+                Felipe Sadrak
+              </a>
+            </p>
           </div>
         </div>
       </footer>
