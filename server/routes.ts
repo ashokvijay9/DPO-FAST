@@ -9,7 +9,7 @@ import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import Stripe from "stripe";
 import { attachUserPlan, checkDocumentLimits, checkReportLimits, requireAdvancedFeatures, getPlanLimits, type AuthenticatedRequest } from "./middleware/planLimits";
-import { generateComplianceReportPDF, type ReportData } from "./reportGenerator";
+import { generateComplianceReportHTML, type ReportData } from "./reportGenerator";
 import fs from "fs";
 
 // Initialize Stripe
@@ -958,8 +958,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         questions: dynamicQuestions,
       };
 
-      // Generate PDF
-      const { buffer, filename } = await generateComplianceReportPDF(reportData);
+      // Get user plan
+      const userPlan = user.subscriptionPlan || 'free';
+
+      // Generate HTML Report
+      const { html, filename } = await generateComplianceReportHTML(reportData, userPlan);
       
       // Create reports directory if it doesn't exist
       const reportsDir = 'uploads/reports';
@@ -967,9 +970,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fs.mkdirSync(reportsDir, { recursive: true });
       }
 
-      // Save PDF file
+      // Save HTML file
       const filePath = path.join(reportsDir, filename);
-      fs.writeFileSync(filePath, buffer);
+      fs.writeFileSync(filePath, html, 'utf8');
 
       // Save report record to database
       const reportRecord = await storage.createComplianceReport({
@@ -979,7 +982,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         reportType: 'compliance_summary',
         complianceScore: questionnaireResponse.complianceScore || 0,
         fileName: filename,
-        fileSize: buffer.length,
+        fileSize: Buffer.from(html).length,
         fileUrl: `/uploads/reports/${filename}`,
         status: 'generated',
       });
@@ -1186,13 +1189,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sectors
       };
 
-      // Generate sector PDF - fallback to regular report for now
-      const { buffer, filename } = await generateComplianceReportPDF({
+      // Get user plan
+      const userPlan = user.subscriptionPlan || 'free';
+
+      // Generate sector HTML report
+      const { html, filename } = await generateComplianceReportHTML({
         user: reportData.user,
         questionnaireResponse: reportData.questionnaireResponse,
         complianceTasks: reportData.complianceTasks,
         questions: reportData.questions
-      });
+      }, userPlan);
       
       // Create reports directory if it doesn't exist
       const reportsDir = 'uploads/reports';
@@ -1200,9 +1206,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fs.mkdirSync(reportsDir, { recursive: true });
       }
 
-      // Save PDF file
+      // Save HTML file
       const filePath = path.join(reportsDir, filename);
-      fs.writeFileSync(filePath, buffer);
+      fs.writeFileSync(filePath, html, 'utf8');
 
       // Save report record to database
       const reportRecord = await storage.createComplianceReport({
@@ -1212,7 +1218,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         reportType: 'sector_analysis',
         complianceScore: questionnaireResponse.complianceScore || 0,
         fileName: filename,
-        fileSize: buffer.length,
+        fileSize: Buffer.from(html).length,
         fileUrl: `/uploads/reports/${filename}`,
         status: 'generated',
       });
