@@ -159,16 +159,16 @@ function analyzeComplianceByAreas(answers: string[], questions: any[]): any {
     const area = getQuestionArea(question.question);
     
     if (answer === 'sim') {
-      areas[area].good.push(question.question);
+      (areas as any)[area].good.push(question.question);
     } else if (answer === 'não' || answer === 'parcial') {
-      areas[area].improve.push(question.question);
+      (areas as any)[area].improve.push(question.question);
     }
   });
 
   return areas;
 }
 
-function getQuestionArea(questionText: string): keyof ReturnType<typeof analyzeComplianceByAreas> {
+function getQuestionArea(questionText: string): string {
   const questionLower = questionText.toLowerCase();
   
   if (questionLower.includes('política') || questionLower.includes('dpo') || questionLower.includes('responsável')) {
@@ -425,14 +425,14 @@ function generateLGPDCompliantReport(reportData: ReportData, compliance: any, co
         ${complianceAnalysis.dataGovernance.good.length > 0 ? `
         <div class="good-practices">
             <div class="subsection-title">✓ Pontos Fortes Identificados:</div>
-            ${complianceAnalysis.dataGovernance.good.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+            ${complianceAnalysis.dataGovernance.good.map((item: string) => `<div class="bullet-point">${item}</div>`).join('')}
         </div>
         ` : ''}
         
         ${complianceAnalysis.dataGovernance.improve.length > 0 ? `
         <div class="improvements">
             <div class="subsection-title">⚠ Áreas para Melhoria:</div>
-            ${complianceAnalysis.dataGovernance.improve.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+            ${complianceAnalysis.dataGovernance.improve.map((item: string) => `<div class="bullet-point">${item}</div>`).join('')}
             <p class="policy-text">
                 <strong>Recomendação:</strong> Designar formalmente um Encarregado de Proteção de Dados (DPO) e estabelecer 
                 políticas claras de governança de dados pessoais.
@@ -447,14 +447,14 @@ function generateLGPDCompliantReport(reportData: ReportData, compliance: any, co
         ${complianceAnalysis.dataCollection.good.length > 0 ? `
         <div class="good-practices">
             <div class="subsection-title">✓ Práticas Adequadas:</div>
-            ${complianceAnalysis.dataCollection.good.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+            ${complianceAnalysis.dataCollection.good.map((item: string) => `<div class="bullet-point">${item}</div>`).join('')}
         </div>
         ` : ''}
         
         ${complianceAnalysis.dataCollection.improve.length > 0 ? `
         <div class="improvements">
             <div class="subsection-title">⚠ Necessidades de Adequação:</div>
-            ${complianceAnalysis.dataCollection.improve.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+            ${complianceAnalysis.dataCollection.improve.map((item: string) => `<div class="bullet-point">${item}</div>`).join('')}
             <p class="policy-text">
                 <strong>Recomendação:</strong> Implementar mapeamento detalhado de todos os dados pessoais coletados, 
                 suas finalidades e bases legais para tratamento.
@@ -469,14 +469,14 @@ function generateLGPDCompliantReport(reportData: ReportData, compliance: any, co
         ${complianceAnalysis.consent.good.length > 0 ? `
         <div class="good-practices">
             <div class="subsection-title">✓ Conformidade Identificada:</div>
-            ${complianceAnalysis.consent.good.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+            ${complianceAnalysis.consent.good.map((item: string) => `<div class="bullet-point">${item}</div>`).join('')}
         </div>
         ` : ''}
         
         ${complianceAnalysis.consent.improve.length > 0 ? `
         <div class="improvements">
             <div class="subsection-title">⚠ Melhorias Necessárias:</div>
-            ${complianceAnalysis.consent.improve.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+            ${complianceAnalysis.consent.improve.map((item: string) => `<div class="bullet-point">${item}</div>`).join('')}
             <p class="policy-text">
                 <strong>Recomendação:</strong> Estabelecer processos claros para obtenção, registro e gestão de consentimentos, 
                 garantindo que sejam livres, informados e específicos.
@@ -491,14 +491,14 @@ function generateLGPDCompliantReport(reportData: ReportData, compliance: any, co
         ${complianceAnalysis.security.good.length > 0 ? `
         <div class="good-practices">
             <div class="subsection-title">✓ Medidas de Segurança Implementadas:</div>
-            ${complianceAnalysis.security.good.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+            ${complianceAnalysis.security.good.map((item: string) => `<div class="bullet-point">${item}</div>`).join('')}
         </div>
         ` : ''}
         
         ${complianceAnalysis.security.improve.length > 0 ? `
         <div class="critical-issues">
             <div class="subsection-title">🔴 Vulnerabilidades Críticas:</div>
-            ${complianceAnalysis.security.improve.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+            ${complianceAnalysis.security.improve.map((item: string) => `<div class="bullet-point">${item}</div>`).join('')}
             <p class="policy-text">
                 <strong>Ação Urgente:</strong> Implementar medidas técnicas e organizacionais de segurança apropriadas, 
                 incluindo criptografia, controles de acesso e monitoramento de segurança.
@@ -513,14 +513,14 @@ function generateLGPDCompliantReport(reportData: ReportData, compliance: any, co
         ${complianceAnalysis.rights.good.length > 0 ? `
         <div class="good-practices">
             <div class="subsection-title">✓ Direitos Atendidos:</div>
-            ${complianceAnalysis.rights.good.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+            ${complianceAnalysis.rights.good.map((item: string) => `<div class="bullet-point">${item}</div>`).join('')}
         </div>
         ` : ''}
         
         ${complianceAnalysis.rights.improve.length > 0 ? `
         <div class="improvements">
             <div class="subsection-title">⚠ Procedimentos a Implementar:</div>
-            ${complianceAnalysis.rights.improve.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+            ${complianceAnalysis.rights.improve.map((item: string) => `<div class="bullet-point">${item}</div>`).join('')}
             <p class="policy-text">
                 <strong>Recomendação:</strong> Estabelecer canais e procedimentos para atendimento aos direitos dos titulares: 
                 acesso, retificação, portabilidade, eliminação e oposição ao tratamento.
@@ -535,14 +535,14 @@ function generateLGPDCompliantReport(reportData: ReportData, compliance: any, co
         ${complianceAnalysis.breach.good.length > 0 ? `
         <div class="good-practices">
             <div class="subsection-title">✓ Preparação para Incidentes:</div>
-            ${complianceAnalysis.breach.good.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+            ${complianceAnalysis.breach.good.map((item: string) => `<div class="bullet-point">${item}</div>`).join('')}
         </div>
         ` : ''}
         
         ${complianceAnalysis.breach.improve.length > 0 ? `
         <div class="critical-issues">
             <div class="subsection-title">🔴 Riscos de Não Conformidade:</div>
-            ${complianceAnalysis.breach.improve.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+            ${complianceAnalysis.breach.improve.map((item: string) => `<div class="bullet-point">${item}</div>`).join('')}
             <p class="policy-text">
                 <strong>Ação Urgente:</strong> Criar plano de resposta a incidentes de segurança e procedimentos para 
                 comunicação à ANPD e aos titulares em caso de vazamento de dados.
@@ -557,14 +557,14 @@ function generateLGPDCompliantReport(reportData: ReportData, compliance: any, co
         ${complianceAnalysis.training.good.length > 0 ? `
         <div class="good-practices">
             <div class="subsection-title">✓ Capacitação Existente:</div>
-            ${complianceAnalysis.training.good.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+            ${complianceAnalysis.training.good.map((item: string) => `<div class="bullet-point">${item}</div>`).join('')}
         </div>
         ` : ''}
         
         ${complianceAnalysis.training.improve.length > 0 ? `
         <div class="improvements">
             <div class="subsection-title">⚠ Necessidades de Capacitação:</div>
-            ${complianceAnalysis.training.improve.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+            ${complianceAnalysis.training.improve.map((item: string) => `<div class="bullet-point">${item}</div>`).join('')}
             <p class="policy-text">
                 <strong>Recomendação:</strong> Implementar programa de treinamento contínuo sobre LGPD para todos os 
                 colaboradores que lidam com dados pessoais.
