@@ -942,6 +942,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get compliance tasks
       const complianceTasks = await storage.getComplianceTasks(userId);
 
+      // Get dynamic questions
+      const dynamicQuestions = await generateDynamicQuestions(userId);
+
       // Prepare report data
       const reportData: ReportData = {
         user: {
@@ -952,7 +955,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         questionnaireResponse,
         complianceTasks,
-        questions: lgpdQuestions,
+        questions: dynamicQuestions,
       };
 
       // Generate PDF

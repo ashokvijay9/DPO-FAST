@@ -132,13 +132,84 @@ function generateReportHTML(reportData: ReportData, compliance: any): string {
     })
     .slice(0, 10);
 
+  // Analyze compliance by areas based on questionnaire answers
+  const complianceAnalysis = analyzeComplianceByAreas(answers, reportData.questions);
+
+  return generateLGPDCompliantReport(reportData, compliance, complianceAnalysis, userName, companyName, reportDate, priorityTasks);
+}
+
+function analyzeComplianceByAreas(answers: string[], questions: any[]): any {
+  const areas = {
+    dataGovernance: { good: [], improve: [] },
+    dataCollection: { good: [], improve: [] },
+    consent: { good: [], improve: [] },
+    dataStorage: { good: [], improve: [] },
+    dataSharing: { good: [], improve: [] },
+    rights: { good: [], improve: [] },
+    security: { good: [], improve: [] },
+    breach: { good: [], improve: [] },
+    training: { good: [], improve: [] },
+    documentation: { good: [], improve: [] }
+  };
+
+  answers.forEach((answer, index) => {
+    const question = questions[index];
+    if (!question) return;
+
+    const area = getQuestionArea(question.question);
+    
+    if (answer === 'sim') {
+      areas[area].good.push(question.question);
+    } else if (answer === 'não' || answer === 'parcial') {
+      areas[area].improve.push(question.question);
+    }
+  });
+
+  return areas;
+}
+
+function getQuestionArea(questionText: string): keyof ReturnType<typeof analyzeComplianceByAreas> {
+  const questionLower = questionText.toLowerCase();
+  
+  if (questionLower.includes('política') || questionLower.includes('dpo') || questionLower.includes('responsável')) {
+    return 'dataGovernance';
+  }
+  if (questionLower.includes('coleta') || questionLower.includes('dados pessoais')) {
+    return 'dataCollection';
+  }
+  if (questionLower.includes('consentimento') || questionLower.includes('autorização')) {
+    return 'consent';
+  }
+  if (questionLower.includes('armazenamento') || questionLower.includes('retenção')) {
+    return 'dataStorage';
+  }
+  if (questionLower.includes('compartilhamento') || questionLower.includes('terceiros')) {
+    return 'dataSharing';
+  }
+  if (questionLower.includes('direitos') || questionLower.includes('titular')) {
+    return 'rights';
+  }
+  if (questionLower.includes('segurança') || questionLower.includes('proteção') || questionLower.includes('criptografia')) {
+    return 'security';
+  }
+  if (questionLower.includes('vazamento') || questionLower.includes('incidente') || questionLower.includes('violação')) {
+    return 'breach';
+  }
+  if (questionLower.includes('treinamento') || questionLower.includes('capacitação')) {
+    return 'training';
+  }
+  
+  return 'documentation';
+}
+
+function generateLGPDCompliantReport(reportData: ReportData, compliance: any, complianceAnalysis: any, userName: string, companyName: string, reportDate: string, priorityTasks: any[]): string {
   return `
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatório de Conformidade LGPD - ${companyName}</title>
+    <title>Política de Segurança da Informação e Conformidade LGPD - ${companyName}</title>
     <style>
         * {
             margin: 0;
@@ -147,323 +218,398 @@ function generateReportHTML(reportData: ReportData, compliance: any): string {
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Times New Roman', serif;
             line-height: 1.6;
             color: #333;
             background: #fff;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 40px 30px;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-        
-        .header p {
-            font-size: 16px;
-            opacity: 0.9;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 0 30px;
-        }
-        
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-        
-        .info-card {
-            background: #f8f9fa;
             padding: 20px;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
         }
         
-        .info-card h3 {
-            color: #667eea;
-            margin-bottom: 10px;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .info-card p {
-            font-size: 16px;
-            font-weight: 500;
-        }
-        
-        .score-section {
+        .document-header {
             text-align: center;
-            background: #fff;
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
-            padding: 30px;
             margin-bottom: 40px;
+            padding: 30px;
+            border-bottom: 3px solid #2c3e50;
         }
         
-        .score-circle {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
+        .document-header h1 {
+            font-size: 24px;
             font-weight: bold;
-            color: white;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            text-transform: uppercase;
+        }
+        
+        .document-header h2 {
+            font-size: 18px;
+            color: #34495e;
             margin-bottom: 20px;
         }
         
-        .score-excellent { background: linear-gradient(45deg, #4CAF50, #66BB6A); }
-        .score-good { background: linear-gradient(45deg, #FF9800, #FFB74D); }
-        .score-poor { background: linear-gradient(45deg, #F44336, #EF5350); }
-        
-        .breakdown-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-        
-        .breakdown-card {
-            background: #fff;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .breakdown-card h4 {
-            color: #667eea;
-            margin-bottom: 15px;
+        .company-info {
             font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
         }
         
-        .breakdown-stats {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 15px;
-        }
-        
-        .stat {
+        .compliance-score {
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
             text-align: center;
         }
         
-        .stat-number {
-            font-size: 20px;
+        .score-value {
+            font-size: 32px;
             font-weight: bold;
-            color: #333;
+            color: #27ae60;
         }
         
-        .stat-label {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-        }
-        
-        .tasks-section {
-            margin-bottom: 40px;
+        .section {
+            margin-bottom: 30px;
+            padding: 20px 0;
         }
         
         .section-title {
-            color: #333;
-            font-size: 24px;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #667eea;
-        }
-        
-        .task-item {
-            background: #fff;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
             margin-bottom: 15px;
-            border-left: 4px solid var(--priority-color);
-        }
-        
-        .task-high { --priority-color: #F44336; }
-        .task-medium { --priority-color: #FF9800; }
-        .task-low { --priority-color: #4CAF50; }
-        
-        .task-title {
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #333;
-        }
-        
-        .task-description {
-            color: #666;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-        
-        .priority-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
             text-transform: uppercase;
-            margin-top: 10px;
+            border-bottom: 2px solid #34495e;
+            padding-bottom: 5px;
         }
         
-        .priority-high { background: #ffebee; color: #c62828; }
-        .priority-medium { background: #fff3e0; color: #ef6c00; }
-        .priority-low { background: #e8f5e8; color: #2e7d32; }
-        
-        .footer {
-            background: #f8f9fa;
-            padding: 30px;
-            text-align: center;
-            margin-top: 40px;
-            border-top: 1px solid #e9ecef;
+        .subsection {
+            margin: 20px 0;
         }
         
-        .footer p {
-            color: #666;
-            font-size: 14px;
+        .subsection-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #34495e;
             margin-bottom: 10px;
         }
         
-        .recommendations {
-            background: #f0f8ff;
-            border: 1px solid #b6d7ff;
-            border-radius: 8px;
-            padding: 25px;
-            margin-bottom: 30px;
+        .good-practices {
+            background: #d5f4e6;
+            border-left: 4px solid #27ae60;
+            padding: 15px;
+            margin: 10px 0;
         }
         
-        .recommendations h3 {
-            color: #1565c0;
+        .improvements {
+            background: #ffeaa7;
+            border-left: 4px solid #fdcb6e;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .critical-issues {
+            background: #fab1a0;
+            border-left: 4px solid #e17055;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .policy-text {
+            text-align: justify;
+            line-height: 1.8;
             margin-bottom: 15px;
         }
         
-        .recommendations ul {
-            list-style: none;
-            padding-left: 0;
-        }
-        
-        .recommendations li {
-            margin-bottom: 10px;
+        .bullet-point {
+            margin: 5px 0;
             padding-left: 20px;
             position: relative;
         }
         
-        .recommendations li:before {
-            content: "✓";
+        .bullet-point::before {
+            content: "•";
             position: absolute;
             left: 0;
-            color: #1565c0;
             font-weight: bold;
         }
         
+        .compliance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .compliance-table th,
+        .compliance-table td {
+            border: 1px solid #bdc3c7;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        .compliance-table th {
+            background: #34495e;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .status-compliant {
+            background: #d5f4e6;
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .status-partial {
+            background: #ffeaa7;
+            color: #f39c12;
+            font-weight: bold;
+        }
+        
+        .status-non-compliant {
+            background: #fab1a0;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .objective-section {
+            background: #ebf3fd;
+            border: 1px solid #3498db;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding: 20px;
+            border-top: 2px solid #2c3e50;
+            text-align: center;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        
         @media print {
-            .container { max-width: none; padding: 0; }
-            .header { margin-bottom: 20px; }
-            .task-item { break-inside: avoid; }
+            body { padding: 10px; }
+            .section { page-break-inside: avoid; }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Relatório de Conformidade LGPD</h1>
-        <p>Avaliação detalhada da adequação à Lei Geral de Proteção de Dados</p>
-    </div>
-    
-    <div class="container">
-        <div class="info-grid">
-            <div class="info-card">
-                <h3>Empresa</h3>
-                <p>${companyName}</p>
-            </div>
-            <div class="info-card">
-                <h3>Responsável</h3>
-                <p>${userName}</p>
-            </div>
-            <div class="info-card">
-                <h3>Data do Relatório</h3>
-                <p>${reportDate}</p>
-            </div>
-            <div class="info-card">
-                <h3>Avaliação Realizada</h3>
-                <p>${new Date(reportData.questionnaireResponse.createdAt).toLocaleDateString('pt-BR')}</p>
-            </div>
+    <div class="document-header">
+        <h1>Política de Segurança da Informação e Conformidade LGPD</h1>
+        <h2>${companyName}</h2>
+        <div class="company-info">
+            <div>Responsável: ${userName}</div>
+            <div>Data do Relatório: ${reportDate}</div>
         </div>
+        <div class="compliance-score">
+            <div class="score-value">${compliance.overallScore}%</div>
+            <div>Nível de Conformidade LGPD</div>
+        </div>
+    </div>
+
+    <div class="objective-section">
+        <div class="section-title">Objetivo</div>
+        <p class="policy-text">
+            Este relatório apresenta a análise da adequação da ${companyName} à Lei Geral de Proteção de Dados (LGPD), 
+            estabelecendo diretrizes que permitam aos colaboradores, clientes e parceiros seguirem padrões de comportamento 
+            relacionados à segurança da informação adequados às necessidades de negócio e de proteção legal da empresa e do indivíduo.
+        </p>
+        <p class="policy-text">
+            O objetivo é preservar as informações quanto à <strong>Integridade</strong>, <strong>Confidencialidade</strong> e <strong>Disponibilidade</strong>, 
+            garantindo a conformidade com a legislação de proteção de dados pessoais.
+        </p>
+    </div>
+
+    <div class="section">
+        <div class="section-title">1. Governança de Dados e Responsabilidades</div>
         
-        <div class="score-section">
-            <div class="score-circle ${compliance.overallScore >= 80 ? 'score-excellent' : compliance.overallScore >= 60 ? 'score-good' : 'score-poor'}">
-                ${compliance.overallScore}%
-            </div>
-            <h2>Nível de Conformidade Geral</h2>
-            <p style="margin-top: 10px; font-size: 16px; color: #666;">
-                ${compliance.overallScore >= 80 ? 'Excelente conformidade com a LGPD' : 
-                  compliance.overallScore >= 60 ? 'Boa conformidade, algumas melhorias necessárias' : 
-                  'Conformidade insuficiente, ações imediatas requeridas'}
+        ${complianceAnalysis.dataGovernance.good.length > 0 ? `
+        <div class="good-practices">
+            <div class="subsection-title">✓ Pontos Fortes Identificados:</div>
+            ${complianceAnalysis.dataGovernance.good.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+        </div>
+        ` : ''}
+        
+        ${complianceAnalysis.dataGovernance.improve.length > 0 ? `
+        <div class="improvements">
+            <div class="subsection-title">⚠ Áreas para Melhoria:</div>
+            ${complianceAnalysis.dataGovernance.improve.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+            <p class="policy-text">
+                <strong>Recomendação:</strong> Designar formalmente um Encarregado de Proteção de Dados (DPO) e estabelecer 
+                políticas claras de governança de dados pessoais.
             </p>
         </div>
+        ` : ''}
+    </div>
+
+    <div class="section">
+        <div class="section-title">2. Coleta e Tratamento de Dados Pessoais</div>
         
-        <div class="breakdown-grid">
-            <div class="breakdown-card">
-                <h4>Questões Analisadas</h4>
-                <div class="stat-number">${compliance.totalQuestions}</div>
-                <div class="breakdown-stats">
-                    <div class="stat">
-                        <div class="stat-number" style="color: #4CAF50;">${compliance.compliantAnswers}</div>
-                        <div class="stat-label">Conformes</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-number" style="color: #FF9800;">${compliance.partiallyCompliantAnswers}</div>
-                        <div class="stat-label">Parciais</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-number" style="color: #F44336;">${compliance.nonCompliantAnswers}</div>
-                        <div class="stat-label">Não Conformes</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        ${compliance.overallScore < 70 ? `
-        <div class="recommendations">
-            <h3>Recomendações Prioritárias</h3>
-            <ul>
-                <li>Designar um Encarregado de Proteção de Dados (DPO)</li>
-                <li>Implementar políticas claras de privacidade e proteção de dados</li>
-                <li>Estabelecer procedimentos para exercício de direitos dos titulares</li>
-                <li>Implementar medidas técnicas e organizacionais de segurança</li>
-                <li>Treinar equipe sobre LGPD e proteção de dados</li>
-            </ul>
+        ${complianceAnalysis.dataCollection.good.length > 0 ? `
+        <div class="good-practices">
+            <div class="subsection-title">✓ Práticas Adequadas:</div>
+            ${complianceAnalysis.dataCollection.good.map(item => `<div class="bullet-point">${item}</div>`).join('')}
         </div>
         ` : ''}
         
-        ${priorityTasks.length > 0 ? `
-        <div class="tasks-section">
-            <h2 class="section-title">Plano de Ação - Tarefas Prioritárias</h2>
-            ${priorityTasks.map(task => `
-                <div class="task-item task-${task.priority}">
-                    <div class="task-title">${task.title}</div>
-                    <div class="task-description">${task.description}</div>
-                    <span class="priority-badge priority-${task.priority}">
-                        Prioridade ${task.priority === 'high' ? 'Alta' : task.priority === 'medium' ? 'Média' : 'Baixa'}
-                    </span>
-                </div>
+        ${complianceAnalysis.dataCollection.improve.length > 0 ? `
+        <div class="improvements">
+            <div class="subsection-title">⚠ Necessidades de Adequação:</div>
+            ${complianceAnalysis.dataCollection.improve.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+            <p class="policy-text">
+                <strong>Recomendação:</strong> Implementar mapeamento detalhado de todos os dados pessoais coletados, 
+                suas finalidades e bases legais para tratamento.
+            </p>
+        </div>
+        ` : ''}
+    </div>
+
+    <div class="section">
+        <div class="section-title">3. Consentimento e Bases Legais</div>
+        
+        ${complianceAnalysis.consent.good.length > 0 ? `
+        <div class="good-practices">
+            <div class="subsection-title">✓ Conformidade Identificada:</div>
+            ${complianceAnalysis.consent.good.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+        </div>
+        ` : ''}
+        
+        ${complianceAnalysis.consent.improve.length > 0 ? `
+        <div class="improvements">
+            <div class="subsection-title">⚠ Melhorias Necessárias:</div>
+            ${complianceAnalysis.consent.improve.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+            <p class="policy-text">
+                <strong>Recomendação:</strong> Estabelecer processos claros para obtenção, registro e gestão de consentimentos, 
+                garantindo que sejam livres, informados e específicos.
+            </p>
+        </div>
+        ` : ''}
+    </div>
+
+    <div class="section">
+        <div class="section-title">4. Segurança da Informação e Medidas Técnicas</div>
+        
+        ${complianceAnalysis.security.good.length > 0 ? `
+        <div class="good-practices">
+            <div class="subsection-title">✓ Medidas de Segurança Implementadas:</div>
+            ${complianceAnalysis.security.good.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+        </div>
+        ` : ''}
+        
+        ${complianceAnalysis.security.improve.length > 0 ? `
+        <div class="critical-issues">
+            <div class="subsection-title">🔴 Vulnerabilidades Críticas:</div>
+            ${complianceAnalysis.security.improve.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+            <p class="policy-text">
+                <strong>Ação Urgente:</strong> Implementar medidas técnicas e organizacionais de segurança apropriadas, 
+                incluindo criptografia, controles de acesso e monitoramento de segurança.
+            </p>
+        </div>
+        ` : ''}
+    </div>
+
+    <div class="section">
+        <div class="section-title">5. Direitos dos Titulares de Dados</div>
+        
+        ${complianceAnalysis.rights.good.length > 0 ? `
+        <div class="good-practices">
+            <div class="subsection-title">✓ Direitos Atendidos:</div>
+            ${complianceAnalysis.rights.good.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+        </div>
+        ` : ''}
+        
+        ${complianceAnalysis.rights.improve.length > 0 ? `
+        <div class="improvements">
+            <div class="subsection-title">⚠ Procedimentos a Implementar:</div>
+            ${complianceAnalysis.rights.improve.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+            <p class="policy-text">
+                <strong>Recomendação:</strong> Estabelecer canais e procedimentos para atendimento aos direitos dos titulares: 
+                acesso, retificação, portabilidade, eliminação e oposição ao tratamento.
+            </p>
+        </div>
+        ` : ''}
+    </div>
+
+    <div class="section">
+        <div class="section-title">6. Gestão de Incidentes e Vazamentos</div>
+        
+        ${complianceAnalysis.breach.good.length > 0 ? `
+        <div class="good-practices">
+            <div class="subsection-title">✓ Preparação para Incidentes:</div>
+            ${complianceAnalysis.breach.good.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+        </div>
+        ` : ''}
+        
+        ${complianceAnalysis.breach.improve.length > 0 ? `
+        <div class="critical-issues">
+            <div class="subsection-title">🔴 Riscos de Não Conformidade:</div>
+            ${complianceAnalysis.breach.improve.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+            <p class="policy-text">
+                <strong>Ação Urgente:</strong> Criar plano de resposta a incidentes de segurança e procedimentos para 
+                comunicação à ANPD e aos titulares em caso de vazamento de dados.
+            </p>
+        </div>
+        ` : ''}
+    </div>
+
+    <div class="section">
+        <div class="section-title">7. Treinamento e Conscientização</div>
+        
+        ${complianceAnalysis.training.good.length > 0 ? `
+        <div class="good-practices">
+            <div class="subsection-title">✓ Capacitação Existente:</div>
+            ${complianceAnalysis.training.good.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+        </div>
+        ` : ''}
+        
+        ${complianceAnalysis.training.improve.length > 0 ? `
+        <div class="improvements">
+            <div class="subsection-title">⚠ Necessidades de Capacitação:</div>
+            ${complianceAnalysis.training.improve.map(item => `<div class="bullet-point">${item}</div>`).join('')}
+            <p class="policy-text">
+                <strong>Recomendação:</strong> Implementar programa de treinamento contínuo sobre LGPD para todos os 
+                colaboradores que lidam com dados pessoais.
+            </p>
+        </div>
+        ` : ''}
+    </div>
+
+    ${priorityTasks.length > 0 ? `
+    <div class="section">
+        <div class="section-title">8. Plano de Ação Prioritário</div>
+        <table class="compliance-table">
+            <tr>
+                <th>Tarefa</th>
+                <th>Prioridade</th>
+                <th>Descrição</th>
+            </tr>
+            ${priorityTasks.slice(0, 10).map(task => `
+                <tr>
+                    <td>${task.title}</td>
+                    <td class="status-${task.priority === 'high' ? 'non-compliant' : task.priority === 'medium' ? 'partial' : 'compliant'}">
+                        ${task.priority === 'high' ? 'ALTA' : task.priority === 'medium' ? 'MÉDIA' : 'BAIXA'}
+                    </td>
+                    <td>${task.description}</td>
+                </tr>
             `).join('')}
-        </div>
-        ` : ''}
+        </table>
+    </div>
+    ` : ''}
+
+    <div class="section">
+        <div class="section-title">Considerações Finais</div>
+        <p class="policy-text">
+            Esta análise demonstra que a ${companyName} possui um nível de conformidade de <strong>${compliance.overallScore}%</strong> 
+            com a LGPD. ${compliance.overallScore >= 80 ? 
+                'A empresa demonstra excelente adequação às exigências legais.' :
+                compliance.overallScore >= 60 ?
+                'A empresa está no caminho certo, mas requer melhorias em áreas específicas.' :
+                'São necessárias ações imediatas para adequação às exigências da LGPD.'
+            }
+        </p>
+        <p class="policy-text">
+            Recomendamos revisão periódica desta política e implementação das melhorias sugeridas para garantir 
+            conformidade contínua com a Lei Geral de Proteção de Dados.
+        </p>
     </div>
     
     <div class="footer">
