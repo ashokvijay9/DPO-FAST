@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -13,12 +14,18 @@ import {
   User, 
   Mail, 
   Building, 
+  Building2,
   Calendar, 
   Shield, 
   Key, 
   Save,
   Crown,
-  CheckCircle
+  CheckCircle,
+  Users,
+  Briefcase,
+  Award,
+  BarChart3,
+  Star
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -54,6 +61,26 @@ export default function Profile() {
 
   const { data: user, isLoading: isUserLoading } = useQuery({
     queryKey: ["/api/auth/user"],
+    enabled: isAuthenticated,
+  });
+
+  const { data: companyProfile } = useQuery({
+    queryKey: ["/api/company-profile"],
+    enabled: isAuthenticated,
+  });
+
+  const { data: documents = [] } = useQuery({
+    queryKey: ["/api/documents"],
+    enabled: isAuthenticated,
+  });
+
+  const { data: reports = [] } = useQuery({
+    queryKey: ["/api/reports"],
+    enabled: isAuthenticated,
+  });
+
+  const { data: planLimits } = useQuery({
+    queryKey: ["/api/plan/limits"],
     enabled: isAuthenticated,
   });
 
@@ -182,6 +209,29 @@ export default function Profile() {
     );
   };
 
+  // Calculate plan limits and suggested plan
+  const currentPlan = user?.subscriptionStatus === 'active' ? user?.subscriptionPlan || 'free' : 'free';
+  const currentPlanLimits = planLimits?.limits;
+  
+  // Calculate suggested plan based on company profile
+  const getSuggestedPlan = () => {
+    if (!companyProfile) return 'basic';
+    
+    const sectorsCount = ((companyProfile.sectors as string[]) || []).length +
+                        ((companyProfile.customSectors as string[]) || []).length;
+    const isLargeCompany = companyProfile.companySize === 'large';
+    
+    if (isLargeCompany || sectorsCount > 3) {
+      return 'pro';
+    } else if (sectorsCount > 0 || companyProfile.companySize === 'medium') {
+      return 'basic';
+    }
+    return 'free';
+  };
+  
+  const suggestedPlan = getSuggestedPlan();
+  const documentsCount = documents?.length || 0;
+
   if (isLoading || isUserLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -199,6 +249,219 @@ export default function Profile() {
             <p className="text-muted-foreground">
               Gerencie suas informações pessoais e configurações da conta
             </p>
+          </div>
+
+          {/* Company Information Section */}
+          {companyProfile && (
+            <div className="mb-8">
+              <Card className="glass-card border-0 shadow-xl">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center text-xl">
+                    <Building2 className="h-5 w-5 mr-3 text-primary" />
+                    Resumo da Empresa
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-3 gap-6">
+                    {/* Company Basic Info */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                          <Building2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Empresa</p>
+                          <p className="font-medium" data-testid="text-company-name">
+                            {companyProfile.companyName}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                          <BarChart3 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Porte</p>
+                          <Badge className="status-info">
+                            {companyProfile.companySize === "small" ? "Pequena" : 
+                             companyProfile.companySize === "medium" ? "Média" : "Grande"}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Employee Count */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                          <Users className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Funcionários</p>
+                          <p className="font-medium" data-testid="text-employee-count">
+                            {companyProfile.employeeCount || "Não informado"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                          <Briefcase className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Departamentos</p>
+                          <p className="font-medium">
+                            {(companyProfile.departments as string[])?.length || 0}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Sectors */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+                          <Award className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Setores de Atuação</p>
+                          <p className="font-medium" data-testid="text-sectors-count">
+                            {((companyProfile.sectors as string[]) || []).length + 
+                             ((companyProfile.customSectors as string[]) || []).length} setores
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {((companyProfile.sectors as string[]) || []).slice(0, 3).map((sector, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {sector}
+                          </Badge>
+                        ))}
+                        {((companyProfile.sectors as string[]) || []).length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{((companyProfile.sectors as string[]) || []).length - 3} mais
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Plan Information Section */}
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            {/* Current Plan & Usage */}
+            <Card className="glass-card border-0 shadow-xl">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center text-lg">
+                  <Crown className="h-5 w-5 mr-2 text-amber-500" />
+                  Plano Atual: {currentPlan === "free" ? "Gratuito" : 
+                                currentPlan === "basic" ? "Básico" : "Pro"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {currentPlanLimits && (
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Documentos</span>
+                      <span className="font-medium">
+                        {documentsCount}
+                        {currentPlanLimits.maxDocuments > 0 ? `/${currentPlanLimits.maxDocuments}` : " (Ilimitado)"}
+                      </span>
+                    </div>
+                    {currentPlanLimits.maxDocuments > 0 && (
+                      <Progress 
+                        value={(documentsCount / currentPlanLimits.maxDocuments) * 100} 
+                        className="h-2"
+                      />
+                    )}
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Relatórios</span>
+                      <span className="font-medium">
+                        {reports?.length || 0}
+                        {currentPlanLimits.reportsPerMonth > 0 ? `/${currentPlanLimits.reportsPerMonth}` : " (Ilimitado)"}
+                      </span>
+                    </div>
+                    {currentPlanLimits.reportsPerMonth > 0 && (
+                      <Progress 
+                        value={((reports?.length || 0) / currentPlanLimits.reportsPerMonth) * 100} 
+                        className="h-2"
+                      />
+                    )}
+
+                    {currentPlanLimits.hasAdvancedFeatures && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Recursos Avançados</span>
+                        <Badge className="status-success text-xs">
+                          Habilitado
+                        </Badge>
+                      </div>
+                    )}
+
+                    {currentPlanLimits.hasPrioritySupport && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Suporte Prioritário</span>
+                        <Badge className="status-success text-xs">
+                          Habilitado
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => window.location.href = '/subscription'}
+                >
+                  Gerenciar Plano
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Plan Suggestion */}
+            {suggestedPlan !== currentPlan && (
+              <Card className="glass-card border-0 shadow-xl border-amber-200 dark:border-amber-800">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center text-lg">
+                    <Star className="h-5 w-5 mr-2 text-amber-500" />
+                    Sugestão de Plano
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center space-y-4">
+                    <div className="p-4 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-lg">
+                      <h3 className="font-semibold text-lg mb-2">
+                        Plano {suggestedPlan === "basic" ? "Básico" : "Pro"}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        {companyProfile && (
+                          <>
+                            Com base no seu perfil empresarial ({
+                              ((companyProfile.sectors as string[]) || []).length +
+                              ((companyProfile.customSectors as string[]) || []).length
+                            } setores, porte {
+                              companyProfile.companySize === "small" ? "pequeno" :
+                              companyProfile.companySize === "medium" ? "médio" : "grande"
+                            }), recomendamos este plano.
+                          </>
+                        )}
+                      </p>
+                      <Button 
+                        className="btn-gradient w-full"
+                        onClick={() => window.location.href = '/subscription'}
+                        data-testid="button-upgrade-plan"
+                      >
+                        <Crown className="h-4 w-4 mr-2" />
+                        Fazer Upgrade
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -337,47 +600,6 @@ export default function Profile() {
 
             {/* Account Summary */}
             <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Crown className="h-5 w-5" />
-                    Plano Atual
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="text-center space-y-2">
-                    {getPlanBadge(user?.subscriptionPlan || 'free')}
-                    {getStatusBadge(user?.subscriptionStatus || 'inactive')}
-                  </div>
-                  
-                  <div className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Plano:</span>
-                      <span className="font-medium capitalize">
-                        {user?.subscriptionPlan === 'free' ? 'Gratuito' : 
-                         user?.subscriptionPlan === 'basic' ? 'Básico' : 'Pro'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Status:</span>
-                      <span className="font-medium capitalize">
-                        {user?.subscriptionStatus === 'active' ? 'Ativo' : 
-                         user?.subscriptionStatus === 'canceled' ? 'Cancelado' : 'Inativo'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => window.location.href = '/subscription'}
-                    data-testid="button-manage-subscription"
-                  >
-                    Gerenciar Assinatura
-                  </Button>
-                </CardContent>
-              </Card>
-
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
