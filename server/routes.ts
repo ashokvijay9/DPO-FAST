@@ -44,10 +44,9 @@ const baseLgpdQuestions = [
     question: "A empresa possui uma política de privacidade documentada e atualizada?",
     type: "single",
     sector: "base",
-    requiresDocument: true,
-    documentCondition: "sim",
+    requiresDocument: false,
     options: ["sim", "não", "parcial"],
-    description: "Documento obrigatório se 'sim'"
+    description: "Política de privacidade - documento será solicitado via tarefa"
   },
   {
     id: 2,
@@ -63,20 +62,18 @@ const baseLgpdQuestions = [
     question: "A empresa realiza mapeamento dos dados pessoais que coleta e processa?",
     type: "single",
     sector: "base", 
-    requiresDocument: true,
-    documentCondition: "sim",
+    requiresDocument: false,
     options: ["sim", "não", "parcial"],
-    description: "Documento obrigatório se 'sim'"
+    description: "Mapeamento de dados - documento será solicitado via tarefa"
   },
   {
     id: 4,
     question: "A empresa possui procedimento para atender solicitações dos titulares (acesso, correção, exclusão)?",
     type: "single",
     sector: "base",
-    requiresDocument: true,
-    documentCondition: "sim",
+    requiresDocument: false,
     options: ["sim", "não", "parcial"],
-    description: "Documento obrigatório se 'sim'"
+    description: "Procedimento de solicitações - documento será solicitado via tarefa"
   },
   {
     id: 5,
@@ -161,10 +158,9 @@ const baseLgpdQuestions = [
     id: 10,
     question: "Se o dado é utilizado com base no consentimento, a empresa solicita formalmente o consentimento do titular?",
     type: "single",
-    requiresDocument: true,
-    documentCondition: "sim",
+    requiresDocument: false,
     options: ["sim", "não", "Esse processo não está baseado no consentimento"],
-    description: "alternativa - seleção de opções listadas; requer documento anexado obrigatório se resposta for 'sim', como prova de consentimento, para prosseguir"
+    description: "Processo de consentimento - documento será solicitado via tarefa"
   },
   {
     id: 11,
@@ -194,10 +190,9 @@ const baseLgpdQuestions = [
     id: 14,
     question: "No caso de resposta positiva ao item 13, o compartilhamento é informado ao titular?",
     type: "single",
-    requiresDocument: true,
-    documentCondition: "sim",
+    requiresDocument: false,
     options: ["sim", "não"],
-    description: "alternativa - sim/não; requer documento anexado obrigatório se resposta for 'sim', como contrato ou notificação, para prosseguir"
+    description: "Notificação de compartilhamento - documento será solicitado via tarefa"
   },
   {
     id: 15,
@@ -243,9 +238,9 @@ const baseLgpdQuestions = [
     id: 20,
     question: "Em caso positivo qual o provedor de nuvem utilizado:",
     type: "text",
-    requiresDocument: true,
+    requiresDocument: false,
     options: [],
-    description: "dissertativa; requer documento anexado obrigatório, como contrato ou comprovante do provedor, para prosseguir"
+    description: "Provedor de nuvem - documento será solicitado via tarefa"
   },
   {
     id: 21,
@@ -259,18 +254,17 @@ const baseLgpdQuestions = [
     id: 22,
     question: "Em caso positivo de armazenamento de sistema, qual o nome do sistema e a empresa que o fornece? (incluir o site da empresa)",
     type: "text",
-    requiresDocument: true,
+    requiresDocument: false,
     options: [],
-    description: "dissertativa; requer documento anexado obrigatório, como contrato ou especificação do sistema, para prosseguir"
+    description: "Sistema de armazenamento - documento será solicitado via tarefa"
   },
   {
     id: 23,
     question: "Os dados são compartilhados ou arquivados com empresas ou provedores localizados em território estrangeiro?",
     type: "single",
-    requiresDocument: true,
-    documentCondition: "sim",
+    requiresDocument: false,
     options: ["sim", "não"],
-    description: "alternativa - sim/não; requer documento anexado obrigatório se resposta for 'sim', como cláusula contratual, para prosseguir"
+    description: "Transferência internacional - documento será solicitado via tarefa"
   },
   {
     id: 24,
@@ -330,8 +324,8 @@ const sectorQuestions = {
       question: "Como a empresa coleta e armazena dados dos funcionários durante o processo de contratação?",
       type: "text",
       sector: "rh",
-      requiresDocument: true,
-      description: "Descreva os procedimentos de coleta de dados no processo seletivo. Documento obrigatório."
+      requiresDocument: false,
+      description: "Descreva os procedimentos de coleta de dados no processo seletivo. Documento será solicitado via tarefa."
     },
     {
       id: 102,
@@ -347,10 +341,9 @@ const sectorQuestions = {
       question: "A empresa possui consentimento explícito para processamento de dados sensíveis dos funcionários (saúde, origem racial, etc.)?",
       type: "single",
       sector: "rh",
-      requiresDocument: true,
-      documentCondition: "sim",
+      requiresDocument: false,
       options: ["sim", "não", "parcial"],
-      description: "Documento obrigatório se 'sim'"
+      description: "Consentimento para dados sensíveis - documento será solicitado via tarefa"
     },
     {
       id: 104,
@@ -367,18 +360,17 @@ const sectorQuestions = {
       question: "Como são protegidos os dados financeiros dos clientes (contas bancárias, cartões, etc.)?",
       type: "text",
       sector: "financas",
-      requiresDocument: true,
-      description: "Descreva as medidas de proteção. Documento obrigatório."
+      requiresDocument: false,
+      description: "Descreva as medidas de proteção. Documento será solicitado via tarefa."
     },
     {
       id: 202,
       question: "A empresa possui certificação de segurança para processamento de pagamentos?",
       type: "single",
       sector: "financas",
-      requiresDocument: true,
-      documentCondition: "sim", 
+      requiresDocument: false,
       options: ["sim", "não"],
-      description: "Documento obrigatório se 'sim'"
+      description: "Certificação de segurança - documento será solicitado via tarefa"
     },
     {
       id: 203,
@@ -405,8 +397,8 @@ const sectorQuestions = {
       question: "Como é obtido o consentimento para envio de comunicações de marketing?",
       type: "text",
       sector: "marketing",
-      requiresDocument: true,
-      description: "Descreva o processo de obtenção de consentimento. Documento obrigatório."
+      requiresDocument: false,
+      description: "Descreva o processo de obtenção de consentimento. Documento será solicitado via tarefa."
     },
     {
       id: 302,
@@ -431,10 +423,9 @@ const sectorQuestions = {
       question: "São utilizados cookies ou tecnologias de rastreamento no site/app da empresa?",
       type: "single",
       sector: "marketing",
-      requiresDocument: true,
-      documentCondition: "sim",
+      requiresDocument: false,
       options: ["sim", "não", "parcial"],
-      description: "Documento obrigatório se 'sim' (política de cookies)"
+      description: "Política de cookies - documento será solicitado via tarefa"
     }
   ],
   "Vendas": [
@@ -451,8 +442,8 @@ const sectorQuestions = {
       question: "A empresa possui CRM? Como os dados dos clientes são protegidos nele?",
       type: "text",
       sector: "vendas",
-      requiresDocument: true,
-      description: "Descreva as medidas de proteção no CRM. Documento obrigatório se possuir CRM."
+      requiresDocument: false,
+      description: "Descreva as medidas de proteção no CRM. Documento será solicitado via tarefa."
     },
     {
       id: 403,
@@ -470,10 +461,9 @@ const sectorQuestions = {
       question: "Existe política de segurança da informação documentada e implementada?",
       type: "single",
       sector: "ti",
-      requiresDocument: true,
-      documentCondition: "sim",
+      requiresDocument: false,
       options: ["sim", "não", "parcial"],
-      description: "Documento obrigatório se 'sim'"
+      description: "Política de segurança - documento será solicitado via tarefa"
     },
     {
       id: 502,
@@ -488,10 +478,9 @@ const sectorQuestions = {
       question: "A empresa possui plano de resposta a incidentes de segurança?",
       type: "single",
       sector: "ti",
-      requiresDocument: true,
-      documentCondition: "sim",
+      requiresDocument: false,
       options: ["sim", "não", "parcial"],
-      description: "Documento obrigatório se 'sim'"
+      description: "Plano de resposta - documento será solicitado via tarefa"
     },
     {
       id: 504,
@@ -509,8 +498,8 @@ const sectorQuestions = {
       question: "Como são tratadas as solicitações dos titulares sobre seus dados pessoais (acesso, correção, exclusão)?",
       type: "text",
       sector: "atendimento",
-      requiresDocument: true,
-      description: "Descreva o processo de atendimento às solicitações. Documento obrigatório."
+      requiresDocument: false,
+      description: "Descreva o processo de atendimento às solicitações. Documento será solicitado via tarefa."
     },
     {
       id: 602,
@@ -526,10 +515,9 @@ const sectorQuestions = {
       question: "Os atendentes são treinados sobre proteção de dados pessoais?",
       type: "single",
       sector: "atendimento",
-      requiresDocument: true,
-      documentCondition: "sim",
+      requiresDocument: false,
       options: ["sim", "não", "parcial"],
-      description: "Documento obrigatório se 'sim' (certificados de treinamento)"
+      description: "Certificados de treinamento - documento será solicitado via tarefa"
     }
   ]
 };
@@ -1685,6 +1673,273 @@ async function createComplianceTasksBasedOnAnswers(userId: string, answers: stri
         "9. Crie processo de auditoria de fornecedores críticos",
         "10. Desenvolva plano de contingência para substituição de fornecedores"
       ]
+    },
+    
+    // Document-specific tasks
+    attachPrivacyPolicyDoc: {
+      title: "Anexar Documento da Política de Privacidade",
+      description: "Anexar cópia da política de privacidade documentada e atualizada",
+      category: "documentation",
+      priority: "high" as const,
+      dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 days
+      steps: [
+        "1. Localize a versão mais atual da política de privacidade da empresa",
+        "2. Anexe o documento no sistema através da seção 'Documentos'",
+        "3. Certifique-se de que o documento está atualizado e completo",
+        "4. Verifique se a política contém todos os elementos exigidos pela LGPD"
+      ]
+    },
+    
+    attachDataMappingDoc: {
+      title: "Anexar Documento de Mapeamento de Dados",
+      description: "Anexar documentação do mapeamento dos dados pessoais coletados e processados",
+      category: "data_protection",
+      priority: "high" as const,
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+      steps: [
+        "1. Compile toda a documentação do mapeamento de dados da empresa",
+        "2. Anexe o documento no sistema através da seção 'Documentos'",
+        "3. Certifique-se de que inclui todos os fluxos de dados",
+        "4. Verifique se contém categorias de dados, finalidades e bases legais"
+      ]
+    },
+    
+    attachDataSubjectProceduresDoc: {
+      title: "Anexar Documento de Procedimentos para Solicitações de Titulares",
+      description: "Anexar documentação dos procedimentos para atender solicitações dos titulares",
+      category: "data_subject_rights",
+      priority: "high" as const,
+      dueDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000), // 20 days
+      steps: [
+        "1. Localize a documentação dos procedimentos para atendimento de solicitações",
+        "2. Anexe o documento no sistema através da seção 'Documentos'",
+        "3. Verifique se inclui processos para acesso, correção e exclusão de dados",
+        "4. Confirme que os prazos e responsabilidades estão claramente definidos"
+      ]
+    },
+    
+    attachConsentDoc: {
+      title: "Anexar Comprovante de Consentimento",
+      description: "Anexar documentação que comprove como o consentimento é solicitado formalmente",
+      category: "consent_management",
+      priority: "high" as const,
+      dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 days
+      steps: [
+        "1. Reúna exemplos de formulários ou processos de consentimento",
+        "2. Anexe o documento no sistema através da seção 'Documentos'",
+        "3. Certifique-se de que demonstra como o consentimento é coletado",
+        "4. Verifique se o processo está claro e inequívoco"
+      ]
+    },
+    
+    attachSharingNotificationDoc: {
+      title: "Anexar Documento de Notificação de Compartilhamento",
+      description: "Anexar documentação que comprove como o compartilhamento de dados é informado aos titulares",
+      category: "data_sharing",
+      priority: "medium" as const,
+      dueDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000), // 20 days
+      steps: [
+        "1. Localize contratos ou notificações sobre compartilhamento de dados",
+        "2. Anexe o documento no sistema através da seção 'Documentos'",
+        "3. Verifique se inclui informações sobre terceiros que recebem dados",
+        "4. Confirme que os titulares são adequadamente informados"
+      ]
+    },
+    
+    attachCloudProviderDoc: {
+      title: "Anexar Contrato com Provedor de Nuvem",
+      description: "Anexar contrato ou comprovante do provedor de nuvem utilizado",
+      category: "vendor_management",
+      priority: "medium" as const,
+      dueDate: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000), // 25 days
+      steps: [
+        "1. Localize o contrato com o provedor de nuvem",
+        "2. Anexe o documento no sistema através da seção 'Documentos'",
+        "3. Verifique se o contrato inclui cláusulas de proteção de dados",
+        "4. Confirme que o provedor atende aos requisitos da LGPD"
+      ]
+    },
+    
+    attachSystemContractDoc: {
+      title: "Anexar Contrato do Sistema de Armazenamento",
+      description: "Anexar contrato ou especificação do sistema de armazenamento",
+      category: "vendor_management",
+      priority: "medium" as const,
+      dueDate: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000), // 25 days
+      steps: [
+        "1. Localize o contrato ou especificação do sistema",
+        "2. Anexe o documento no sistema através da seção 'Documentos'",
+        "3. Verifique se inclui informações sobre segurança de dados",
+        "4. Confirme que o fornecedor está adequado à LGPD"
+      ]
+    },
+    
+    attachInternationalTransferDoc: {
+      title: "Anexar Documentação de Transferência Internacional",
+      description: "Anexar cláusula contratual para transferência internacional de dados",
+      category: "international_transfer",
+      priority: "high" as const,
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+      steps: [
+        "1. Localize contratos com empresas no exterior",
+        "2. Anexe o documento no sistema através da seção 'Documentos'",
+        "3. Verifique se inclui cláusulas de adequação internacional",
+        "4. Confirme que atende aos requisitos da LGPD para transferência"
+      ]
+    },
+    
+    attachHrDataCollectionDoc: {
+      title: "Anexar Procedimentos de Coleta de Dados de RH",
+      description: "Anexar documentação dos procedimentos de coleta de dados no processo de contratação",
+      category: "hr_compliance",
+      priority: "medium" as const,
+      dueDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000), // 20 days
+      steps: [
+        "1. Compile a documentação dos processos de RH",
+        "2. Anexe o documento no sistema através da seção 'Documentos'",
+        "3. Verifique se inclui todos os procedimentos de coleta",
+        "4. Confirme que está adequado às exigências da LGPD"
+      ]
+    },
+    
+    attachSensitiveDataConsentDoc: {
+      title: "Anexar Consentimento para Dados Sensíveis de Funcionários",
+      description: "Anexar documentação do consentimento para processamento de dados sensíveis",
+      category: "hr_compliance",
+      priority: "high" as const,
+      dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 days
+      steps: [
+        "1. Localize formulários de consentimento para dados sensíveis",
+        "2. Anexe o documento no sistema através da seção 'Documentos'",
+        "3. Verifique se o consentimento é explícito e específico",
+        "4. Confirme que atende aos requisitos para dados sensíveis"
+      ]
+    },
+    
+    attachFinancialSecurityDoc: {
+      title: "Anexar Documentação de Segurança de Dados Financeiros",
+      description: "Anexar documentação das medidas de proteção de dados financeiros",
+      category: "financial_security",
+      priority: "high" as const,
+      dueDate: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000), // 25 days
+      steps: [
+        "1. Compile documentação sobre proteção de dados financeiros",
+        "2. Anexe o documento no sistema através da seção 'Documentos'",
+        "3. Verifique se inclui medidas técnicas e organizacionais",
+        "4. Confirme que atende aos padrões de segurança financeira"
+      ]
+    },
+    
+    attachPaymentCertificationDoc: {
+      title: "Anexar Certificação de Segurança para Pagamentos",
+      description: "Anexar certificação de segurança para processamento de pagamentos",
+      category: "financial_security",
+      priority: "high" as const,
+      dueDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000), // 20 days
+      steps: [
+        "1. Localize certificações de segurança (PCI DSS, etc.)",
+        "2. Anexe o documento no sistema através da seção 'Documentos'",
+        "3. Verifique se a certificação está válida",
+        "4. Confirme que cobre o escopo necessário"
+      ]
+    },
+    
+    attachMarketingConsentDoc: {
+      title: "Anexar Processo de Consentimento para Marketing",
+      description: "Anexar documentação do processo de obtenção de consentimento para marketing",
+      category: "marketing_compliance",
+      priority: "medium" as const,
+      dueDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000), // 20 days
+      steps: [
+        "1. Compile documentação dos processos de consentimento de marketing",
+        "2. Anexe o documento no sistema através da seção 'Documentos'",
+        "3. Verifique se inclui opt-in e opt-out claros",
+        "4. Confirme que está adequado às regras de marketing direto"
+      ]
+    },
+    
+    attachCookiePolicyDoc: {
+      title: "Anexar Política de Cookies",
+      description: "Anexar política de cookies e tecnologias de rastreamento",
+      category: "marketing_compliance",
+      priority: "medium" as const,
+      dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 days
+      steps: [
+        "1. Localize a política de cookies da empresa",
+        "2. Anexe o documento no sistema através da seção 'Documentos'",
+        "3. Verifique se inclui todos os tipos de cookies utilizados",
+        "4. Confirme que permite controle pelo usuário"
+      ]
+    },
+    
+    attachCrmSecurityDoc: {
+      title: "Anexar Documentação de Proteção do CRM",
+      description: "Anexar documentação das medidas de proteção de dados no CRM",
+      category: "sales_compliance",
+      priority: "medium" as const,
+      dueDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000), // 20 days
+      steps: [
+        "1. Compile documentação sobre segurança do CRM",
+        "2. Anexe o documento no sistema através da seção 'Documentos'",
+        "3. Verifique se inclui controles de acesso e auditoria",
+        "4. Confirme que atende aos requisitos de proteção"
+      ]
+    },
+    
+    attachItSecurityPolicyDoc: {
+      title: "Anexar Política de Segurança da Informação",
+      description: "Anexar política de segurança da informação documentada",
+      category: "it_security",
+      priority: "high" as const,
+      dueDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000), // 20 days
+      steps: [
+        "1. Localize a política de segurança da informação",
+        "2. Anexe o documento no sistema através da seção 'Documentos'",
+        "3. Verifique se está atualizada e implementada",
+        "4. Confirme que cobre proteção de dados pessoais"
+      ]
+    },
+    
+    attachIncidentResponsePlanDoc: {
+      title: "Anexar Plano de Resposta a Incidentes",
+      description: "Anexar plano de resposta a incidentes de segurança",
+      category: "incident_management",
+      priority: "high" as const,
+      dueDate: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000), // 25 days
+      steps: [
+        "1. Localize o plano de resposta a incidentes",
+        "2. Anexe o documento no sistema através da seção 'Documentos'",
+        "3. Verifique se inclui procedimentos para vazamento de dados",
+        "4. Confirme que atende aos requisitos da LGPD"
+      ]
+    },
+    
+    attachDataRequestProcessDoc: {
+      title: "Anexar Processo de Atendimento às Solicitações LGPD",
+      description: "Anexar documentação do processo de atendimento às solicitações dos titulares",
+      category: "customer_service",
+      priority: "high" as const,
+      dueDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000), // 20 days
+      steps: [
+        "1. Compile documentação dos processos de atendimento LGPD",
+        "2. Anexe o documento no sistema através da seção 'Documentos'",
+        "3. Verifique se inclui todos os direitos dos titulares",
+        "4. Confirme que os prazos estão adequados"
+      ]
+    },
+    
+    attachTrainingCertificatesDoc: {
+      title: "Anexar Certificados de Treinamento LGPD",
+      description: "Anexar certificados de treinamento sobre proteção de dados",
+      category: "training",
+      priority: "medium" as const,
+      dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 days
+      steps: [
+        "1. Reúna certificados de treinamento dos atendentes",
+        "2. Anexe o documento no sistema através da seção 'Documentos'",
+        "3. Verifique se os treinamentos cobrem proteção de dados",
+        "4. Confirme que estão atualizados"
+      ]
     }
   };
 
@@ -1751,6 +2006,129 @@ function analyzeQuestionnaireAnswers(answers: string[]): { requiredTasks: string
     }
   });
 
+  // Add document attachment tasks based on answers to questions that previously required documents
+  analyzeDocumentRequirements(answers, requiredTasks);
+
   // Remove duplicates
   return { requiredTasks: Array.from(new Set(requiredTasks)) };
+}
+
+// Helper function to analyze document requirements based on questionnaire answers
+function analyzeDocumentRequirements(answers: string[], requiredTasks: string[]): void {
+  answers.forEach((answer, index) => {
+    const normalizedAnswer = Array.isArray(answer) ? answer : [answer];
+    const hasPositiveResponse = normalizedAnswer.some(a => 
+      typeof a === 'string' && (a.includes('sim') || a.includes('Sim'))
+    );
+    const hasAnswer = answer && answer.toString().trim() !== '';
+
+    // Base questionnaire document requirements (indices 0-28)
+    switch (index) {
+      case 0: // Question 1: Privacy policy
+        if (hasPositiveResponse) {
+          requiredTasks.push('attachPrivacyPolicyDoc');
+        }
+        break;
+      case 2: // Question 3: Data mapping
+        if (hasPositiveResponse) {
+          requiredTasks.push('attachDataMappingDoc');
+        }
+        break;
+      case 3: // Question 4: Data subject procedures
+        if (hasPositiveResponse) {
+          requiredTasks.push('attachDataSubjectProceduresDoc');
+        }
+        break;
+      case 9: // Question 10: Consent
+        if (hasPositiveResponse) {
+          requiredTasks.push('attachConsentDoc');
+        }
+        break;
+      case 13: // Question 14: Sharing notification
+        if (hasPositiveResponse) {
+          requiredTasks.push('attachSharingNotificationDoc');
+        }
+        break;
+      case 19: // Question 20: Cloud provider
+        if (hasAnswer) {
+          requiredTasks.push('attachCloudProviderDoc');
+        }
+        break;
+      case 21: // Question 22: Storage system
+        if (hasAnswer) {
+          requiredTasks.push('attachSystemContractDoc');
+        }
+        break;
+      case 22: // Question 23: International transfer
+        if (hasPositiveResponse) {
+          requiredTasks.push('attachInternationalTransferDoc');
+        }
+        break;
+    }
+  });
+
+  // Check for sector-specific document requirements
+  // This would require analyzing the dynamic questions based on the company profile
+  // For now, we'll add logic to handle common sector questions that appear after base questions
+  
+  if (answers.length > 29) { // If there are sector-specific answers
+    const sectorAnswers = answers.slice(29); // Answers after base questions
+    
+    sectorAnswers.forEach((answer, sectorIndex) => {
+      const normalizedAnswer = Array.isArray(answer) ? answer : [answer];
+      const hasPositiveResponse = normalizedAnswer.some(a => 
+        typeof a === 'string' && (a.includes('sim') || a.includes('Sim'))
+      );
+      const hasAnswer = answer && answer.toString().trim() !== '';
+      
+      // Map sector question indices to document tasks
+      // This is a simplified approach - in a real scenario, you'd need to map
+      // the actual question IDs from the dynamic questions
+      
+      // HR sector (questions 101-104)
+      if (sectorIndex === 0 && hasAnswer) { // HR data collection (101)
+        requiredTasks.push('attachHrDataCollectionDoc');
+      }
+      if (sectorIndex === 2 && hasPositiveResponse) { // HR sensitive data consent (103)
+        requiredTasks.push('attachSensitiveDataConsentDoc');
+      }
+      
+      // Finance sector (questions 201-204)
+      if (sectorIndex === 4 && hasAnswer) { // Financial security (201)
+        requiredTasks.push('attachFinancialSecurityDoc');
+      }
+      if (sectorIndex === 5 && hasPositiveResponse) { // Payment certification (202)
+        requiredTasks.push('attachPaymentCertificationDoc');
+      }
+      
+      // Marketing sector (questions 301-304)
+      if (sectorIndex === 8 && hasAnswer) { // Marketing consent (301)
+        requiredTasks.push('attachMarketingConsentDoc');
+      }
+      if (sectorIndex === 11 && hasPositiveResponse) { // Cookie policy (304)
+        requiredTasks.push('attachCookiePolicyDoc');
+      }
+      
+      // Sales sector (questions 401-403)
+      if (sectorIndex === 13 && hasAnswer) { // CRM security (402)
+        requiredTasks.push('attachCrmSecurityDoc');
+      }
+      
+      // IT sector (questions 501-504)
+      if (sectorIndex === 16 && hasPositiveResponse) { // IT security policy (501)
+        requiredTasks.push('attachItSecurityPolicyDoc');
+      }
+      if (sectorIndex === 18 && hasPositiveResponse) { // Incident response plan (503)
+        requiredTasks.push('attachIncidentResponsePlanDoc');
+      }
+      
+      // Customer service sector (questions 601-603)
+      if (sectorIndex === 20 && hasAnswer) { // Data request process (601)
+        requiredTasks.push('attachDataRequestProcessDoc');
+      }
+      if (sectorIndex === 22 && hasPositiveResponse) { // Training certificates (603)
+        requiredTasks.push('attachTrainingCertificatesDoc');
+      }
+    });
+  }
 }
