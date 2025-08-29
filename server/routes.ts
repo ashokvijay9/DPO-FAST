@@ -868,11 +868,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Compliance task routes
-  app.get('/api/compliance-tasks', isAuthenticated, async (req: any, res) => {
+  app.get('/api/compliance-tasks', isAuthenticated, attachUserPlan, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const tasks = await storage.getComplianceTasks(userId);
-      res.json(tasks);
+      
+      // Check if user has access to detailed task information
+      const hasDetailAccess = req.userPlan === 'basic' || req.userPlan === 'pro' || req.userPlan === 'personalite';
+      
+      // Filter task data based on user plan
+      const filteredTasks = tasks.map(task => {
+        if (hasDetailAccess) {
+          // Return full task data for paid plans
+          return task;
+        } else {
+          // Return basic task info for free plan
+          return {
+            id: task.id,
+            title: task.title,
+            description: task.description,
+            category: task.category || 'general',
+            priority: task.priority || 'medium',
+            status: task.status || 'pending',
+            dueDate: task.dueDate,
+            steps: [] // Empty steps array for free users
+          };
+        }
+      });
+      
+      res.json(filteredTasks);
     } catch (error) {
       console.error("Error fetching compliance tasks:", error);
       res.status(500).json({ message: "Failed to fetch compliance tasks" });

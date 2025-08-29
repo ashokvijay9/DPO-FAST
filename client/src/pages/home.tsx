@@ -595,7 +595,7 @@ export default function Home() {
                         <Button 
                           variant="ghost" 
                           className="gap-2"
-                          onClick={() => navigate("/questionnaire")}
+                          onClick={() => navigate("/tasks")}
                         >
                           Ver todas as tarefas
                           <ArrowRight className="h-4 w-4" />
