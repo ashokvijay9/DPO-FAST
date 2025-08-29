@@ -8,6 +8,7 @@ import {
   companyProfiles,
   type User,
   type UpsertUser,
+  type InsertUser,
   type QuestionnaireResponse,
   type InsertQuestionnaireResponse,
   type Document,
@@ -22,13 +23,23 @@ import {
   type InsertCompanyProfile,
   type UpdateUserProfile,
 } from "@shared/schema";
-import { db } from "./db";
-import { eq, and, desc } from "drizzle-orm";
+import { db, pool } from "./db";
+import { eq, and, desc, or } from "drizzle-orm";
+import session from "express-session";
+import connectPg from "connect-pg-simple";
+
+const PostgresSessionStore = connectPg(session);
 
 // Interface for storage operations
 export interface IStorage {
-  // User operations (required for Replit Auth)
+  // Session store for authentication
+  sessionStore: connectPg.PGStore;
+  
+  // User operations (authentication)
   getUser(id: string): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserSubscription(userId: string, customerId: string, subscriptionId: string, plan: string): Promise<User>;
   updateUserProfile(userId: string, updates: UpdateUserProfile): Promise<User>;
@@ -84,9 +95,37 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  // User operations (required for Replit Auth)
+  // Session store for authentication
+  sessionStore: connectPg.PGStore;
+  
+  constructor() {
+    this.sessionStore = new PostgresSessionStore({ 
+      pool, 
+      createTableIfMissing: true 
+    });
+  }
+
+  // User operations (authentication)
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async createUser(userData: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .returning();
     return user;
   }
 
