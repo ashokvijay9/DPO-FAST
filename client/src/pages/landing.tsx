@@ -7,8 +7,8 @@ const DPOFastLanding = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
 
-  const sections = useRef({});
-  const observer = useRef(null);
+  const sections = useRef<Record<string, HTMLElement | null>>({});
+  const observer = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
     // Configurar Intersection Observer para detectar a seção ativa
@@ -37,7 +37,7 @@ const DPOFastLanding = () => {
     };
   }, []);
 
-  const scrollToSection = (sectionId) => {
+  const scrollToSection = (sectionId: string) => {
     const section = sections.current[sectionId];
     if (section) {
       window.scrollTo({
@@ -48,7 +48,7 @@ const DPOFastLanding = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Email cadastrado:', email);
     setIsSubmitted(true);
@@ -546,37 +546,6 @@ const DPOFastLanding = () => {
         </div>
       </footer>
 
-      <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes float {
-          0% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-          100% { transform: translateY(0px); }
-        }
-
-        @keyframes countUp {
-          from { opacity: 0; transform: scale(0.5); }
-          to { opacity: 1; transform: scale(1); }
-        }
-
-        .animate-fade-in {
-          opacity: 0;
-          animation: fadeIn 0.6s ease-out forwards;
-        }
-
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
-        }
-
-        .animate-count-up {
-          opacity: 0;
-          animation: countUp 0.5s ease-out forwards;
-        }
-      `}</style>
     </div>
   );
 };
