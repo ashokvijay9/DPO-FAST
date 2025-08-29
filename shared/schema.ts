@@ -12,14 +12,21 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Session storage is handled by connect-pg-simple automatically
+// Session storage table (required for Replit Auth)
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
 
-// User storage table (with local authentication)
+// User storage table (required for Replit Auth)
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: varchar("username").unique(),
-  email: varchar("email").unique().notNull(),
-  password: varchar("password").notNull(),
+  email: varchar("email").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
@@ -189,26 +196,6 @@ export const updateUserProfileSchema = z.object({
   company: z.string().optional(),
 });
 
-export const insertUserSchema = createInsertSchema(users).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const registerSchema = z.object({
-  username: z.string().min(3, "Username deve ter pelo menos 3 caracteres"),
-  email: z.string().email("Email inválido"),
-  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
-  firstName: z.string().min(1, "Nome é obrigatório"),
-  lastName: z.string().min(1, "Sobrenome é obrigatório"),
-  company: z.string().optional(),
-});
-
-export const loginSchema = z.object({
-  username: z.string().min(1, "Username é obrigatório"),
-  password: z.string().min(1, "Senha é obrigatória"),
-});
-
 export const companyOnboardingSchema = z.object({
   companyName: z.string().min(1, "Nome da empresa é obrigatório"),
   departments: z.array(z.string()).min(1, "Selecione pelo menos um departamento"),
@@ -230,6 +217,3 @@ export const companyOnboardingSchema = z.object({
 
 export type UpdateUserProfile = z.infer<typeof updateUserProfileSchema>;
 export type CompanyOnboarding = z.infer<typeof companyOnboardingSchema>;
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type RegisterUser = z.infer<typeof registerSchema>;
-export type LoginData = z.infer<typeof loginSchema>;

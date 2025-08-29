@@ -27,9 +27,9 @@ export function getSession() {
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL,
-    createTableIfMissing: true,
+    createTableIfMissing: false,
     ttl: sessionTtl,
-    tableName: "session",
+    tableName: "sessions",
   });
   return session({
     secret: process.env.SESSION_SECRET!,
@@ -63,7 +63,6 @@ async function upsertUser(
     firstName: claims["first_name"],
     lastName: claims["last_name"],
     profileImageUrl: claims["profile_image_url"],
-    password: "", // OIDC users don't have passwords
   });
 }
 
@@ -79,7 +78,7 @@ export async function setupAuth(app: Express) {
     tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
     verified: passport.AuthenticateCallback
   ) => {
-    const user: any = {};
+    const user = {};
     updateUserSession(user, tokens);
     await upsertUser(tokens.claims());
     verified(null, user);

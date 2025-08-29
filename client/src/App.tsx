@@ -4,10 +4,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import { useAuth, AuthProvider } from "@/hooks/use-auth";
-import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 import Landing from "@/pages/landing";
-import AuthPage from "@/pages/auth-page";
 import Home from "@/pages/home";
 import Questionnaire from "@/pages/questionnaire";
 import Tasks from "@/pages/tasks";
@@ -32,29 +30,19 @@ function LoadingScreen() {
 }
 
 function Router() {
-  const { user, isLoading } = useAuth();
-  
-  // Check if user has company profile
-  const { data: companyProfile, isLoading: companyLoading } = useQuery({
-    queryKey: ["/api/company-profile"],
-    enabled: !!user,
-  });
-  
-  const hasCompanyProfile = !!companyProfile;
-  const isAppLoading = isLoading || (user && companyLoading);
+  const { isAuthenticated, isLoading, hasCompanyProfile } = useAuth();
 
   // Loading state
-  if (isAppLoading) {
+  if (isLoading) {
     return <LoadingScreen />;
   }
 
   // Not authenticated
-  if (!user) {
+  if (!isAuthenticated) {
     return (
       <Switch>
         <Route path="/" component={Landing} />
-        <Route path="/auth" component={AuthPage} />
-        <Route path="*" component={AuthPage} />
+        <Route path="*" component={Landing} />
       </Switch>
     );
   }
@@ -93,10 +81,8 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <TooltipProvider>
-          <AuthProvider>
-            <Toaster />
-            <Router />
-          </AuthProvider>
+          <Toaster />
+          <Router />
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
