@@ -36,12 +36,7 @@ const PLAN_LIMITS: Record<string, PlanLimits> = {
 };
 
 export interface AuthenticatedRequest extends Request {
-  user: {
-    claims: {
-      sub: string;
-      email?: string;
-    };
-  };
+  user: any; // Support both OIDC and local auth formats
   userPlan?: string;
   planLimits?: PlanLimits;
 }
@@ -49,7 +44,11 @@ export interface AuthenticatedRequest extends Request {
 // Middleware to check and attach user plan information
 export const attachUserPlan = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user.claims.sub;
+    // Support both OIDC (req.user.claims.sub) and local auth (req.user.id)
+    const userId = req.user.claims?.sub || req.user.id;
+    if (!userId) {
+      return res.status(401).json({ message: "User ID not found" });
+    }
     const user = await storage.getUser(userId);
     
     if (!user) {
@@ -70,7 +69,7 @@ export const attachUserPlan = async (req: AuthenticatedRequest, res: Response, n
 // Middleware to check document upload limits
 export const checkDocumentLimits = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     const planLimits = req.planLimits;
     
     if (!planLimits) {

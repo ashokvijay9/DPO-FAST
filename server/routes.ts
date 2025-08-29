@@ -574,8 +574,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, attachUserPlan, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      // Support both OIDC (req.user.claims.sub) and local auth (req.user.id)
+      const userId = req.user.claims?.sub || req.user.id;
+      if (!userId) {
+        return res.status(401).json({ message: "User ID not found" });
+      }
+      
       const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
       
       // Include plan information in the response
       const userWithPlan = {
