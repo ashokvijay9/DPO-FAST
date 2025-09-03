@@ -1,0 +1,43 @@
+os questionários do sistema tem que gerar um relatório para cada setor da empresa do assinante, baseado nas respostas. Integre o modelo de IA Qwen AI (da Alibaba Cloud) para gerar os relatórios, processando as respostas do questionário e produzindo conteúdo personalizado por setor, destacando conformidades, não conformidades e recomendações para adequação à LGPD.
+
+A funcionalidade de questionários e relatórios por setor do DPO Fast deve incluir:
+
+
+
+
+
+Cadastro de Setores: Permitir que o assinante defina os setores da empresa (ex.: RH, TI, Vendas) durante o cadastro ou no perfil.
+
+
+
+Questionário por Setor: Adaptar o questionário iterativo para ser respondido por setor, coletando respostas específicas.
+
+
+
+Geração de Relatórios: Usar Qwen AI para gerar relatórios em PDF por setor, resumindo respostas, conformidades, to-do lists e nível de adequação.
+
+
+
+Integração com Qwen AI: Chamar a API do Qwen AI para processar respostas e gerar texto do relatório, integrando com a extensão Generate PDF.
+
+
+
+Visualização e Gerenciamento: Exibir relatórios por setor no dashboard do assinante, com opções para download e envio para validação.
+
+
+
+Notificações: Alertar sobre geração de relatórios e atualizações.
+
+
+
+Integração com Componentes Existentes: Conectar ao Firestore para armazenar setores, respostas por setor e relatórios.
+
+O desenvolvimento será dividido em etapas para facilitar a implementação e evitar sobrecarga. Cada etapa terá um prompt específico com instruções claras, focando no que cada tela e parte do sistema deve possuir, com o nome DPO Fast integrado em títulos e descrições.
+
+Etapas de Desenvolvimento
+
+Etapa 1: Cadastro e Gerenciamento de Setores
+
+Objetivo: Permitir que o assinante cadastre e gerencie os setores da empresa no DPO Fast.
+
+Prompt: Crie a funcionalidade de cadastro de setores para o Micro-SaaS DPO Fast. No perfil ou dashboard do assinante, deve haver uma seção para adicionar, editar e remover setores (ex.: "Adicionar Setor: Nome, Descrição"). Cada setor deve ser armazenado com campos como ID, nome, descrição e UID do assinante. Deve validar que haja pelo menos um setor antes de prosseguir para questionários. Exibir uma lista de setores com ações (editar, excluir). Descreva em detalhes o que essa funcionalidade deve possuir e como deve funcionar.

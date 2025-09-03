@@ -40,10 +40,22 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Company sectors/departments management
+export const companySectors = pgTable("company_sectors", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  name: varchar("name").notNull(),
+  description: text("description"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Questionnaire responses
 export const questionnaireResponses = pgTable("questionnaire_responses", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
+  sectorId: varchar("sector_id").references(() => companySectors.id), // New field for sector-specific responses
   questionId: integer("question_id").notNull(),
   answer: text("answer").notNull(),
   observations: text("observations"),
@@ -120,14 +132,17 @@ export const complianceTasks = pgTable("compliance_tasks", {
 export const complianceReports = pgTable("compliance_reports", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
+  sectorId: varchar("sector_id").references(() => companySectors.id), // New field for sector-specific reports
   questionnaireResponseId: varchar("questionnaire_response_id").references(() => questionnaireResponses.id),
   title: varchar("title").notNull(),
-  reportType: varchar("report_type").notNull(), // compliance_summary, full_report
+  reportType: varchar("report_type").notNull(), // compliance_summary, full_report, sector_report
   complianceScore: integer("compliance_score").notNull(),
   fileName: varchar("file_name").notNull(),
   fileSize: integer("file_size").notNull(),
   fileUrl: text("file_url").notNull(),
   status: varchar("status").default("generated"), // generated, sent, archived
+  generatedBy: varchar("generated_by").default("system"), // system, qwen_ai
+  aiPromptUsed: text("ai_prompt_used"), // Store the prompt used for AI generation
   generatedAt: timestamp("generated_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -180,6 +195,9 @@ export const companyProfiles = pgTable("company_profiles", {
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 
+export type InsertCompanySector = typeof companySectors.$inferInsert;
+export type CompanySector = typeof companySectors.$inferSelect;
+
 export type InsertQuestionnaireResponse = typeof questionnaireResponses.$inferInsert;
 export type QuestionnaireResponse = typeof questionnaireResponses.$inferSelect;
 
@@ -199,6 +217,12 @@ export type InsertCompanyProfile = typeof companyProfiles.$inferInsert;
 export type CompanyProfile = typeof companyProfiles.$inferSelect;
 
 // Zod schemas
+export const insertCompanySectorSchema = createInsertSchema(companySectors).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertQuestionnaireResponseSchema = createInsertSchema(questionnaireResponses).omit({
   id: true,
   createdAt: true,
@@ -256,5 +280,16 @@ export const companyOnboardingSchema = z.object({
   address: z.string().optional(),
 });
 
+export const companySectorSchema = z.object({
+  name: z.string().min(1, "Nome do setor é obrigatório").max(100, "Nome muito longo"),
+  description: z.string().optional(),
+});
+
+export const updateCompanySectorSchema = companySectorSchema.extend({
+  isActive: z.boolean().optional(),
+});
+
 export type UpdateUserProfile = z.infer<typeof updateUserProfileSchema>;
 export type CompanyOnboarding = z.infer<typeof companyOnboardingSchema>;
+export type CompanySectorData = z.infer<typeof companySectorSchema>;
+export type UpdateCompanySectorData = z.infer<typeof updateCompanySectorSchema>;

@@ -8,6 +8,7 @@ import {
   companyProfiles,
   notifications,
   taskStatusHistory,
+  companySectors,
   type User,
   type UpsertUser,
   type QuestionnaireResponse,
@@ -23,6 +24,8 @@ import {
   type CompanyProfile,
   type InsertCompanyProfile,
   type UpdateUserProfile,
+  type CompanySector,
+  type InsertCompanySector,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, gte, lt, sql } from "drizzle-orm";
@@ -41,6 +44,13 @@ export interface IStorage {
   createCompanyProfile(profile: InsertCompanyProfile): Promise<CompanyProfile>;
   getCompanyProfile(userId: string): Promise<CompanyProfile | undefined>;
   updateCompanyProfile(userId: string, updates: Partial<InsertCompanyProfile>): Promise<CompanyProfile>;
+  
+  // Company sectors operations
+  createCompanySector(sector: InsertCompanySector): Promise<CompanySector>;
+  getCompanySectors(userId: string): Promise<CompanySector[]>;
+  getCompanySector(id: string, userId: string): Promise<CompanySector | undefined>;
+  updateCompanySector(id: string, userId: string, updates: Partial<InsertCompanySector>): Promise<CompanySector>;
+  deleteCompanySector(id: string, userId: string): Promise<boolean>;
   
   // Questionnaire operations
   saveQuestionnaireResponse(response: InsertQuestionnaireResponse): Promise<QuestionnaireResponse>;
@@ -445,6 +455,48 @@ export class DatabaseStorage implements IStorage {
       .where(eq(companyProfiles.userId, userId))
       .returning();
     return updated;
+  }
+
+  // Company sectors operations
+  async createCompanySector(sector: InsertCompanySector): Promise<CompanySector> {
+    const [created] = await db
+      .insert(companySectors)
+      .values(sector)
+      .returning();
+    return created;
+  }
+
+  async getCompanySectors(userId: string): Promise<CompanySector[]> {
+    return db
+      .select()
+      .from(companySectors)
+      .where(and(eq(companySectors.userId, userId), eq(companySectors.isActive, true)))
+      .orderBy(desc(companySectors.createdAt));
+  }
+
+  async getCompanySector(id: string, userId: string): Promise<CompanySector | undefined> {
+    const [sector] = await db
+      .select()
+      .from(companySectors)
+      .where(and(eq(companySectors.id, id), eq(companySectors.userId, userId)));
+    return sector;
+  }
+
+  async updateCompanySector(id: string, userId: string, updates: Partial<InsertCompanySector>): Promise<CompanySector> {
+    const [updated] = await db
+      .update(companySectors)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(and(eq(companySectors.id, id), eq(companySectors.userId, userId)))
+      .returning();
+    return updated;
+  }
+
+  async deleteCompanySector(id: string, userId: string): Promise<boolean> {
+    const result = await db
+      .update(companySectors)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(and(eq(companySectors.id, id), eq(companySectors.userId, userId)));
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Plan suggestion logic based on company sectors

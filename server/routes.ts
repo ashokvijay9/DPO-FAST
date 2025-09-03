@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertQuestionnaireResponseSchema, insertDocumentSchema, updateUserProfileSchema, insertComplianceReportSchema, insertCompanyProfileSchema, companyOnboardingSchema } from "@shared/schema";
+import { insertQuestionnaireResponseSchema, insertDocumentSchema, updateUserProfileSchema, insertComplianceReportSchema, insertCompanyProfileSchema, companyOnboardingSchema, insertCompanySectorSchema, companySectorSchema, updateCompanySectorSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
@@ -645,6 +645,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.error("Error updating company profile:", error);
       res.status(500).json({ message: "Failed to update company profile" });
+    }
+  });
+
+  // =====================================================================
+  // COMPANY SECTORS MANAGEMENT ROUTES - DPO Fast
+  // =====================================================================
+
+  // Create company sector
+  app.post("/api/company-sectors", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const parsedSector = companySectorSchema.parse(req.body);
+      
+      const sector = await storage.createCompanySector({
+        ...parsedSector,
+        userId,
+      });
+      
+      res.json(sector);
+    } catch (error) {
+      console.error("Error creating company sector:", error);
+      
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: error.errors });
+      } else {
+        res.status(500).json({ error: "Internal server error" });
+      }
+    }
+  });
+
+  // Get all company sectors
+  app.get("/api/company-sectors", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const sectors = await storage.getCompanySectors(userId);
+      res.json(sectors);
+    } catch (error) {
+      console.error("Error getting company sectors:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get single company sector
+  app.get("/api/company-sectors/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const sector = await storage.getCompanySector(req.params.id, userId);
+      if (!sector) {
+        return res.status(404).json({ error: "Setor não encontrado" });
+      }
+      res.json(sector);
+    } catch (error) {
+      console.error("Error getting company sector:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Update company sector
+  app.put("/api/company-sectors/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const parsedUpdates = updateCompanySectorSchema.parse(req.body);
+      
+      const sector = await storage.updateCompanySector(req.params.id, userId, parsedUpdates);
+      
+      res.json(sector);
+    } catch (error) {
+      console.error("Error updating company sector:", error);
+      
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: error.errors });
+      } else {
+        res.status(500).json({ error: "Internal server error" });
+      }
+    }
+  });
+
+  // Delete company sector (soft delete)
+  app.delete("/api/company-sectors/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const deleted = await storage.deleteCompanySector(req.params.id, userId);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: "Setor não encontrado" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting company sector:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 

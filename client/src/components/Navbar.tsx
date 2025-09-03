@@ -21,7 +21,8 @@ import {
   CreditCard, 
   User, 
   LogOut,
-  Settings
+  Settings,
+  Building2
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { NotificationCenter } from "@/components/NotificationCenter";
@@ -43,6 +44,7 @@ export default function Navbar() {
   const navigationItems = [
     { href: "/", label: "Dashboard", icon: Home },
     { href: "/questionnaire", label: "Questionário", icon: FileCheck },
+    { href: "/sectors", label: "Setores", icon: Building2 },
     { href: "/documents", label: "Documentos", icon: FileText },
     { href: "/reports", label: "Relatórios", icon: FileBarChart },
     { href: "/subscription", label: "Assinaturas", icon: CreditCard },

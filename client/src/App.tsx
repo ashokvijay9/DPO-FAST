@@ -12,6 +12,7 @@ import Questionnaire from "@/pages/questionnaire";
 import Tasks from "@/pages/tasks";
 import TaskDetail from "@/pages/task-detail";
 import SectorReports from "@/pages/sector-reports";
+import Sectors from "@/pages/sectors";
 import Documents from "@/pages/documents";
 import Reports from "@/pages/reports";
 import Subscription from "@/pages/subscription";
@@ -122,6 +123,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/questionnaire" component={Questionnaire} />
+        <Route path="/sectors" component={Sectors} />
         <Route path="/tasks" component={Tasks} />
         <Route path="/tasks/:id" component={TaskDetail} />
         <Route path="/documents" component={Documents} />
