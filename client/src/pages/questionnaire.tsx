@@ -45,7 +45,7 @@ export default function Questionnaire() {
       }, 500);
       return;
     }
-  }, [isAuthenticated, isLoading, toast]);
+  }, [isAuthenticated, isLoading]);
 
   // Fetch questions based on whether we have a sectorId or not
   const { data: questionsData } = useQuery({
@@ -107,7 +107,7 @@ export default function Questionnaire() {
 
   // Load existing answers if available
   useEffect(() => {
-    if ((existingResponse as any)?.answer) {
+    if ((existingResponse as any)?.answer && questions.length > 0) {
       try {
         const existingAnswers = JSON.parse((existingResponse as any).answer);
         const answersObj: Record<number, string | string[]> = {};
@@ -125,7 +125,7 @@ export default function Questionnaire() {
         console.error("Error parsing existing answers:", error);
       }
     }
-  }, [existingResponse, questions]);
+  }, [existingResponse]);
 
   // Check if user has existing responses to show initial options
   useEffect(() => {
