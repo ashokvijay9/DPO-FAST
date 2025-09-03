@@ -1,4 +1,5 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
+import { Button } from "@/components/ui/button";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -18,6 +19,13 @@ import CompanyOnboarding from "@/pages/company-onboarding";
 import Navbar from "@/components/Navbar";
 import NotFound from "@/pages/not-found";
 
+// Admin components
+import AdminNavbar from "@/components/AdminNavbar";
+import AdminDashboard from "@/pages/admin/admin-dashboard";
+import AdminSubscribers from "@/pages/admin/admin-subscribers";
+import AdminDocuments from "@/pages/admin/admin-documents";
+import AdminReports from "@/pages/admin/admin-reports";
+
 function LoadingScreen() {
   return (
     <div className="min-h-screen hero-gradient flex items-center justify-center">
@@ -30,7 +38,8 @@ function LoadingScreen() {
 }
 
 function Router() {
-  const { isAuthenticated, isLoading, hasCompanyProfile } = useAuth();
+  const { isAuthenticated, isLoading, hasCompanyProfile, isAdmin } = useAuth();
+  const [location] = useLocation();
 
   // Loading state
   if (isLoading) {
@@ -47,8 +56,50 @@ function Router() {
     );
   }
 
-  // Authenticated but no company profile
-  if (!hasCompanyProfile) {
+  // Check if accessing admin routes
+  const isAdminRoute = location.startsWith('/admin');
+
+  // Admin routes - only for users with admin role
+  if (isAdminRoute) {
+    if (!isAdmin) {
+      // Redirect non-admin users trying to access admin routes
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              Acesso Negado
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Você não tem permissão para acessar o painel administrativo.
+            </p>
+            <Button 
+              onClick={() => window.location.href = '/'}
+              className="btn-gradient"
+            >
+              Voltar ao Início
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <AdminNavbar />
+        <Switch>
+          <Route path="/admin" component={AdminDashboard} />
+          <Route path="/admin/subscribers" component={AdminSubscribers} />
+          <Route path="/admin/documents" component={AdminDocuments} />
+          <Route path="/admin/reports" component={AdminReports} />
+          <Route path="/profile" component={Profile} />
+          <Route component={NotFound} />
+        </Switch>
+      </>
+    );
+  }
+
+  // Authenticated but no company profile (skip for admin users)
+  if (!hasCompanyProfile && !isAdmin) {
     return (
       <Switch>
         <Route path="/company-onboarding" component={CompanyOnboarding} />
@@ -57,7 +108,7 @@ function Router() {
     );
   }
 
-  // Fully authenticated with company profile
+  // Regular user routes
   return (
     <>
       <Navbar />

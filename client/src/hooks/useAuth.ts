@@ -18,5 +18,9 @@ export function useAuth() {
     isLoading: userLoading || profileLoading,
     isAuthenticated: !!user,
     hasCompanyProfile: !!companyProfile,
+    isAdmin: user?.role === 'admin',
+    logout: () => {
+      // Logout functionality will be handled by the components
+    },
   };
 }

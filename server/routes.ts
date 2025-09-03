@@ -11,6 +11,7 @@ import Stripe from "stripe";
 import { attachUserPlan, checkDocumentLimits, checkReportLimits, requireAdvancedFeatures, getPlanLimits, type AuthenticatedRequest } from "./middleware/planLimits";
 import { generateComplianceReportHTML, type ReportData } from "./reportGenerator";
 import fs from "fs";
+import { requireAdmin, type AdminRequest } from "./middleware/adminAuth";
 
 // Initialize Stripe
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -1394,6 +1395,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ received: true });
   });
 
+  // Setup admin routes
+  setupAdminRoutes(app);
+
   const httpServer = createServer(app);
   return httpServer;
 }
@@ -2155,4 +2159,157 @@ function analyzeDocumentRequirements(answers: string[], requiredTasks: string[])
       }
     });
   }
+}
+
+export function setupAdminRoutes(app: Express) {
+  // Admin Dashboard Stats
+  app.get("/api/admin/stats", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const stats = await storage.getAdminStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ message: "Failed to fetch admin statistics" });
+    }
+  });
+
+  // Admin - Get All Subscribers
+  app.get("/api/admin/subscribers", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const subscribers = await storage.getAllSubscribers();
+      res.json(subscribers);
+    } catch (error) {
+      console.error("Error fetching subscribers:", error);
+      res.status(500).json({ message: "Failed to fetch subscribers" });
+    }
+  });
+
+  // Admin - Get All Documents
+  app.get("/api/admin/documents", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const documents = await storage.getAllDocumentsForAdmin();
+      res.json(documents);
+    } catch (error) {
+      console.error("Error fetching documents:", error);
+      res.status(500).json({ message: "Failed to fetch documents" });
+    }
+  });
+
+  // Admin - Get Recent Documents
+  app.get("/api/admin/recent-documents", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const documents = await storage.getRecentDocumentsForAdmin();
+      res.json(documents);
+    } catch (error) {
+      console.error("Error fetching recent documents:", error);
+      res.status(500).json({ message: "Failed to fetch recent documents" });
+    }
+  });
+
+  // Admin - Get Pending Documents
+  app.get("/api/admin/pending-documents", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const documents = await storage.getPendingDocumentsForAdmin();
+      res.json(documents);
+    } catch (error) {
+      console.error("Error fetching pending documents:", error);
+      res.status(500).json({ message: "Failed to fetch pending documents" });
+    }
+  });
+
+  // Admin - Approve Document
+  app.post("/api/admin/documents/:id/approve", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const documentId = req.params.id;
+      const adminId = req.user!.id;
+      
+      await storage.approveDocument(documentId, adminId);
+      
+      // Log the action
+      await storage.createAuditLog({
+        userId: adminId,
+        action: "approve_document",
+        resourceType: "document",
+        resourceId: documentId,
+        details: { approvedBy: adminId },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent') || null,
+      });
+
+      res.json({ message: "Document approved successfully" });
+    } catch (error) {
+      console.error("Error approving document:", error);
+      res.status(500).json({ message: "Failed to approve document" });
+    }
+  });
+
+  // Admin - Reject Document
+  app.post("/api/admin/documents/:id/reject", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const documentId = req.params.id;
+      const adminId = req.user!.id;
+      const { reason } = req.body;
+      
+      if (!reason || typeof reason !== 'string' || reason.trim() === '') {
+        return res.status(400).json({ message: "Rejection reason is required" });
+      }
+      
+      await storage.rejectDocument(documentId, adminId, reason.trim());
+      
+      // Log the action
+      await storage.createAuditLog({
+        userId: adminId,
+        action: "reject_document",
+        resourceType: "document",
+        resourceId: documentId,
+        details: { rejectedBy: adminId, reason: reason.trim() },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent') || null,
+      });
+
+      res.json({ message: "Document rejected successfully" });
+    } catch (error) {
+      console.error("Error rejecting document:", error);
+      res.status(500).json({ message: "Failed to reject document" });
+    }
+  });
+
+  // Admin - Get All Reports
+  app.get("/api/admin/reports", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const reports = await storage.getAllReportsForAdmin();
+      res.json(reports);
+    } catch (error) {
+      console.error("Error fetching reports:", error);
+      res.status(500).json({ message: "Failed to fetch reports" });
+    }
+  });
+
+  // Admin - Get Report Stats
+  app.get("/api/admin/report-stats", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const stats = await storage.getReportStatsForAdmin();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching report stats:", error);
+      res.status(500).json({ message: "Failed to fetch report statistics" });
+    }
+  });
+
+  // Admin - Get Subscriber Details
+  app.get("/api/admin/subscriber/:id", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const subscriberId = req.params.id;
+      const subscriber = await storage.getSubscriberDetails(subscriberId);
+      
+      if (!subscriber) {
+        return res.status(404).json({ message: "Subscriber not found" });
+      }
+      
+      res.json(subscriber);
+    } catch (error) {
+      console.error("Error fetching subscriber details:", error);
+      res.status(500).json({ message: "Failed to fetch subscriber details" });
+    }
+  });
 }

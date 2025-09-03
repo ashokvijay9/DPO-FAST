@@ -81,6 +81,29 @@ export interface IStorage {
       hasAdvancedFeatures: boolean;
     };
   }>;
+  
+  // Admin operations
+  getAdminStats(): Promise<{
+    totalSubscribers: number;
+    pendingDocuments: number;
+    approvedDocuments: number;
+    reportsGenerated: number;
+  }>;
+  getAllSubscribers(): Promise<any[]>;
+  getAllDocumentsForAdmin(): Promise<any[]>;
+  getRecentDocumentsForAdmin(): Promise<any[]>;
+  getPendingDocumentsForAdmin(): Promise<any[]>;
+  approveDocument(documentId: string, adminId: string): Promise<void>;
+  rejectDocument(documentId: string, adminId: string, reason: string): Promise<void>;
+  getAllReportsForAdmin(): Promise<any[]>;
+  getReportStatsForAdmin(): Promise<{
+    totalReports: number;
+    highScoreReports: number;
+    mediumScoreReports: number;
+    lowScoreReports: number;
+  }>;
+  getSubscriberDetails(subscriberId: string): Promise<any>;
+  createAuditLog(log: InsertAuditLog): Promise<AuditLog>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -403,6 +426,286 @@ export class DatabaseStorage implements IStorage {
       user,
       suggestedPlan,
       currentPlanLimits,
+    };
+  }
+
+  async createAuditLog(log: InsertAuditLog): Promise<AuditLog> {
+    return this.logAction(log);
+  }
+
+  // Admin operations implementation
+  async getAdminStats(): Promise<{
+    totalSubscribers: number;
+    pendingDocuments: number;
+    approvedDocuments: number;
+    reportsGenerated: number;
+  }> {
+    const [subscribersCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(users);
+
+    const [pendingDocsCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(documents)
+      .where(eq(documents.status, 'pending'));
+
+    const [approvedDocsCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(documents)
+      .where(eq(documents.status, 'valid'));
+
+    const [reportsCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(complianceReports);
+
+    return {
+      totalSubscribers: subscribersCount.count,
+      pendingDocuments: pendingDocsCount.count,
+      approvedDocuments: approvedDocsCount.count,
+      reportsGenerated: reportsCount.count,
+    };
+  }
+
+  async getAllSubscribers(): Promise<any[]> {
+    const subscribersData = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        company: users.company,
+        subscriptionPlan: users.subscriptionPlan,
+        subscriptionStatus: users.subscriptionStatus,
+        createdAt: users.createdAt,
+        companyProfile: {
+          companyName: companyProfiles.companyName,
+          companySize: companyProfiles.companySize,
+          employeeCount: companyProfiles.employeeCount,
+        },
+      })
+      .from(users)
+      .leftJoin(companyProfiles, eq(users.id, companyProfiles.userId))
+      .orderBy(desc(users.createdAt));
+
+    // Get document count for each subscriber
+    const subscribersWithDocCount = await Promise.all(
+      subscribersData.map(async (subscriber) => {
+        const [docCount] = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(documents)
+          .where(eq(documents.userId, subscriber.id));
+
+        return {
+          ...subscriber,
+          documentCount: docCount.count,
+        };
+      })
+    );
+
+    return subscribersWithDocCount;
+  }
+
+  async getAllDocumentsForAdmin(): Promise<any[]> {
+    return db
+      .select({
+        id: documents.id,
+        name: documents.name,
+        category: documents.category,
+        fileName: documents.fileName,
+        fileSize: documents.fileSize,
+        fileType: documents.fileType,
+        fileUrl: documents.fileUrl,
+        status: documents.status,
+        description: documents.description,
+        createdAt: documents.createdAt,
+        updatedAt: documents.updatedAt,
+        user: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+          company: users.company,
+        },
+        companyProfile: {
+          companyName: companyProfiles.companyName,
+        },
+      })
+      .from(documents)
+      .leftJoin(users, eq(documents.userId, users.id))
+      .leftJoin(companyProfiles, eq(users.id, companyProfiles.userId))
+      .orderBy(desc(documents.createdAt));
+  }
+
+  async getRecentDocumentsForAdmin(): Promise<any[]> {
+    return db
+      .select({
+        id: documents.id,
+        name: documents.name,
+        category: documents.category,
+        status: documents.status,
+        createdAt: documents.createdAt,
+        userName: sql<string>`concat(${users.firstName}, ' ', ${users.lastName})`,
+      })
+      .from(documents)
+      .leftJoin(users, eq(documents.userId, users.id))
+      .orderBy(desc(documents.createdAt))
+      .limit(10);
+  }
+
+  async getPendingDocumentsForAdmin(): Promise<any[]> {
+    return db
+      .select({
+        id: documents.id,
+        name: documents.name,
+        category: documents.category,
+        status: documents.status,
+        createdAt: documents.createdAt,
+        userName: sql<string>`concat(${users.firstName}, ' ', ${users.lastName})`,
+      })
+      .from(documents)
+      .leftJoin(users, eq(documents.userId, users.id))
+      .where(eq(documents.status, 'pending'))
+      .orderBy(desc(documents.createdAt));
+  }
+
+  async approveDocument(documentId: string, adminId: string): Promise<void> {
+    await db
+      .update(documents)
+      .set({
+        status: 'valid',
+        updatedAt: new Date(),
+      })
+      .where(eq(documents.id, documentId));
+  }
+
+  async rejectDocument(documentId: string, adminId: string, reason: string): Promise<void> {
+    await db
+      .update(documents)
+      .set({
+        status: 'rejected',
+        description: reason,
+        updatedAt: new Date(),
+      })
+      .where(eq(documents.id, documentId));
+  }
+
+  async getAllReportsForAdmin(): Promise<any[]> {
+    return db
+      .select({
+        id: complianceReports.id,
+        title: complianceReports.title,
+        reportType: complianceReports.reportType,
+        complianceScore: complianceReports.complianceScore,
+        fileName: complianceReports.fileName,
+        fileSize: complianceReports.fileSize,
+        fileUrl: complianceReports.fileUrl,
+        status: complianceReports.status,
+        generatedAt: complianceReports.generatedAt,
+        createdAt: complianceReports.createdAt,
+        user: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+          company: users.company,
+        },
+        companyProfile: {
+          companyName: companyProfiles.companyName,
+          companySize: companyProfiles.companySize,
+        },
+      })
+      .from(complianceReports)
+      .leftJoin(users, eq(complianceReports.userId, users.id))
+      .leftJoin(companyProfiles, eq(users.id, companyProfiles.userId))
+      .orderBy(desc(complianceReports.generatedAt));
+  }
+
+  async getReportStatsForAdmin(): Promise<{
+    totalReports: number;
+    highScoreReports: number;
+    mediumScoreReports: number;
+    lowScoreReports: number;
+  }> {
+    const [totalCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(complianceReports);
+
+    const [highScoreCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(complianceReports)
+      .where(gte(complianceReports.complianceScore, 70));
+
+    const [mediumScoreCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(complianceReports)
+      .where(and(
+        gte(complianceReports.complianceScore, 40),
+        lt(complianceReports.complianceScore, 70)
+      ));
+
+    const [lowScoreCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(complianceReports)
+      .where(lt(complianceReports.complianceScore, 40));
+
+    return {
+      totalReports: totalCount.count,
+      highScoreReports: highScoreCount.count,
+      mediumScoreReports: mediumScoreCount.count,
+      lowScoreReports: lowScoreCount.count,
+    };
+  }
+
+  async getSubscriberDetails(subscriberId: string): Promise<any> {
+    const [subscriber] = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        company: users.company,
+        subscriptionPlan: users.subscriptionPlan,
+        subscriptionStatus: users.subscriptionStatus,
+        createdAt: users.createdAt,
+        companyProfile: {
+          companyName: companyProfiles.companyName,
+          companySize: companyProfiles.companySize,
+          employeeCount: companyProfiles.employeeCount,
+          sectors: companyProfiles.sectors,
+          departments: companyProfiles.departments,
+        },
+      })
+      .from(users)
+      .leftJoin(companyProfiles, eq(users.id, companyProfiles.userId))
+      .where(eq(users.id, subscriberId));
+
+    if (!subscriber) {
+      return null;
+    }
+
+    // Get documents count
+    const [docCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(documents)
+      .where(eq(documents.userId, subscriberId));
+
+    // Get reports count
+    const [reportCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(complianceReports)
+      .where(eq(complianceReports.userId, subscriberId));
+
+    // Get tasks count
+    const [taskCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(complianceTasks)
+      .where(eq(complianceTasks.userId, subscriberId));
+
+    return {
+      ...subscriber,
+      documentCount: docCount.count,
+      reportCount: reportCount.count,
+      taskCount: taskCount.count,
     };
   }
 }

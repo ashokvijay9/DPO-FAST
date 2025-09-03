@@ -31,6 +31,7 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   company: varchar("company"),
+  role: varchar("role").default("user"), // user, admin
   subscriptionStatus: varchar("subscription_status").default("inactive"), // inactive, active, canceled
   subscriptionPlan: varchar("subscription_plan").default("free"), // free, basic, pro
   stripeCustomerId: varchar("stripe_customer_id"),
