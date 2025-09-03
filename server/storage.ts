@@ -320,34 +320,42 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTaskForReview(taskId: string): Promise<any> {
-    const [taskDetails] = await db
-      .select({
-        id: complianceTasks.id,
-        title: complianceTasks.title,
-        description: complianceTasks.description,
-        steps: complianceTasks.steps,
-        priority: complianceTasks.priority,
-        status: complianceTasks.status,
-        category: complianceTasks.category,
-        dueDate: complianceTasks.dueDate,
-        submittedAt: complianceTasks.submittedAt,
-        userComments: complianceTasks.userComments,
-        attachments: complianceTasks.attachments,
-        userId: complianceTasks.userId,
-        userEmail: users.email,
-        userFirstName: users.firstName,
-        userLastName: users.lastName,
-        companyName: companyProfiles.companyName,
-        companyEmail: companyProfiles.email,
-        companyPhone: companyProfiles.phone
-      })
+    // Get task details with proper null handling
+    const task = await db
+      .select()
       .from(complianceTasks)
-      .leftJoin(users, eq(complianceTasks.userId, users.id))
-      .leftJoin(companyProfiles, eq(users.id, companyProfiles.userId))
       .where(eq(complianceTasks.id, taskId))
       .limit(1);
-    
-    return taskDetails;
+
+    if (!task.length) {
+      return null;
+    }
+
+    const taskData = task[0];
+
+    // Get user details
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, taskData.userId))
+      .limit(1);
+
+    // Get company profile if exists
+    const companyProfile = await db
+      .select()
+      .from(companyProfiles)
+      .where(eq(companyProfiles.userId, taskData.userId))
+      .limit(1);
+
+    return {
+      ...taskData,
+      userEmail: user[0]?.email || '',
+      userFirstName: user[0]?.firstName || '',
+      userLastName: user[0]?.lastName || '',
+      companyName: companyProfile[0]?.companyName || '',
+      companyEmail: companyProfile[0]?.email || '',
+      companyPhone: companyProfile[0]?.phone || ''
+    };
   }
 
   async deleteAllUserComplianceTasks(userId: string): Promise<void> {
