@@ -56,6 +56,7 @@ export interface IStorage {
   // Compliance task operations
   createComplianceTask(task: InsertComplianceTask): Promise<ComplianceTask>;
   getComplianceTasks(userId: string): Promise<ComplianceTask[]>;
+  getComplianceTask(id: string): Promise<ComplianceTask | undefined>;
   updateComplianceTask(id: string, updates: Partial<InsertComplianceTask>): Promise<ComplianceTask>;
   
   // Compliance report operations
@@ -247,6 +248,15 @@ export class DatabaseStorage implements IStorage {
       .from(complianceTasks)
       .where(eq(complianceTasks.userId, userId))
       .orderBy(desc(complianceTasks.createdAt));
+  }
+
+  async getComplianceTask(id: string): Promise<ComplianceTask | undefined> {
+    const [task] = await db
+      .select()
+      .from(complianceTasks)
+      .where(eq(complianceTasks.id, id))
+      .limit(1);
+    return task;
   }
 
   async updateComplianceTask(id: string, updates: Partial<InsertComplianceTask>): Promise<ComplianceTask> {

@@ -10,6 +10,7 @@ import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import Questionnaire from "@/pages/questionnaire";
 import Tasks from "@/pages/tasks";
+import TaskDetail from "@/pages/task-detail";
 import SectorReports from "@/pages/sector-reports";
 import Documents from "@/pages/documents";
 import Reports from "@/pages/reports";
@@ -120,6 +121,7 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/questionnaire" component={Questionnaire} />
         <Route path="/tasks" component={Tasks} />
+        <Route path="/tasks/:id" component={TaskDetail} />
         <Route path="/documents" component={Documents} />
         <Route path="/reports" component={Reports} />
         <Route path="/sector-reports" component={SectorReports} />

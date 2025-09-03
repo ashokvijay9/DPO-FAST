@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle2, Clock, AlertCircle, Lock, Unlock, ArrowLeft } from "lucide-react";
+import { CheckCircle2, Clock, AlertCircle, Lock, Unlock, ArrowLeft, Eye } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { toast } from "@/hooks/use-toast";
 
@@ -16,9 +16,11 @@ interface Task {
   description: string;
   category: string;
   priority: "low" | "medium" | "high";
-  status: "pending" | "in_progress" | "completed";
+  status: "pending" | "in_progress" | "completed" | "in_review" | "approved" | "rejected";
   dueDate: string;
   steps: string[];
+  attachedDocuments?: any[];
+  progress?: number;
 }
 
 interface User {
@@ -111,9 +113,14 @@ export default function TasksPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
+      case 'approved':
         return <CheckCircle2 className="h-4 w-4 text-green-500" />;
       case 'in_progress':
         return <Clock className="h-4 w-4 text-blue-500" />;
+      case 'in_review':
+        return <Clock className="h-4 w-4 text-purple-500" />;
+      case 'rejected':
+        return <AlertCircle className="h-4 w-4 text-red-500" />;
       default:
         return <AlertCircle className="h-4 w-4 text-yellow-500" />;
     }
@@ -121,8 +128,8 @@ export default function TasksPage() {
 
   const filteredTasks = {
     pending: tasks.filter(task => task.status === 'pending'),
-    inProgress: tasks.filter(task => task.status === 'in_progress'),
-    completed: tasks.filter(task => task.status === 'completed'),
+    inProgress: tasks.filter(task => ['in_progress', 'in_review'].includes(task.status)),
+    completed: tasks.filter(task => ['completed', 'approved'].includes(task.status)),
   };
 
   const completionRate = tasks.length > 0 
@@ -199,16 +206,28 @@ export default function TasksPage() {
               </Accordion>
             )}
             
-            {task.status !== 'completed' && (
+            <div className="flex gap-2">
               <Button
-                onClick={() => completeMutation.mutate(task.id)}
-                disabled={completeMutation.isPending}
-                className="w-full"
-                data-testid={`complete-task-${task.id}`}
+                variant="outline"
+                onClick={() => navigate(`/tasks/${task.id}`)}
+                className="flex-1"
+                data-testid={`view-task-${task.id}`}
               >
-                {completeMutation.isPending ? "Concluindo..." : "Marcar como concluída"}
+                <Eye className="h-4 w-4 mr-2" />
+                Ver Detalhes
               </Button>
-            )}
+              
+              {task.status === 'pending' && (
+                <Button
+                  onClick={() => completeMutation.mutate(task.id)}
+                  disabled={completeMutation.isPending}
+                  className="flex-1"
+                  data-testid={`complete-task-${task.id}`}
+                >
+                  {completeMutation.isPending ? "Concluindo..." : "Marcar como concluída"}
+                </Button>
+              )}
+            </div>
           </>
         ) : (
           <div className="bg-muted/50 rounded-lg p-4 text-center">

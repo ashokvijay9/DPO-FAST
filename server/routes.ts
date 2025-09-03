@@ -922,6 +922,145 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get single compliance task details
+  app.get('/api/compliance-tasks/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const taskId = req.params.id;
+      const userId = req.user.claims.sub;
+      
+      const task = await storage.getComplianceTask(taskId);
+      
+      if (!task || task.userId !== userId) {
+        return res.status(404).json({ message: "Tarefa não encontrada" });
+      }
+      
+      res.json(task);
+    } catch (error) {
+      console.error("Error fetching compliance task:", error);
+      res.status(500).json({ message: "Failed to fetch compliance task" });
+    }
+  });
+
+  // Upload documents to a compliance task
+  app.post('/api/compliance-tasks/:id/documents', isAuthenticated, upload.array('documents', 5), async (req: any, res) => {
+    try {
+      const taskId = req.params.id;
+      const userId = req.user.claims.sub;
+      
+      // Verify task ownership
+      const task = await storage.getComplianceTask(taskId);
+      if (!task || task.userId !== userId) {
+        return res.status(404).json({ message: "Tarefa não encontrada" });
+      }
+      
+      if (task.status === 'in_review' || task.status === 'approved') {
+        return res.status(400).json({ message: "Não é possível anexar documentos a uma tarefa em revisão ou aprovada" });
+      }
+      
+      const files = req.files as Express.Multer.File[];
+      if (!files || files.length === 0) {
+        return res.status(400).json({ message: "Nenhum arquivo foi enviado" });
+      }
+      
+      // Store documents and get their information
+      const documentData = [];
+      for (const file of files) {
+        // For now, using local storage - will be enhanced with object storage
+        const fileUrl = `/uploads/${file.filename}`;
+        
+        const document = await storage.createDocument({
+          userId,
+          name: file.originalname,
+          category: 'compliance_task',
+          fileName: file.originalname,
+          fileSize: file.size,
+          fileType: file.mimetype,
+          fileUrl,
+          description: `Documento anexado à tarefa: ${task.title}`,
+        });
+        
+        documentData.push({
+          id: document.id,
+          name: document.name,
+          fileName: document.fileName,
+          fileSize: document.fileSize,
+          fileType: document.fileType,
+          uploadedAt: document.createdAt
+        });
+      }
+      
+      // Update task with attached documents
+      const currentDocs = Array.isArray(task.attachedDocuments) ? task.attachedDocuments : [];
+      const updatedDocs = [...currentDocs, ...documentData];
+      
+      await storage.updateComplianceTask(taskId, {
+        attachedDocuments: updatedDocs
+      });
+      
+      res.json({ 
+        message: "Documentos anexados com sucesso",
+        documents: documentData,
+        totalDocuments: updatedDocs.length
+      });
+    } catch (error) {
+      console.error("Error uploading documents to task:", error);
+      res.status(500).json({ message: "Erro ao anexar documentos" });
+    }
+  });
+
+  // Submit task for validation
+  app.patch('/api/compliance-tasks/:id/submit', isAuthenticated, async (req: any, res) => {
+    try {
+      const taskId = req.params.id;
+      const userId = req.user.claims.sub;
+      const { userComments } = req.body;
+      
+      // Verify task ownership
+      const task = await storage.getComplianceTask(taskId);
+      if (!task || task.userId !== userId) {
+        return res.status(404).json({ message: "Tarefa não encontrada" });
+      }
+      
+      if (task.status === 'in_review' || task.status === 'approved') {
+        return res.status(400).json({ message: "Esta tarefa já foi enviada para validação ou já foi aprovada" });
+      }
+      
+      // Check if task has attached documents
+      const documents = Array.isArray(task.attachedDocuments) ? task.attachedDocuments : [];
+      if (documents.length === 0) {
+        return res.status(400).json({ message: "É necessário anexar pelo menos um documento antes de enviar para validação" });
+      }
+      
+      // Update task status to in_review
+      await storage.updateComplianceTask(taskId, {
+        status: 'in_review',
+        submittedAt: new Date(),
+        userComments: userComments || null,
+        progress: 50 // Task submitted, halfway to completion
+      });
+      
+      // Log this action
+      await storage.createAuditLog({
+        userId,
+        action: 'task_submitted_for_review',
+        resourceType: 'compliance_task',
+        entityId: taskId,
+        details: `Tarefa "${task.title}" enviada para validação com ${documents.length} documento(s) anexado(s)`,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent') || 'unknown'
+      });
+      
+      res.json({ 
+        message: "Tarefa enviada para validação com sucesso",
+        status: 'in_review',
+        submittedAt: new Date()
+      });
+    } catch (error) {
+      console.error("Error submitting task for validation:", error);
+      res.status(500).json({ message: "Erro ao enviar tarefa para validação" });
+    }
+  });
+
   // Plan limits endpoint
   app.get('/api/plan/limits', isAuthenticated, attachUserPlan, async (req: any, res) => {
     try {
