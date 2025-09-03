@@ -20,9 +20,7 @@ import {
   FileBarChart, 
   CreditCard, 
   User, 
-  LogOut, 
-  Sun, 
-  Moon,
+  LogOut,
   Settings
 } from "lucide-react";
 import { useLocation } from "wouter";
@@ -30,7 +28,7 @@ import { NotificationCenter } from "@/components/NotificationCenter";
 
 export default function Navbar() {
   const { user, isAuthenticated, isLoading } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
   const [, navigate] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -116,22 +114,6 @@ export default function Navbar() {
 
           {/* Right side */}
           <div className="flex items-center space-x-3">
-            
-            {/* Theme Toggle */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleTheme}
-              className="p-2 hover:bg-muted/80 rounded-lg transition-colors"
-              data-testid="theme-toggle"
-              title={`Alternar para tema ${theme === 'light' ? 'escuro' : 'claro'}`}
-            >
-              {theme === 'light' ? (
-                <Moon className="h-4 w-4" />
-              ) : (
-                <Sun className="h-4 w-4" />
-              )}
-            </Button>
 
             {isLoading ? (
               <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />

@@ -235,7 +235,7 @@ export default function TasksPage() {
             <p className="text-sm text-muted-foreground mb-2">
               Detalhes disponíveis apenas para assinantes
             </p>
-            <Button variant="outline" size="sm" onClick={() => navigate("/pricing")}>
+            <Button variant="outline" size="sm" onClick={() => navigate("/subscription")}>
               Fazer upgrade
             </Button>
           </div>
@@ -325,7 +325,7 @@ export default function TasksPage() {
                 </p>
               </div>
             </div>
-            <Button onClick={() => navigate("/pricing")} size="sm">
+            <Button onClick={() => navigate("/subscription")} size="sm">
               Fazer Upgrade
             </Button>
           </CardContent>

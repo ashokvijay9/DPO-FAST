@@ -12,61 +12,12 @@
   --warning-yellow: hsl(45, 100%, 51%);
   --gray-text: hsl(215, 13%, 44%);
   
-  --background: #f0f0f0;
-  --foreground: #1a1a1a;
-  --card: #fcfcfc;
-  --card-foreground: hsl(0, 0%, 0%);
-  --popover: hsl(45, 25%, 97%);
-  --popover-foreground: hsl(0, 0%, 100%);
-  --primary: #eb1a4e;
-  --primary-foreground: #ffffff;
-  --primary-dark: var(--accent-blue);
-  --secondary: #c4c4c4;
-  --secondary-foreground: #1a1a1a;
-  --muted: #e3e3e3;
-  --muted-foreground: #212121;
-  --accent: hsl(0, 0%, 100%);
-  --accent-foreground: hsl(0, 0%, 10.2%);
-  --destructive: hsl(0, 0%, 0%);
-  --destructive-foreground: #ffffff;
-  --border: #e8e8e8;
-  --input: #b5b5b5;
-  --ring: hsl(0, 0%, 41.96%);
-  --chart-1: hsl(203.8863, 88.2845%, 53.1373%);
-  --chart-2: hsl(159.7826, 100%, 36.0784%);
-  --chart-3: hsl(42.0290, 92.8251%, 56.2745%);
-  --chart-4: hsl(147.1429, 78.5047%, 41.9608%);
-  --chart-5: hsl(341.4894, 75.2000%, 50.9804%);
-  --sidebar: hsl(45, 25%, 97%);
-  --sidebar-foreground: hsl(20, 14%, 17%);
-  --sidebar-primary: hsl(9, 75%, 61%);
-  --sidebar-primary-foreground: hsl(0, 0%, 100%);
-  --sidebar-accent: hsl(25, 45%, 80%);
-  --sidebar-accent-foreground: hsl(20, 14%, 17%);
-  --sidebar-border: hsl(45, 15%, 80%);
-  --sidebar-ring: hsl(9, 75%, 61%);
-  --font-sans: 'Poppins', sans-serif;
-  --font-serif: 'Poppins', sans-serif;
-  --font-mono: Menlo, monospace;
-  --radius: 0.8rem;
-  --shadow: 0px 2px 0px 0px hsl(9, 75%, 61% / 0.00), 0px 1px 2px -1px hsl(9, 75%, 61% / 0.00);
-  --spacing: 0.25rem;
-  --shadow-lg: 0px 2px 0px 0px hsl(9, 75%, 61% / 0.00), 0px 4px 6px -1px hsl(9, 75%, 61% / 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(9, 75%, 61% / 0.00), 0px 2px 4px -1px hsl(9, 75%, 61% / 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(9, 75%, 61% / 0.00), 0px 1px 2px -1px hsl(9, 75%, 61% / 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(9, 75%, 61% / 0.00), 0px 8px 10px -1px hsl(9, 75%, 61% / 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(9, 75%, 61% / 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(9, 75%, 61% / 0.00);
-  --shadow-2xs: 0px 2px 0px 0px hsl(9, 75%, 61% / 0.00);
-  --tracking-normal: 0em;
-}
-
-.dark {
+  /* Force dark theme values as default */
   --background: hsl(20, 14%, 4%);
   --foreground: hsl(45, 25%, 91%);
   --card: hsl(20, 14%, 8%);
   --card-foreground: hsl(45, 25%, 85%);
-  --popover: hsl(20, 14%, 4%);
+  --popover: hsl(20, 14%, 4% / 0.8);
   --popover-foreground: hsl(45, 25%, 91%);
   --primary: hsl(9, 75%, 61%);
   --primary-foreground: hsl(0, 0%, 100%);
@@ -95,25 +46,59 @@
   --sidebar-accent-foreground: hsl(45, 25%, 85%);
   --sidebar-border: hsl(20, 14%, 15%);
   --sidebar-ring: hsl(9, 75%, 61%);
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Inter', sans-serif;
+  --font-mono: Menlo, monospace;
   --radius: 1.3rem;
   --shadow: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
   --spacing: 0.25rem;
-  --font-mono: Menlo, monospace;
-  --font-sans: Open Sans, sans-serif;
   --shadow-lg: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 4px 6px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
   --shadow-md: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 2px 4px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
   --shadow-sm: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
   --shadow-xl: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00), 0px 8px 10px -1px hsl(202.8169 89.1213% 53.1373% / 0.00);
   --shadow-xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00);
-  --font-serif: Georgia, serif;
   --shadow-2xl: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00);
   --shadow-2xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0.00);
   --tracking-normal: 0em;
 }
 
+/* Transparent forms and popups */
+.form-transparent,
+form {
+  background: rgba(32, 35, 42, 0.7) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Transparent dialog/modal content */
+[data-radix-dialog-content],
+[data-radix-popover-content],
+[data-radix-dropdown-menu-content],
+[data-radix-select-content],
+.dialog-content,
+.popover-content,
+.dropdown-content {
+  background: rgba(32, 35, 42, 0.8) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Transparent cards and containers */
+.card-transparent,
+.bg-card {
+  background: rgba(32, 35, 42, 0.6) !important;
+  backdrop-filter: blur(15px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
 @layer base {
   * {
     @apply border-border;
+  }
+
+  html {
+    color-scheme: dark;
   }
 
   body {
@@ -271,9 +256,11 @@
   @apply text-xl text-muted-foreground mb-8 md:mb-12;
 }
 
-/* Modern card styles */
+/* Modern transparent card styles */
 .glass-card {
-  @apply backdrop-blur-xl bg-card/90 border border-border;
+  background: rgba(32, 35, 42, 0.7) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 .gradient-border {
@@ -316,142 +303,147 @@
   min-height: 100vh;
 }
 
-/* Status pills with better colors */
+/* Status pills with dark theme transparency */
 .status-success {
-  @apply bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800;
+  background: rgba(16, 185, 129, 0.2) !important;
+  color: rgb(167, 243, 208) !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 .status-warning {
-  @apply bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800;
+  background: rgba(245, 158, 11, 0.2) !important;
+  color: rgb(252, 211, 77) !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 .status-error {
-  @apply bg-red-100 text-red-800 border-red-200 dark:bg-red-950/50 dark:text-red-300 dark:border-red-800;
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: rgb(252, 165, 165) !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 .status-info {
-  @apply bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800;
+  background: rgba(59, 130, 246, 0.2) !important;
+  color: rgb(147, 197, 253) !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
-/* Status indicators */
+/* Status indicators with transparency */
 .status-valid {
-  @apply bg-green-100 text-green-800 border-green-200 dark:bg-green-950/50 dark:text-green-300 dark:border-green-800;
+  background: rgba(34, 197, 94, 0.2) !important;
+  color: rgb(187, 247, 208) !important;
+  border: 1px solid rgba(34, 197, 94, 0.3) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 .status-pending {
-  @apply bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-950/50 dark:text-yellow-300 dark:border-yellow-800;
+  background: rgba(234, 179, 8, 0.2) !important;
+  color: rgb(254, 240, 138) !important;
+  border: 1px solid rgba(234, 179, 8, 0.3) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 .status-expired {
-  @apply bg-red-100 text-red-800 border-red-200 dark:bg-red-950/50 dark:text-red-300 dark:border-red-800;
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: rgb(252, 165, 165) !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
-/* Priority indicators */
+/* Priority indicators with transparency */
 .priority-high {
-  @apply bg-red-100 text-red-800 border-red-200 dark:bg-red-950/50 dark:text-red-300 dark:border-red-800;
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: rgb(252, 165, 165) !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 .priority-medium {
-  @apply bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-950/50 dark:text-yellow-300 dark:border-yellow-800;
+  background: rgba(234, 179, 8, 0.2) !important;
+  color: rgb(254, 240, 138) !important;
+  border: 1px solid rgba(234, 179, 8, 0.3) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 .priority-low {
-  @apply bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800;
+  background: rgba(59, 130, 246, 0.2) !important;
+  color: rgb(147, 197, 253) !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
-/* Dark mode overrides for better visibility */
-.dark .glass-card {
-  background: hsl(var(--card) / 0.95);
-  backdrop-filter: blur(20px);
-  border: 1px solid hsl(var(--border));
+/* Enhanced transparency for all UI elements */
+.glass-card {
+  background: rgba(32, 35, 42, 0.7) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-.dark [data-radix-popper-content-wrapper] {
+[data-radix-popper-content-wrapper] {
   z-index: 60 !important;
 }
 
-/* Ensure modal/popover backgrounds are solid in dark mode */
-.dark .bg-popover,
-.dark [data-radix-dropdown-menu-content],
-.dark [data-radix-popover-content],
-.dark [data-radix-dialog-content],
-.dark [data-radix-select-content],
-.dark [data-radix-toast-root],
-.dark [data-state="open"][data-radix-dropdown-menu-content],
-.dark [data-state="open"][data-radix-popover-content],
-.dark [data-state="open"][data-radix-select-content] {
-  background-color: hsl(var(--popover)) !important;
-  border: 1px solid hsl(var(--border)) !important;
-  color: hsl(var(--popover-foreground)) !important;
+/* Input fields transparent styling */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+textarea,
+select,
+.input-field {
+  background: rgba(32, 35, 42, 0.6) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus,
+.input-field:focus {
+  background: rgba(32, 35, 42, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
+}
+
+/* Toast styling with transparency */
+[data-radix-toast-root] {
+  background: rgba(32, 35, 42, 0.9) !important;
   backdrop-filter: blur(20px) !important;
-  box-shadow: 0 10px 38px -10px rgba(0, 0, 0, 0.8), 0 10px 20px -15px rgba(0, 0, 0, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-.dark .bg-background {
-  background-color: hsl(var(--background)) !important;
+/* Button transparency enhancements */
+.btn-transparent {
+  background: rgba(32, 35, 42, 0.6) !important;
+  backdrop-filter: blur(15px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-.dark .bg-card {
-  background-color: hsl(var(--card)) !important;
+.btn-transparent:hover {
+  background: rgba(32, 35, 42, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
 }
 
-/* Force solid backgrounds and proper styling for all radix components in dark mode */
-.dark [data-radix-dropdown-menu-content] {
-  background: hsl(var(--popover)) !important;
-  backdrop-filter: blur(20px) !important;
-  border: 1px solid hsl(var(--border)) !important;
+/* Muted elements with transparency */
+.bg-muted {
+  background: rgba(32, 35, 42, 0.5) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
-.dark [data-radix-popover-content] {
-  background: hsl(var(--popover)) !important;
-  backdrop-filter: blur(20px) !important;
-  border: 1px solid hsl(var(--border)) !important;
+.bg-secondary {
+  background: rgba(76, 39, 133, 0.6) !important;
+  backdrop-filter: blur(15px) !important;
 }
 
-.dark [data-radix-select-content] {
-  background: hsl(var(--popover)) !important;
-  backdrop-filter: blur(20px) !important;
-  border: 1px solid hsl(var(--border)) !important;
-}
-
-.dark [data-radix-dialog-content] {
-  background: hsl(var(--background)) !important;
-  backdrop-filter: blur(20px) !important;
-  border: 1px solid hsl(var(--border)) !important;
-}
-
-/* Toast styling for dark mode */
-.dark [data-radix-toast-root] {
-  background: hsl(var(--background)) !important;
-  backdrop-filter: blur(20px) !important;
-  border: 1px solid hsl(var(--border)) !important;
-}
-
-/* Fix any remaining transparent elements */
-.dark .glass-card {
-  background: hsl(var(--card) / 0.95) !important;
-  backdrop-filter: blur(20px);
-  border: 1px solid hsl(var(--border));
-}
-
-/* Override any potential transparent backgrounds in dark mode */
-.dark * {
-  --tw-bg-opacity: 1 !important;
-}
-
-.dark [data-radix-popper-content-wrapper] {
-  --tw-bg-opacity: 1 !important;
-}
-
-/* Specific fixes for common components */
-.dark .bg-muted {
-  background-color: hsl(var(--muted)) !important;
-}
-
-.dark .bg-secondary {
-  background-color: hsl(var(--secondary)) !important;
-}
-
-.dark .bg-accent {
-  background-color: hsl(var(--accent)) !important;
+.bg-accent {
+  background: rgba(64, 41, 51, 0.6) !important;
+  backdrop-filter: blur(15px) !important;
 }
