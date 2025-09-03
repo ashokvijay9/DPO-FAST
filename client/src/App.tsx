@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import Questionnaire from "@/pages/questionnaire";
+import QuestionnaireSectors from "@/pages/questionnaire-sectors";
 import Tasks from "@/pages/tasks";
 import TaskDetail from "@/pages/task-detail";
 import SectorReports from "@/pages/sector-reports";
@@ -122,6 +123,8 @@ function Router() {
       <Navbar />
       <Switch>
         <Route path="/" component={Home} />
+        <Route path="/questionnaire-sectors" component={QuestionnaireSectors} />
+        <Route path="/questionnaire/:sectorId" component={Questionnaire} />
         <Route path="/questionnaire" component={Questionnaire} />
         <Route path="/sectors" component={Sectors} />
         <Route path="/tasks" component={Tasks} />

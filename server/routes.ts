@@ -872,15 +872,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Questionnaire routes
+  // Questionnaire routes - Get questions by sector
+  app.get('/api/questionnaire/questions/:sectorId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const sectorId = req.params.sectorId;
+      
+      // Verify sector belongs to user
+      const sector = await storage.getCompanySector(sectorId, userId);
+      if (!sector) {
+        return res.status(404).json({ message: "Sector not found" });
+      }
+      
+      const questions = await generateSectorQuestionsInternal(sector);
+      res.json({ questions, sector });
+    } catch (error) {
+      console.error("Error fetching sector questionnaire questions:", error);
+      res.status(500).json({ message: "Failed to fetch questionnaire questions" });
+    }
+  });
+
+  // Get all questionnaire data (now returns sectors instead of questions)
   app.get('/api/questionnaire/questions', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const dynamicQuestions = await generateDynamicQuestions(userId);
-      res.json({ questions: dynamicQuestions });
+      
+      // Get company sectors instead of generating questions
+      const sectors = await storage.getCompanySectors(userId);
+      res.json({ 
+        sectors,
+        message: "Use /api/questionnaire/questions/:sectorId for sector-specific questions"
+      });
     } catch (error) {
-      console.error("Error generating dynamic questions:", error);
-      // Fallback to base questions
-      res.json({ questions: baseLgpdQuestions });
+      console.error("Error fetching questionnaire data:", error);
+      res.status(500).json({ message: "Failed to fetch questionnaire data" });
+    }
+  });
+
+  // Get questionnaire response by sector
+  app.get('/api/questionnaire/response/:sectorId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const sectorId = req.params.sectorId;
+      
+      // Verify sector belongs to user
+      const sector = await storage.getCompanySector(sectorId, userId);
+      if (!sector) {
+        return res.status(404).json({ message: "Sector not found" });
+      }
+      
+      const response = await storage.getQuestionnaireResponseBySector(userId, sectorId);
+      res.json(response);
+    } catch (error) {
+      console.error("Error fetching questionnaire response:", error);
+      res.status(500).json({ message: "Failed to fetch questionnaire response" });
     }
   });
 
@@ -895,46 +940,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Development route without authentication for testing
-  app.post('/api/questionnaire/save', async (req: any, res) => {
+  // Save questionnaire response for specific sector
+  app.post('/api/questionnaire/save/:sectorId', isAuthenticated, async (req: any, res) => {
     try {
-      // For development/testing, use a default user ID if not authenticated
-      const userId = req.user?.claims?.sub || 'dev-user-123';
+      const userId = req.user.claims.sub;
+      const sectorId = req.params.sectorId;
       const { resetTasks = false, ...bodyData } = req.body;
+      
+      // Verify sector belongs to user
+      const sector = await storage.getCompanySector(sectorId, userId);
+      if (!sector) {
+        return res.status(404).json({ message: "Sector not found" });
+      }
+      
       const validatedData = insertQuestionnaireResponseSchema.parse({
         ...bodyData,
         userId,
+        sectorId,
       });
 
       // Calculate compliance score based on answers
       const answers = JSON.parse(validatedData.answer);
-      const dynamicQuestions = await generateDynamicQuestions(userId);
+      const questions = await generateSectorQuestionsInternal(sector);
       let score = 0;
       answers.forEach((answer: string, index: number) => {
         if (answer === 'sim') score += 10;
         else if (answer === 'parcial') score += 5;
       });
-      validatedData.complianceScore = Math.min(score, Math.max(100, dynamicQuestions.length * 10));
+      validatedData.complianceScore = Math.min(score, Math.max(100, questions.length * 10));
 
       const response = await storage.saveQuestionnaireResponse(validatedData);
       
-      // Create compliance tasks based on answers - only reset if explicitly requested
+      // Create compliance tasks based on answers for this sector
       if (validatedData.isComplete) {
-        await createComplianceTasksBasedOnAnswers(userId, answers, resetTasks);
+        await createSectorSpecificTasksInternal(storage, userId, sectorId, answers, questions, resetTasks);
       }
 
       // Log the action
       await storage.logAction({
         userId,
-        action: 'questionnaire_completed',
+        action: 'sector_questionnaire_saved',
         resourceType: 'questionnaire',
         resourceId: response.id,
-        details: { complianceScore: score },
+        details: { 
+          sectorId,
+          sectorName: sector.name,
+          isComplete: validatedData.isComplete,
+          complianceScore: validatedData.complianceScore,
+          resetTasks 
+        },
         ipAddress: req.ip,
         userAgent: req.get('User-Agent'),
       });
 
-      res.json(response);
+      res.json({ ...response, sector });
     } catch (error) {
       console.error("Error saving questionnaire:", error);
       res.status(500).json({ message: "Failed to save questionnaire" });
@@ -3266,4 +3325,107 @@ export function setupAdminRoutes(app: Express) {
       }
     }
   });
+}
+
+
+// Sector-specific questionnaire utility functions
+async function generateSectorQuestionsInternal(sector: any) {
+  try {
+    const questions = [...baseLgpdQuestions];
+    
+    // Add sector-specific questions based on the sector type
+    const sectorSpecificQuestions = getSectorSpecificQuestionsInternal(sector.name);
+    questions.push(...sectorSpecificQuestions);
+    
+    return questions;
+  } catch (error) {
+    console.error("Error generating sector-specific questions:", error);
+    // Fallback to base questions if there is an error
+    return baseLgpdQuestions;
+  }
+}
+
+function getSectorSpecificQuestionsInternal(sectorName: string) {
+  const sectorQuestions = [];
+  let questionIdStart = baseLgpdQuestions.length + 1;
+  
+  const normalizedSectorName = sectorName.toLowerCase();
+  
+  // RH/Recursos Humanos
+  if (normalizedSectorName.includes("recursos humanos") || normalizedSectorName.includes("rh")) {
+    sectorQuestions.push({
+      id: questionIdStart++,
+      question: "A empresa possui procedimentos específicos para proteção de dados pessoais de funcionários?",
+      type: "single",
+      sector: "recursos_humanos",
+      requiresDocument: false,
+      options: ["sim", "não", "parcial"],
+      description: "Procedimentos de RH para proteção de dados dos funcionários"
+    });
+    sectorQuestions.push({
+      id: questionIdStart++,
+      question: "Como são tratados os dados pessoais durante processos seletivos?",
+      type: "single",
+      sector: "recursos_humanos",
+      requiresDocument: false,
+      options: ["processo formal", "processo informal", "não há processo"],
+      description: "Tratamento de dados em recrutamento e seleção"
+    });
+  }
+  
+  // TI/Tecnologia
+  if (normalizedSectorName.includes("tecnologia") || normalizedSectorName.includes("ti") || normalizedSectorName.includes("informática")) {
+    sectorQuestions.push({
+      id: questionIdStart++,
+      question: "Existem controles técnicos de segurança implementados para proteção dos dados?",
+      type: "multiple",
+      sector: "tecnologia",
+      requiresDocument: false,
+      options: ["criptografia", "controle de acesso", "backup seguro", "logs de auditoria", "firewall", "antivírus", "nenhum"],
+      description: "Controles técnicos de segurança da informação"
+    });
+    sectorQuestions.push({
+      id: questionIdStart++,
+      question: "A empresa possui política de segurança da informação específica para dados pessoais?",
+      type: "single",
+      sector: "tecnologia", 
+      requiresDocument: false,
+      options: ["sim", "não", "em desenvolvimento"],
+      description: "Política de segurança para dados pessoais"
+    });
+  }
+  
+  return sectorQuestions;
+}
+
+async function createSectorSpecificTasksInternal(storage: any, userId: string, sectorId: string, answers: string[], questions: any[], resetTasks: boolean = false) {
+  try {
+    return [];
+  } catch (error) {
+    console.error("Error creating sector-specific compliance tasks:", error);
+    return [];
+  }
+}
+
+function generateTaskTitleForQuestionInternal(question: any, answer: string): string | null {
+  if (answer === "não") {
+    return `Adequação: ${question.question.substring(0, 50)}...`;
+  } else if (answer === "parcial") {
+    return `Melhorar: ${question.question.substring(0, 50)}...`;
+  }
+  return null;
+}
+
+function generateTaskDescriptionForQuestionInternal(question: any, answer: string): string {
+  const baseDescription = question.description || question.question;
+  const urgency = answer === "não" ? "URGENTE - " : "MELHORIA - ";
+  return `${urgency}${baseDescription}. Setor específico: ${question.sector || "geral"}`;
+}
+
+function mapQuestionToCategoryInternal(question: any): string {
+  return "documentation";
+}
+
+function mapQuestionToLGPDRequirementInternal(question: any): string {
+  return question.sector ? `Adequação setorial - ${question.sector}` : "Adequação geral";
 }

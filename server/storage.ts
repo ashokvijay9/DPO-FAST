@@ -221,6 +221,22 @@ export class DatabaseStorage implements IStorage {
     return response;
   }
 
+  // Get questionnaire response by sector
+  async getQuestionnaireResponseBySector(userId: string, sectorId: string): Promise<QuestionnaireResponse | undefined> {
+    const [response] = await db
+      .select()
+      .from(questionnaireResponses)
+      .where(
+        and(
+          eq(questionnaireResponses.userId, userId),
+          eq(questionnaireResponses.sectorId, sectorId)
+        )
+      )
+      .orderBy(desc(questionnaireResponses.createdAt))
+      .limit(1);
+    return response;
+  }
+
   async updateQuestionnaireResponse(id: string, updates: Partial<InsertQuestionnaireResponse>): Promise<QuestionnaireResponse> {
     const [updated] = await db
       .update(questionnaireResponses)

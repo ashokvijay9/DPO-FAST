@@ -14,13 +14,17 @@ import { ChevronLeft, ChevronRight, Save, Check, FileIcon, Upload, BookOpen, Tar
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useLocation } from "wouter";
+import { useLocation, useRoute } from "wouter";
 
 export default function Questionnaire() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
+  
+  // Get sectorId from URL parameters if available
+  const [match, params] = useRoute("/questionnaire/:sectorId");
+  const sectorId = params?.sectorId;
   
   const [showInitialOptions, setShowInitialOptions] = useState(true);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -43,19 +47,21 @@ export default function Questionnaire() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
+  // Fetch questions based on whether we have a sectorId or not
   const { data: questionsData } = useQuery({
-    queryKey: ["/api/questionnaire/questions"],
+    queryKey: sectorId ? [`/api/questionnaire/questions/${sectorId}`] : ["/api/questionnaire/questions"],
     enabled: isAuthenticated,
   });
 
   const { data: existingResponse } = useQuery({
-    queryKey: ["/api/questionnaire/response"],
+    queryKey: sectorId ? [`/api/questionnaire/response/${sectorId}`] : ["/api/questionnaire/response"],
     enabled: isAuthenticated,
   });
 
   const saveMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await apiRequest("POST", "/api/questionnaire/save", data);
+      const endpoint = sectorId ? `/api/questionnaire/save/${sectorId}` : "/api/questionnaire/save";
+      const response = await apiRequest("POST", endpoint, data);
       return response.json();
     },
     onSuccess: (data, variables) => {
