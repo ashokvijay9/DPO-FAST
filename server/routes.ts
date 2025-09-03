@@ -739,6 +739,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Import sectors from company profile
+  app.post("/api/company-sectors/import-from-profile", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get company profile
+      const profile = await storage.getCompanyProfile(userId);
+      if (!profile) {
+        return res.status(404).json({ error: "Perfil da empresa não encontrado" });
+      }
+      
+      const importedSectors = [];
+      const allSectors = new Set<string>();
+      
+      // Add departments as sectors
+      if (profile.departments && Array.isArray(profile.departments)) {
+        profile.departments.forEach((dept: string) => allSectors.add(dept));
+      }
+      
+      // Add selected sectors  
+      if (profile.sectors && Array.isArray(profile.sectors)) {
+        profile.sectors.forEach((sector: string) => allSectors.add(sector));
+      }
+      
+      // Add custom sectors
+      if (profile.customSectors && Array.isArray(profile.customSectors)) {
+        profile.customSectors.forEach((sector: string) => allSectors.add(sector));
+      }
+      
+      // Get existing sectors to avoid duplicates
+      const existingSectors = await storage.getCompanySectors(userId);
+      const existingNames = new Set(existingSectors.map(s => s.name.toLowerCase()));
+      
+      // Create sectors that don't already exist
+      for (const sectorName of allSectors) {
+        if (sectorName && sectorName.trim() && !existingNames.has(sectorName.toLowerCase())) {
+          const newSector = await storage.createCompanySector({
+            userId,
+            name: sectorName.trim(),
+            description: `Setor importado do perfil da empresa`
+          });
+          importedSectors.push(newSector);
+        }
+      }
+      
+      res.json({ 
+        importedCount: importedSectors.length,
+        sectors: importedSectors,
+        message: importedSectors.length > 0 ? 
+          `${importedSectors.length} setores importados com sucesso!` : 
+          "Nenhum setor novo para importar. Todos os setores já existem."
+      });
+      
+    } catch (error) {
+      console.error("Error importing sectors from profile:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Profile routes
   app.put('/api/profile', isAuthenticated, async (req: any, res) => {
     try {

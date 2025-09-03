@@ -26,7 +26,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, Plus, Edit2, Trash2, CheckCircle } from "lucide-react";
+import { Building2, Plus, Edit2, Trash2, CheckCircle, Download, Info } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -70,6 +70,12 @@ export default function SectorsPage() {
   const { data: sectors, isLoading } = useQuery({
     queryKey: ["/api/company-sectors"],
     queryFn: () => fetch("/api/company-sectors").then((res) => res.json()),
+  });
+
+  // Fetch company profile to check for existing sectors
+  const { data: companyProfile } = useQuery({
+    queryKey: ["/api/company-profile"],
+    queryFn: () => fetch("/api/company-profile").then((res) => res.json()),
   });
 
   // Create sector mutation
@@ -136,6 +142,26 @@ export default function SectorsPage() {
     },
   });
 
+  // Import sectors from profile mutation
+  const importSectorsMutation = useMutation({
+    mutationFn: () =>
+      apiRequest("POST", "/api/company-sectors/import-from-profile"),
+    onSuccess: (response: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/company-sectors"] });
+      toast({
+        title: "✅ Setores importados!",
+        description: response.message || "Setores importados com sucesso.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "❌ Erro ao importar setores",
+        description: error.message || "Erro interno do servidor",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: SectorFormData) => {
     if (editingSector) {
       updateSectorMutation.mutate({ id: editingSector.id, data });
@@ -159,6 +185,41 @@ export default function SectorsPage() {
     setEditingSector(null);
     reset();
   };
+
+  const handleImportSectors = () => {
+    importSectorsMutation.mutate();
+  };
+
+  // Check if there are sectors in company profile that could be imported
+  const getAvailableProfileSectors = () => {
+    if (!companyProfile) return [];
+    
+    const allProfileSectors = new Set<string>();
+    
+    // Add departments
+    if (companyProfile.departments && Array.isArray(companyProfile.departments)) {
+      companyProfile.departments.forEach((dept: string) => allProfileSectors.add(dept));
+    }
+    
+    // Add sectors
+    if (companyProfile.sectors && Array.isArray(companyProfile.sectors)) {
+      companyProfile.sectors.forEach((sector: string) => allProfileSectors.add(sector));
+    }
+    
+    // Add custom sectors
+    if (companyProfile.customSectors && Array.isArray(companyProfile.customSectors)) {
+      companyProfile.customSectors.forEach((sector: string) => allProfileSectors.add(sector));
+    }
+    
+    // Filter out sectors that already exist
+    const existingNames = new Set((sectors || []).map((s: Sector) => s.name.toLowerCase()));
+    
+    return Array.from(allProfileSectors).filter(
+      sector => sector && sector.trim() && !existingNames.has(sector.toLowerCase())
+    );
+  };
+
+  const availableProfileSectors = getAvailableProfileSectors();
 
   if (isLoading) {
     return (
@@ -184,17 +245,34 @@ export default function SectorsPage() {
           </p>
         </div>
 
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button 
+        <div className="flex items-center gap-3">
+          {availableProfileSectors.length > 0 && (
+            <Button
+              onClick={handleImportSectors}
+              disabled={importSectorsMutation.isPending}
+              variant="outline"
               className="btn-transparent flex items-center gap-2"
-              data-testid="button-create-sector"
+              data-testid="button-import-sectors"
             >
-              <Plus className="h-4 w-4" />
-              Adicionar Setor
+              <Download className="h-4 w-4" />
+              {importSectorsMutation.isPending 
+                ? "Importando..." 
+                : `Importar ${availableProfileSectors.length} Setores`
+              }
             </Button>
-          </DialogTrigger>
-          <DialogContent className="glass-card">
+          )}
+          
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                className="btn-transparent flex items-center gap-2"
+                data-testid="button-create-sector"
+              >
+                <Plus className="h-4 w-4" />
+                Adicionar Setor
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="glass-card">
             <DialogHeader>
               <DialogTitle>Adicionar Novo Setor</DialogTitle>
               <DialogDescription>
@@ -245,8 +323,9 @@ export default function SectorsPage() {
                 </Button>
               </DialogFooter>
             </form>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Edit Dialog */}
@@ -381,21 +460,77 @@ export default function SectorsPage() {
                   Nenhum setor cadastrado
                 </h3>
                 <p className="text-muted-foreground text-center mb-6">
-                  Comece adicionando setores da sua empresa para organizar questionários e relatórios por departamentos.
+                  {availableProfileSectors.length > 0 
+                    ? "Você pode importar os setores do seu perfil da empresa ou adicionar novos manualmente."
+                    : "Comece adicionando setores da sua empresa para organizar questionários e relatórios por departamentos."
+                  }
                 </p>
-                <Button
-                  onClick={() => setIsCreateDialogOpen(true)}
-                  className="btn-transparent"
-                  data-testid="button-create-first-sector"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Primeiro Setor
-                </Button>
+                <div className="flex items-center gap-3">
+                  {availableProfileSectors.length > 0 && (
+                    <Button
+                      onClick={handleImportSectors}
+                      disabled={importSectorsMutation.isPending}
+                      variant="outline"
+                      className="btn-transparent"
+                      data-testid="button-import-first-sectors"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      {importSectorsMutation.isPending 
+                        ? "Importando..." 
+                        : `Importar ${availableProfileSectors.length} Setores`
+                      }
+                    </Button>
+                  )}
+                  <Button
+                    onClick={() => setIsCreateDialogOpen(true)}
+                    className="btn-transparent"
+                    data-testid="button-create-first-sector"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar Primeiro Setor
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>
         )}
       </div>
+
+      {/* Import Info Card - Show if there are profile sectors available */}
+      {availableProfileSectors.length > 0 && (
+        <Card className="glass-card border-blue-500/20">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Info className="h-5 w-5 text-blue-500" />
+              Setores encontrados no seu perfil da empresa
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Encontramos {availableProfileSectors.length} setores no seu perfil da empresa que ainda não foram adicionados:
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {availableProfileSectors.map((sector, index) => (
+                <span 
+                  key={index}
+                  className="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-xs"
+                >
+                  {sector}
+                </span>
+              ))}
+            </div>
+            <Button
+              onClick={handleImportSectors}
+              disabled={importSectorsMutation.isPending}
+              className="btn-transparent w-full"
+              data-testid="button-import-profile-sectors"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              {importSectorsMutation.isPending ? "Importando..." : "Importar Todos os Setores"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Info Card */}
       <Card className="glass-card">
