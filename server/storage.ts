@@ -1079,7 +1079,7 @@ export class DatabaseStorage implements IStorage {
     if (updates.status && updates.status !== currentTask.status) {
       await this.createStatusHistoryEntry({
         taskId,
-        fromStatus: currentTask.status,
+        fromStatus: currentTask.status || undefined,
         toStatus: updates.status,
         comments: updates.adminComments || '',
         changedBy,

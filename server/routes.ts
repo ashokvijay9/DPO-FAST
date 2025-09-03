@@ -13,6 +13,13 @@ import { generateComplianceReportHTML, type ReportData } from "./reportGenerator
 import fs from "fs";
 import { requireAdmin, type AdminRequest } from "./middleware/adminAuth";
 import mammoth from "mammoth";
+import { 
+  logAuditEvent, 
+  auditMiddleware, 
+  hasAccess, 
+  verifyDocumentIntegrity,
+  checkRateLimit 
+} from "./auditMiddleware";
 
 // Initialize Stripe
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -870,9 +877,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Compliance task routes
-  app.get('/api/compliance-tasks', isAuthenticated, attachUserPlan, async (req: any, res) => {
+  app.get('/api/compliance-tasks', isAuthenticated, attachUserPlan, 
+    auditMiddleware('view', 'task'),
+    async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      
+      // Rate limiting for task access
+      const rateLimit = checkRateLimit(userId, 'list_tasks', 100, 60);
+      if (!rateLimit.allowed) {
+        return res.status(429).json({ 
+          error: 'Rate limit exceeded. Try again later.',
+          resetTime: rateLimit.resetTime
+        });
+      }
+      
       const tasks = await storage.getComplianceTasks(userId);
       
       // Check if user has access to detailed task information
@@ -948,9 +967,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const taskId = req.params.id;
       const userId = req.user.claims.sub;
       
+      // Rate limiting for document uploads
+      const rateLimit = checkRateLimit(userId, 'upload_document', 20, 60);
+      if (!rateLimit.allowed) {
+        return res.status(429).json({ 
+          error: 'Rate limit exceeded. Too many uploads.',
+          resetTime: rateLimit.resetTime
+        });
+      }
+
       // Verify task ownership
       const task = await storage.getComplianceTask(taskId);
       if (!task || task.userId !== userId) {
+        await logAuditEvent(req, {
+          action: 'create',
+          resourceType: 'document',
+          resourceId: taskId,
+          success: false,
+          errorMessage: 'Task not found or access denied'
+        });
         return res.status(404).json({ message: "Tarefa não encontrada" });
       }
       
@@ -961,6 +996,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const files = req.files as Express.Multer.File[];
       if (!files || files.length === 0) {
         return res.status(400).json({ message: "Nenhum arquivo foi enviado" });
+      }
+
+      // Validate document integrity for each file
+      const validationErrors = [];
+      for (const file of files) {
+        const integrity = verifyDocumentIntegrity({
+          fileName: file.originalname,
+          fileSize: file.size,
+          fileType: file.mimetype
+        });
+        
+        if (!integrity.isValid) {
+          validationErrors.push(`${file.originalname}: ${integrity.errors.join(', ')}`);
+        }
+      }
+      
+      if (validationErrors.length > 0) {
+        await logAuditEvent(req, {
+          action: 'create',
+          resourceType: 'document',
+          resourceId: taskId,
+          success: false,
+          errorMessage: 'Document validation failed',
+          details: { validationErrors }
+        });
+        return res.status(400).json({ 
+          message: "Documentos inválidos", 
+          errors: validationErrors 
+        });
       }
       
       // Store documents and get their information

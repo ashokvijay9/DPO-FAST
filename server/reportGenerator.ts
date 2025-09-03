@@ -15,6 +15,11 @@ export interface ReportData {
     description: string;
     status: string;
     priority: string;
+    completedAt?: string;
+    approvedAt?: string;
+    progress?: number;
+    category?: string;
+    lgpdRequirement?: string;
   }>;
   questions: Array<{
     question: string;
@@ -108,10 +113,13 @@ function generateReportHTML(reportData: ReportData, compliance: any, planType: s
     })
     .slice(0, 10);
 
+  // Calculate task completion metrics
+  const taskMetrics = calculateTaskMetrics(reportData.complianceTasks);
+
   // Analyze compliance by areas based on questionnaire answers
   const complianceAnalysis = analyzeComplianceByAreas(answers, reportData.questions);
 
-  return generateLGPDCompliantReport(reportData, compliance, complianceAnalysis, userName, companyName, reportDate, priorityTasks, planType);
+  return generateLGPDCompliantReport(reportData, compliance, complianceAnalysis, userName, companyName, reportDate, priorityTasks, taskMetrics, planType);
 }
 
 function analyzeComplianceByAreas(answers: string[], questions: any[]): any {
@@ -182,7 +190,55 @@ function getQuestionCategory(questionText: string): string {
   return getQuestionArea(questionText);
 }
 
-function generateLGPDCompliantReport(reportData: ReportData, compliance: any, complianceAnalysis: any, userName: string, companyName: string, reportDate: string, priorityTasks: any[], planType: string = 'free'): string {
+function calculateTaskMetrics(tasks: any[]) {
+  const total = tasks.length;
+  const completed = tasks.filter(t => t.status === 'completed' || t.status === 'approved').length;
+  const pending = tasks.filter(t => t.status === 'pending').length;
+  const inReview = tasks.filter(t => t.status === 'in_review').length;
+  const approved = tasks.filter(t => t.status === 'approved').length;
+  const rejected = tasks.filter(t => t.status === 'rejected').length;
+  
+  const completionRate = total > 0 ? Math.round((approved / total) * 100) : 0;
+  
+  // Group tasks by category
+  const categoryBreakdown = tasks.reduce((acc, task) => {
+    const category = task.category || 'general';
+    if (!acc[category]) {
+      acc[category] = { total: 0, completed: 0, pending: 0, approved: 0 };
+    }
+    acc[category].total++;
+    if (task.status === 'completed' || task.status === 'approved') {
+      acc[category].completed++;
+    }
+    if (task.status === 'pending') {
+      acc[category].pending++;
+    }
+    if (task.status === 'approved') {
+      acc[category].approved++;
+    }
+    return acc;
+  }, {} as any);
+
+  return {
+    total,
+    completed,
+    pending,
+    inReview,
+    approved,
+    rejected,
+    completionRate,
+    categoryBreakdown,
+    recentlyCompleted: tasks
+      .filter(t => t.status === 'approved' && t.completedAt)
+      .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
+      .slice(0, 5),
+    highPriorityPending: tasks
+      .filter(t => t.status === 'pending' && t.priority === 'high')
+      .length
+  };
+}
+
+function generateLGPDCompliantReport(reportData: ReportData, compliance: any, complianceAnalysis: any, userName: string, companyName: string, reportDate: string, priorityTasks: any[], taskMetrics: any, planType: string = 'free'): string {
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>

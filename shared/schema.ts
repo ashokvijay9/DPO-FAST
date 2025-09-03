@@ -74,12 +74,17 @@ export const documents = pgTable("documents", {
 export const auditLog = pgTable("audit_log", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").references(() => users.id),
-  action: varchar("action").notNull(),
-  resourceType: varchar("resource_type").notNull(),
+  action: varchar("action").notNull(), // create, update, delete, submit, approve, reject, view, download
+  resourceType: varchar("resource_type").notNull(), // task, document, report, user, profile
   resourceId: varchar("resource_id"),
   details: jsonb("details"),
   ipAddress: varchar("ip_address"),
   userAgent: text("user_agent"),
+  success: boolean("success").default(true),
+  errorMessage: text("error_message"),
+  accessLevel: varchar("access_level"), // owner, admin, shared
+  previousState: jsonb("previous_state"), // For tracking state changes
+  newState: jsonb("new_state"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
