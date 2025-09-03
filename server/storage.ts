@@ -321,55 +321,59 @@ export class DatabaseStorage implements IStorage {
 
   async getTaskForReview(taskId: string): Promise<any> {
     try {
-      // Use basic select to avoid Drizzle ordering issues
-      const taskQuery = await db
-        .select()
-        .from(complianceTasks)
-        .where(eq(complianceTasks.id, taskId))
-        .limit(1);
+      // Use raw SQL to avoid Drizzle ORM issues
+      const result = await db.execute(sql`
+        SELECT 
+          ct.id,
+          ct.title,
+          ct.description,
+          ct.steps,
+          ct.priority,
+          ct.status,
+          ct.category,
+          ct.due_date as "dueDate",
+          ct.submitted_at as "submittedAt",
+          ct.user_comments as "userComments", 
+          ct.attached_documents as "attachedDocuments",
+          ct.user_id as "userId",
+          u.email as "userEmail",
+          u.first_name as "userFirstName",
+          u.last_name as "userLastName",
+          cp.company_name as "companyName",
+          cp.email as "companyEmail",
+          cp.phone as "companyPhone"
+        FROM compliance_tasks ct
+        LEFT JOIN users u ON ct.user_id = u.id
+        LEFT JOIN company_profiles cp ON ct.user_id = cp.user_id
+        WHERE ct.id = ${taskId}
+        LIMIT 1
+      `);
 
-      if (!taskQuery.length) {
+      if (!result.rows.length) {
         return null;
       }
 
-      const taskData = taskQuery[0];
-
-      // Get user details
-      const userQuery = await db
-        .select()
-        .from(users)
-        .where(eq(users.id, taskData.userId))
-        .limit(1);
-
-      // Get company profile if exists
-      const companyQuery = await db
-        .select()
-        .from(companyProfiles)
-        .where(eq(companyProfiles.userId, taskData.userId))
-        .limit(1);
-
-      const userData = userQuery[0] || {};
-      const companyData = companyQuery[0] || {};
+      const row = result.rows[0] as any;
 
       return {
-        id: taskData.id || '',
-        title: taskData.title || '',
-        description: taskData.description || '',
-        steps: taskData.steps || [],
-        priority: taskData.priority || 'medium',
-        status: taskData.status || '',
-        category: taskData.category || '',
-        dueDate: taskData.dueDate || null,
-        submittedAt: taskData.submittedAt || null,
-        userComments: taskData.userComments || '',
-        attachments: taskData.attachedDocuments || [],
-        userId: taskData.userId || '',
-        userEmail: userData.email || '',
-        userFirstName: userData.firstName || '',
-        userLastName: userData.lastName || '',
-        companyName: companyData.companyName || '',
-        companyEmail: companyData.email || '',
-        companyPhone: companyData.phone || ''
+        id: row.id || '',
+        title: row.title || '',
+        description: row.description || '',
+        steps: row.steps || [],
+        priority: row.priority || 'medium',
+        status: row.status || '',
+        category: row.category || '',
+        dueDate: row.dueDate || null,
+        submittedAt: row.submittedAt || null,
+        userComments: row.userComments || '',
+        attachments: row.attachedDocuments || [],
+        userId: row.userId || '',
+        userEmail: row.userEmail || '',
+        userFirstName: row.userFirstName || '',
+        userLastName: row.userLastName || '',
+        companyName: row.companyName || '',
+        companyEmail: row.companyEmail || '',
+        companyPhone: row.companyPhone || ''
       };
     } catch (error) {
       console.error('Error in getTaskForReview:', error);

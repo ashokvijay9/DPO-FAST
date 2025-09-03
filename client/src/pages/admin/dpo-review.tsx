@@ -27,6 +27,7 @@ import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { DocumentViewer } from "@/components/DocumentViewer";
 
 interface PendingTask {
   id: string;
@@ -489,10 +490,17 @@ export default function DPOReview() {
                             </p>
                           </div>
                         </div>
-                        <Button variant="outline" size="sm">
-                          <Download className="h-4 w-4 mr-2" />
-                          Baixar
-                        </Button>
+                        <DocumentViewer
+                          documentId={attachment.id}
+                          fileName={attachment.filename || `Documento ${index + 1}`}
+                          fileType={attachment.fileType || 'application/pdf'}
+                          trigger={
+                            <Button variant="outline" size="sm">
+                              <Eye className="h-4 w-4 mr-2" />
+                              Ver
+                            </Button>
+                          }
+                        />
                       </div>
                     ))}
                   </div>

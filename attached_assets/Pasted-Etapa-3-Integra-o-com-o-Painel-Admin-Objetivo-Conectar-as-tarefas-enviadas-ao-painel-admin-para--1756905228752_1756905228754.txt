@@ -1,0 +1,19 @@
+Etapa 3: Integração com o Painel Admin
+Objetivo: Conectar as tarefas enviadas ao painel admin para revisão, aprovação ou revogação no DPO Fast.
+Prompt:Integre a to-do list com o painel admin do DPO Fast. As tarefas enviadas pelos assinantes devem aparecer em uma seção dedicada no painel admin, com filtros por assinante, status e prioridade. Para cada tarefa, o admin deve visualizar documentos anexados, aprovar (marcando como "Concluída") ou revogar (rejeitar com motivo obrigatório via modal), atualizando o status e registrando a ação. Após aprovação/revogação, notificar o assinante e atualizar o progresso no dashboard do assinante. Descreva em detalhes o que essa integração deve possuir e como deve funcionar.
+Etapa 4: Notificações e Atualizações de Status
+Objetivo: Implementar notificações e gerenciamento de status para as tarefas no DPO Fast.
+Prompt:Crie o sistema de notificações para a to-do list do DPO Fast. Ao enviar uma tarefa, ao aprovar ou revogar, deve enviar notificações automáticas ao assinante (ex.: "Sua tarefa foi enviada para revisão", "Tarefa aprovada: Prosiga para a próxima", "Tarefa revogada: [motivo] - Por favor, corrija e reenvie"). Deve permitir que o assinante visualize histórico de status e notificações no dashboard. Em caso de revogação, habilitar reenvio com novos anexos. Descreva em detalhes o que essa funcionalidade deve possuir e como deve funcionar, incluindo exemplos de mensagens de notificação.
+Etapa 5: Segurança e Auditoria
+Objetivo: Garantir segurança e auditoria nas interações com a to-do list no DPO Fast.
+Prompt:Configure segurança e auditoria para a funcionalidade de to-do lists no DPO Fast. Deve restringir acesso às tarefas e documentos ao próprio assinante e admins. Registrar todas as ações (ex.: envio, aprovação, revogação) com detalhes como usuário, data e motivo. Verificar integridade dos documentos anexados durante o envio e revisão. Descreva em detalhes as regras de segurança e auditoria, incluindo como diferenciar acessos e instruções para testar.
+Etapa 6: Integração com o Sistema Existente e Deploy
+Objetivo: Integrar a funcionalidade de to-do lists ao sistema existente do DPO Fast.
+Prompt:Integre a funcionalidade de to-do lists ao Micro-SaaS DPO Fast existente. Conecte à geração de relatórios para atualizar o relatório final após conclusão de tarefas. Forneça instruções passo a passo para adicionar essa funcionalidade ao sistema, testar o fluxo completo (ex.: geração de to-do list, anexar documentos, envio, revisão pelo admin, notificação) e realizar o deploy. Descreva em detalhes o que essa integração deve possuir e como deve funcionar, incluindo as instruções de deploy.
+Notas Adicionais
+
+Segurança: Mantenha auditoria de todas as ações relacionadas às tarefas e documentos.
+Escalabilidade: Otimize o gerenciamento de múltiplas tarefas e assinantes.
+Usabilidade: Torne a interface intuitiva, com guias passo a passo para anexar e enviar, e indicadores de progresso.
+Integração: Certifique-se de que a to-do list se conecte perfeitamente ao questionário, relatórios e painel admin existentes.
+Testes: Simule fluxos completos de tarefas antes do deploy.

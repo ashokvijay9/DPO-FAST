@@ -12,6 +12,7 @@ import { attachUserPlan, checkDocumentLimits, checkReportLimits, requireAdvanced
 import { generateComplianceReportHTML, type ReportData } from "./reportGenerator";
 import fs from "fs";
 import { requireAdmin, type AdminRequest } from "./middleware/adminAuth";
+import mammoth from "mammoth";
 
 // Initialize Stripe
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -1146,6 +1147,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching task for review:", error);
       res.status(500).json({ message: "Erro ao buscar detalhes da tarefa" });
+    }
+  });
+
+  // Route to view documents - accessible by both users and admins
+  app.get("/api/documents/:id/view", isAuthenticated, async (req, res) => {
+    try {
+      const document = await storage.getDocumentById(req.params.id);
+      
+      if (!document) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+
+      // Check if user can access this document
+      const user = req.user as any;
+      const isUserDocument = document.userId === user.claims.sub;
+      const isUserAdmin = user.claims.role === 'admin';
+      
+      if (!isUserDocument && !isUserAdmin) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      // Serve the file
+      const filePath = path.resolve(document.fileUrl);
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      res.setHeader('Content-Type', document.fileType);
+      res.setHeader('Content-Disposition', `inline; filename="${document.fileName}"`);
+      
+      const fileStream = fs.createReadStream(filePath);
+      fileStream.pipe(res);
+      
+    } catch (error) {
+      console.error("Error serving document:", error);
+      res.status(500).json({ error: "Failed to serve document" });
+    }
+  });
+
+  // Route to convert DOCX to HTML for preview
+  app.get("/api/documents/:id/preview", isAuthenticated, async (req, res) => {
+    try {
+      const document = await storage.getDocumentById(req.params.id);
+      
+      if (!document) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+
+      // Check if user can access this document
+      const user = req.user as any;
+      const isUserDocument = document.userId === user.claims.sub;
+      const isUserAdmin = user.claims.role === 'admin';
+      
+      if (!isUserDocument && !isUserAdmin) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const filePath = path.resolve(document.fileUrl);
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      // Only for DOCX files
+      if (document.fileType !== 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        return res.status(400).json({ error: "Preview only available for DOCX files" });
+      }
+
+      const result = await mammoth.convertToHtml({ path: filePath });
+      
+      res.json({ 
+        html: result.value,
+        messages: result.messages 
+      });
+      
+    } catch (error) {
+      console.error("Error converting document:", error);
+      res.status(500).json({ error: "Failed to convert document" });
     }
   });
 
