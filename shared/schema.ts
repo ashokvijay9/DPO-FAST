@@ -91,12 +91,24 @@ export const complianceTasks = pgTable("compliance_tasks", {
   description: text("description").notNull(),
   steps: jsonb("steps"), // Array of step-by-step instructions
   priority: varchar("priority").notNull(), // high, medium, low
-  status: varchar("status").default("pending"), // pending, completed
+  status: varchar("status").default("pending"), // pending, completed, in_review, approved, rejected
   category: varchar("category"), // data_protection, consent, documentation, etc.
   dueDate: timestamp("due_date"),
   completedAt: timestamp("completed_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+  // New fields for to-do list functionality
+  questionnaireResponseId: varchar("questionnaire_response_id").references(() => questionnaireResponses.id),
+  lgpdRequirement: varchar("lgpd_requirement"), // Which LGPD requirement this addresses
+  suggestedDurationDays: integer("suggested_duration_days").default(30), // Suggested completion time in days
+  attachedDocuments: jsonb("attached_documents").default([]), // Array of attached document IDs
+  submittedAt: timestamp("submitted_at"), // When submitted for admin review
+  reviewedAt: timestamp("reviewed_at"), // When admin reviewed
+  reviewedBy: varchar("reviewed_by"), // Admin who reviewed
+  rejectionReason: text("rejection_reason"), // Reason if rejected
+  userComments: text("user_comments"), // Comments from user when submitting
+  adminComments: text("admin_comments"), // Comments from admin during review
+  progress: integer("progress").default(0), // Progress percentage 0-100
 });
 
 // Compliance reports

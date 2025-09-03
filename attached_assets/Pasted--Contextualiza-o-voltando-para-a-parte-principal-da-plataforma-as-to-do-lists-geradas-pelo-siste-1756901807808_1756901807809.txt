@@ -1,0 +1,40 @@
+
+Contextualização
+voltando para a parte principal da plataforma  as to-do lists geradas pelo sistema, funcionando de forma semelhante às tarefas do Microsoft Teams. Os usuários/assinantes devem poder anexar documentos a cada item da to-do list gerado e enviar para validação no painel de admins (DPOs), que podem aprovar ou revogar (rejeitar) a documentação, permitindo o avanço no processo de adequação à LGPD.
+A funcionalidade de to-do lists do DPO Fast deve incluir:
+
+Geração da To-Do List: Baseada nas respostas do questionário, gerando uma lista de tarefas para itens não conformes com a LGPD.
+Interação com Tarefas: Para cada tarefa, o assinante pode visualizar detalhes, anexar documentos e enviar para validação.
+Envio para Validação: Após anexar documentos, enviar a tarefa para revisão pelos admins, atualizando o status (ex.: "pendente", "em revisão").
+Integração com Painel Admin: As tarefas enviadas aparecem no painel admin para aprovação ou revogação, com notificações para o assinante.
+Atualizações de Status: Após aprovação, marcar a tarefa como concluída e atualizar o progresso geral; em caso de revogação, permitir reenvio com correções.
+Notificações: Enviar alertas ao assinante sobre status das tarefas (ex.: aprovado, revogado com motivo).
+Gerenciamento de Documentos: Integrar com a seção existente de documentos para armazenar e gerenciar anexos.
+
+O desenvolvimento será dividido em etapas para facilitar a implementação e evitar sobrecarga. Cada etapa terá um prompt específico com instruções claras, focando no que cada tela e parte do sistema deve possuir, com o nome DPO Fast integrado em títulos e descrições.
+Etapas de Desenvolvimento
+Etapa 1: Geração e Visualização da To-Do List
+Objetivo: Criar a geração automática da to-do list baseada no questionário respondido de cada setor que a empresa do assinante possui e uma seção para visualizá-la no dashboard do assinante no DPO Fast.
+Prompt:Crie a funcionalidade de geração de to-do lists para o Micro-SaaS DPO Fast. A to-do list deve ser gerada automaticamente após o preenchimento do questionário de cada setor da empresa, listando tarefas para itens não conformes com a LGPD (ex.: "Designar um DPO", "Atualizar política de privacidade"). Cada tarefa deve incluir descrição, prazo sugerido e status inicial ("pendente"). No dashboard do assinante, deve exibir uma lista interativa com colunas como "Tarefa", "Descrição", "Status", "Ações" (ex.: "Anexar Documentos", "Enviar para Validação"). Deve calcular o progresso geral (ex.: percentual de tarefas concluídas). Descreva em detalhes o que essa funcionalidade deve possuir e como deve funcionar.
+Etapa 2: Anexar Documentos e Enviar para Validação
+Objetivo: Permitir que o assinante anexe documentos a cada tarefa e envie para validação no DPO Fast.
+Prompt:Desenvolva a interação com tarefas na to-do list do DPO Fast. Para cada tarefa, deve haver uma visão detalhada com campos para anexar múltiplos documentos (ex.: PDFs comprovando a ação), adicionar comentários e um botão para "Enviar para Validação". Após envio, atualizar o status da tarefa para "Em Revisão" e bloquear edições até a resposta do admin. Deve validar que documentos sejam anexados antes do envio. Integre com o gerenciamento de documentos existente para armazenar anexos. Descreva em detalhes o que essa funcionalidade deve possuir e como deve funcionar.
+Etapa 3: Integração com o Painel Admin
+Objetivo: Conectar as tarefas enviadas ao painel admin para revisão, aprovação ou revogação no DPO Fast.
+Prompt:Integre a to-do list com o painel admin do DPO Fast. As tarefas enviadas pelos assinantes devem aparecer em uma seção dedicada no painel admin, com filtros por assinante, status e prioridade. Para cada tarefa, o admin deve visualizar documentos anexados, aprovar (marcando como "Concluída") ou revogar (rejeitar com motivo obrigatório via modal), atualizando o status e registrando a ação. Após aprovação/revogação, notificar o assinante e atualizar o progresso no dashboard do assinante. Descreva em detalhes o que essa integração deve possuir e como deve funcionar.
+Etapa 4: Notificações e Atualizações de Status
+Objetivo: Implementar notificações e gerenciamento de status para as tarefas no DPO Fast.
+Prompt:Crie o sistema de notificações para a to-do list do DPO Fast. Ao enviar uma tarefa, ao aprovar ou revogar, deve enviar notificações automáticas ao assinante (ex.: "Sua tarefa foi enviada para revisão", "Tarefa aprovada: Prosiga para a próxima", "Tarefa revogada: [motivo] - Por favor, corrija e reenvie"). Deve permitir que o assinante visualize histórico de status e notificações no dashboard. Em caso de revogação, habilitar reenvio com novos anexos. Descreva em detalhes o que essa funcionalidade deve possuir e como deve funcionar, incluindo exemplos de mensagens de notificação.
+Etapa 5: Segurança e Auditoria
+Objetivo: Garantir segurança e auditoria nas interações com a to-do list no DPO Fast.
+Prompt:Configure segurança e auditoria para a funcionalidade de to-do lists no DPO Fast. Deve restringir acesso às tarefas e documentos ao próprio assinante e admins. Registrar todas as ações (ex.: envio, aprovação, revogação) com detalhes como usuário, data e motivo. Verificar integridade dos documentos anexados durante o envio e revisão. Descreva em detalhes as regras de segurança e auditoria, incluindo como diferenciar acessos e instruções para testar.
+Etapa 6: Integração com o Sistema Existente e Deploy
+Objetivo: Integrar a funcionalidade de to-do lists ao sistema existente do DPO Fast.
+Prompt:Integre a funcionalidade de to-do lists ao Micro-SaaS DPO Fast existente. Conecte à geração de relatórios para atualizar o relatório final após conclusão de tarefas. Forneça instruções passo a passo para adicionar essa funcionalidade ao sistema, testar o fluxo completo (ex.: geração de to-do list, anexar documentos, envio, revisão pelo admin, notificação) e realizar o deploy. Descreva em detalhes o que essa integração deve possuir e como deve funcionar, incluindo as instruções de deploy.
+Notas Adicionais
+
+Segurança: Mantenha auditoria de todas as ações relacionadas às tarefas e documentos.
+Escalabilidade: Otimize o gerenciamento de múltiplas tarefas e assinantes.
+Usabilidade: Torne a interface intuitiva, com guias passo a passo para anexar e enviar, e indicadores de progresso.
+Integração: Certifique-se de que a to-do list se conecte perfeitamente ao questionário, relatórios e painel admin existentes.
+Testes: Simule fluxos completos de tarefas antes do deploy.
