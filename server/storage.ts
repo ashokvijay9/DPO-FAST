@@ -320,42 +320,82 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTaskForReview(taskId: string): Promise<any> {
-    // Get task details with proper null handling
-    const task = await db
-      .select()
-      .from(complianceTasks)
-      .where(eq(complianceTasks.id, taskId))
-      .limit(1);
+    try {
+      // Get task details first
+      const task = await db
+        .select({
+          id: complianceTasks.id,
+          title: complianceTasks.title,
+          description: complianceTasks.description,
+          steps: complianceTasks.steps,
+          priority: complianceTasks.priority,
+          status: complianceTasks.status,
+          category: complianceTasks.category,
+          dueDate: complianceTasks.dueDate,
+          submittedAt: complianceTasks.submittedAt,
+          userComments: complianceTasks.userComments,
+          attachedDocuments: complianceTasks.attachedDocuments,
+          userId: complianceTasks.userId
+        })
+        .from(complianceTasks)
+        .where(eq(complianceTasks.id, taskId))
+        .limit(1);
 
-    if (!task.length) {
+      if (!task.length) {
+        return null;
+      }
+
+      const taskData = task[0];
+
+      // Get user details
+      const user = await db
+        .select({
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName
+        })
+        .from(users)
+        .where(eq(users.id, taskData.userId))
+        .limit(1);
+
+      // Get company profile if exists
+      const companyProfile = await db
+        .select({
+          companyName: companyProfiles.companyName,
+          email: companyProfiles.email,
+          phone: companyProfiles.phone
+        })
+        .from(companyProfiles)
+        .where(eq(companyProfiles.userId, taskData.userId))
+        .limit(1);
+
+      const userData = user[0] || {};
+      const companyData = companyProfile[0] || {};
+
+      return {
+        id: taskData.id,
+        title: taskData.title || '',
+        description: taskData.description || '',
+        steps: taskData.steps || [],
+        priority: taskData.priority || 'medium',
+        status: taskData.status || '',
+        category: taskData.category || '',
+        dueDate: taskData.dueDate,
+        submittedAt: taskData.submittedAt,
+        userComments: taskData.userComments || '',
+        attachments: taskData.attachedDocuments || [],
+        userId: taskData.userId,
+        userEmail: userData.email || '',
+        userFirstName: userData.firstName || '',
+        userLastName: userData.lastName || '',
+        companyName: companyData.companyName || '',
+        companyEmail: companyData.email || '',
+        companyPhone: companyData.phone || ''
+      };
+    } catch (error) {
+      console.error('Error in getTaskForReview:', error);
       return null;
     }
-
-    const taskData = task[0];
-
-    // Get user details
-    const user = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, taskData.userId))
-      .limit(1);
-
-    // Get company profile if exists
-    const companyProfile = await db
-      .select()
-      .from(companyProfiles)
-      .where(eq(companyProfiles.userId, taskData.userId))
-      .limit(1);
-
-    return {
-      ...taskData,
-      userEmail: user[0]?.email || '',
-      userFirstName: user[0]?.firstName || '',
-      userLastName: user[0]?.lastName || '',
-      companyName: companyProfile[0]?.companyName || '',
-      companyEmail: companyProfile[0]?.email || '',
-      companyPhone: companyProfile[0]?.phone || ''
-    };
   }
 
   async deleteAllUserComplianceTasks(userId: string): Promise<void> {
