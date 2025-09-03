@@ -26,6 +26,7 @@ import {
   Settings
 } from "lucide-react";
 import { useLocation } from "wouter";
+import { NotificationCenter } from "@/components/NotificationCenter";
 
 export default function Navbar() {
   const { user, isAuthenticated, isLoading } = useAuth();

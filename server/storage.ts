@@ -6,6 +6,8 @@ import {
   complianceTasks,
   complianceReports,
   companyProfiles,
+  notifications,
+  taskStatusHistory,
   type User,
   type UpsertUser,
   type QuestionnaireResponse,
@@ -967,9 +969,157 @@ export class DatabaseStorage implements IStorage {
     await db.delete(documents).where(eq(documents.userId, userId));
     await db.delete(questionnaireResponses).where(eq(questionnaireResponses.userId, userId));
     await db.delete(companyProfiles).where(eq(companyProfiles.userId, userId));
+    await db.delete(notifications).where(eq(notifications.userId, userId));
     
     // Finally delete the user
     await db.delete(users).where(eq(users.id, userId));
+  }
+
+  // Notification operations
+  async createNotification(data: {
+    userId: string;
+    title: string;
+    message: string;
+    type: string;
+    relatedTaskId?: string;
+  }): Promise<void> {
+    await db.insert(notifications).values({
+      userId: data.userId,
+      title: data.title,
+      message: data.message,
+      type: data.type,
+      relatedTaskId: data.relatedTaskId,
+    });
+  }
+
+  async getUserNotifications(userId: string, limit: number = 50): Promise<any[]> {
+    return await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, userId))
+      .orderBy(desc(notifications.createdAt))
+      .limit(limit);
+  }
+
+  async markNotificationAsRead(notificationId: string): Promise<void> {
+    await db
+      .update(notifications)
+      .set({ isRead: true })
+      .where(eq(notifications.id, notificationId));
+  }
+
+  async getUnreadNotificationCount(userId: string): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(notifications)
+      .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+    
+    return result[0]?.count || 0;
+  }
+
+  // Task status history operations
+  async createStatusHistoryEntry(data: {
+    taskId: string;
+    fromStatus?: string;
+    toStatus: string;
+    comments?: string;
+    changedBy: string;
+  }): Promise<void> {
+    await db.insert(taskStatusHistory).values({
+      taskId: data.taskId,
+      fromStatus: data.fromStatus,
+      toStatus: data.toStatus,
+      comments: data.comments,
+      changedBy: data.changedBy,
+    });
+  }
+
+  async getTaskStatusHistory(taskId: string): Promise<any[]> {
+    return await db
+      .select({
+        id: taskStatusHistory.id,
+        fromStatus: taskStatusHistory.fromStatus,
+        toStatus: taskStatusHistory.toStatus,
+        comments: taskStatusHistory.comments,
+        createdAt: taskStatusHistory.createdAt,
+        changedBy: users.email,
+        changedByName: sql<string>`CONCAT(${users.firstName}, ' ', ${users.lastName})`,
+      })
+      .from(taskStatusHistory)
+      .leftJoin(users, eq(taskStatusHistory.changedBy, users.id))
+      .where(eq(taskStatusHistory.taskId, taskId))
+      .orderBy(desc(taskStatusHistory.createdAt));
+  }
+
+  // Enhanced task update with status tracking and notifications
+  async updateComplianceTaskWithNotification(
+    taskId: string, 
+    updates: Partial<ComplianceTask>,
+    changedBy: string
+  ): Promise<ComplianceTask> {
+    // Get current task
+    const [currentTask] = await db
+      .select()
+      .from(complianceTasks)
+      .where(eq(complianceTasks.id, taskId))
+      .limit(1);
+
+    if (!currentTask) {
+      throw new Error('Task not found');
+    }
+
+    // Update the task
+    const [updatedTask] = await db
+      .update(complianceTasks)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(complianceTasks.id, taskId))
+      .returning();
+
+    // Create status history entry if status changed
+    if (updates.status && updates.status !== currentTask.status) {
+      await this.createStatusHistoryEntry({
+        taskId,
+        fromStatus: currentTask.status,
+        toStatus: updates.status,
+        comments: updates.adminComments || '',
+        changedBy,
+      });
+
+      // Create notification based on status change
+      let notificationTitle = '';
+      let notificationMessage = '';
+      let notificationType = '';
+
+      switch (updates.status) {
+        case 'approved':
+          notificationTitle = 'Tarefa Aprovada!';
+          notificationMessage = `Sua tarefa "${currentTask.title}" foi aprovada pelo DPO. Parabéns! Você pode prosseguir para a próxima etapa.`;
+          notificationType = 'task_approved';
+          break;
+        case 'rejected':
+          notificationTitle = 'Tarefa Rejeitada';
+          notificationMessage = `Sua tarefa "${currentTask.title}" foi rejeitada. Motivo: ${updates.adminComments || 'Não especificado'}. Por favor, corrija e reenvie.`;
+          notificationType = 'task_rejected';
+          break;
+        case 'in_review':
+          notificationTitle = 'Tarefa em Revisão';
+          notificationMessage = `Sua tarefa "${currentTask.title}" foi enviada para revisão do DPO. Aguarde a análise.`;
+          notificationType = 'task_submitted';
+          break;
+      }
+
+      if (notificationTitle) {
+        await this.createNotification({
+          userId: currentTask.userId,
+          title: notificationTitle,
+          message: notificationMessage,
+          type: notificationType,
+          relatedTaskId: taskId,
+        });
+      }
+    }
+
+    return updatedTask;
   }
 }
 

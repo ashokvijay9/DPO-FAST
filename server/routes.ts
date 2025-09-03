@@ -1227,19 +1227,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Approve task (Admin/DPO only)
+  // Approve task (Admin/DPO only) - Updated with notifications
   app.patch('/api/admin/tasks/:taskId/approve', isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
     try {
       const { taskId } = req.params;
       const { reviewComments } = req.body;
       const adminId = req.user.claims.sub;
 
-      const updatedTask = await storage.updateComplianceTask(taskId, {
+      const updatedTask = await storage.updateComplianceTaskWithNotification(taskId, {
         status: 'approved',
         reviewedAt: new Date(),
         reviewedBy: adminId,
         adminComments: reviewComments || ''
-      });
+      }, adminId);
 
       // Log the approval action
       await storage.createAuditLog({
@@ -1275,12 +1275,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const updatedTask = await storage.updateComplianceTask(taskId, {
+      const updatedTask = await storage.updateComplianceTaskWithNotification(taskId, {
         status: 'rejected',
         reviewedAt: new Date(),
         reviewedBy: adminId,
         adminComments: reviewComments
-      });
+      }, adminId);
 
       // Log the rejection action
       await storage.createAuditLog({
@@ -1778,6 +1778,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Setup admin routes
   setupAdminRoutes(app);
+
+  // Notification routes
+  app.get('/api/notifications', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const notifications = await storage.getUserNotifications(userId);
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({ error: "Failed to fetch notifications" });
+    }
+  });
+
+  app.get('/api/notifications/unread-count', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const count = await storage.getUnreadNotificationCount(userId);
+      res.json({ count });
+    } catch (error) {
+      console.error("Error fetching unread count:", error);
+      res.status(500).json({ error: "Failed to fetch unread count" });
+    }
+  });
+
+  app.patch('/api/notifications/:id/read', isAuthenticated, async (req, res) => {
+    try {
+      await storage.markNotificationAsRead(req.params.id);
+      res.json({ message: "Notification marked as read" });
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      res.status(500).json({ error: "Failed to mark notification as read" });
+    }
+  });
+
+  // Task status history route
+  app.get('/api/tasks/:taskId/history', isAuthenticated, async (req, res) => {
+    try {
+      const { taskId } = req.params;
+      const userId = req.user?.claims?.sub;
+      const isAdmin = req.user?.claims?.role === 'admin';
+
+      // Check if user owns the task or is admin
+      const task = await storage.getComplianceTaskById(taskId);
+      if (!task || (task.userId !== userId && !isAdmin)) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const history = await storage.getTaskStatusHistory(taskId);
+      res.json(history);
+    } catch (error) {
+      console.error("Error fetching task history:", error);
+      res.status(500).json({ error: "Failed to fetch task history" });
+    }
+  });
+
+  // Task resubmission route (for rejected tasks)
+  app.patch('/api/compliance-tasks/:taskId/resubmit', isAuthenticated, async (req, res) => {
+    try {
+      const { taskId } = req.params;
+      const { userComments } = req.body;
+      const userId = req.user?.claims?.sub;
+
+      // Get the task and verify ownership
+      const task = await storage.getComplianceTaskById(taskId);
+      if (!task || task.userId !== userId) {
+        return res.status(404).json({ error: "Task not found" });
+      }
+
+      // Only allow resubmission of rejected tasks
+      if (task.status !== 'rejected') {
+        return res.status(400).json({ error: "Only rejected tasks can be resubmitted" });
+      }
+
+      // Update task status to in_review and add comments
+      const updatedTask = await storage.updateComplianceTaskWithNotification(taskId, {
+        status: 'in_review',
+        submittedAt: new Date(),
+        userComments: userComments || '',
+        adminComments: null, // Clear previous admin comments
+        rejectionReason: null, // Clear rejection reason
+      }, userId);
+
+      res.json({
+        message: "Tarefa reenviada com sucesso",
+        task: updatedTask
+      });
+    } catch (error) {
+      console.error("Error resubmitting task:", error);
+      res.status(500).json({ error: "Failed to resubmit task" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;

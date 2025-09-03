@@ -128,6 +128,29 @@ export const complianceReports = pgTable("compliance_reports", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Notifications system
+export const notifications = pgTable("notifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  title: varchar("title").notNull(),
+  message: text("message").notNull(),
+  type: varchar("type").notNull(), // task_submitted, task_approved, task_rejected, system
+  relatedTaskId: varchar("related_task_id").references(() => complianceTasks.id),
+  isRead: boolean("is_read").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Task status history
+export const taskStatusHistory = pgTable("task_status_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  taskId: varchar("task_id").notNull().references(() => complianceTasks.id),
+  fromStatus: varchar("from_status"),
+  toStatus: varchar("to_status").notNull(),
+  comments: text("comments"),
+  changedBy: varchar("changed_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Company profiles (collected after signup)
 export const companyProfiles = pgTable("company_profiles", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
