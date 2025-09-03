@@ -25,6 +25,14 @@ export default function Questionnaire() {
   // Get sectorId from URL parameters if available
   const [match, params] = useRoute("/questionnaire/:sectorId");
   const sectorId = params?.sectorId;
+
+  // Redirect to sector selection if no sectorId is provided
+  useEffect(() => {
+    if (!sectorId && isAuthenticated) {
+      navigate("/questionnaire-sectors");
+      return;
+    }
+  }, [sectorId, isAuthenticated, navigate]);
   
   const [showInitialOptions, setShowInitialOptions] = useState(true);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -299,7 +307,8 @@ export default function Questionnaire() {
     );
   }
 
-  if (!questions.length) {
+  // Show loading state only if we have a sectorId but no questions yet
+  if (sectorId && !questions.length && isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="max-w-md mx-4">
@@ -309,6 +318,11 @@ export default function Questionnaire() {
         </Card>
       </div>
     );
+  }
+
+  // Don't render anything if we don't have a sectorId (user will be redirected)
+  if (!sectorId) {
+    return null;
   }
 
   // Show initial options screen if user has existing responses
