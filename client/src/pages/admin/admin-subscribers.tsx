@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { 
   Search, 
   Users, 
@@ -12,7 +14,10 @@ import {
   Calendar,
   Building,
   Mail,
-  Filter
+  Filter,
+  MoreHorizontal,
+  Trash2,
+  Shield
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
@@ -29,6 +34,7 @@ interface Subscriber {
   createdAt: string;
   documentCount: number;
   lastActivity: string;
+  role?: string;
   companyProfile?: {
     companyName: string;
     companySize: string;
@@ -43,6 +49,7 @@ export default function AdminSubscribers() {
   
   const { isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -62,6 +69,58 @@ export default function AdminSubscribers() {
   const { data: subscribers, isLoading: isSubscribersLoading } = useQuery({
     queryKey: ["/api/admin/subscribers"],
     enabled: isAuthenticated,
+  });
+
+  // Promote user to admin mutation
+  const promoteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const response = await fetch(`/api/admin/users/${userId}/promote`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Erro ao promover usuário");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/subscribers"] });
+      toast({ title: "Usuário promovido a administrador!" });
+    },
+    onError: (error: Error) => {
+      toast({ 
+        title: "Erro ao promover usuário", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    },
+  });
+
+  // Delete user mutation
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Erro ao deletar usuário");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/subscribers"] });
+      toast({ title: "Usuário deletado com sucesso!" });
+    },
+    onError: (error: Error) => {
+      toast({ 
+        title: "Erro ao deletar usuário", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    },
   });
 
   const filteredSubscribers = subscribers?.filter((subscriber: Subscriber) => {
@@ -263,16 +322,96 @@ export default function AdminSubscribers() {
                           </div>
                         </td>
                         <td className="py-4 px-4">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex items-center gap-2"
-                            onClick={() => window.location.href = `/admin/subscriber/${subscriber.id}`}
-                            data-testid={`button-view-subscriber-${subscriber.id}`}
-                          >
-                            <Eye className="h-4 w-4" />
-                            Ver Detalhes
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex items-center gap-2"
+                              onClick={() => window.location.href = `/admin/subscriber/${subscriber.id}`}
+                              data-testid={`button-view-subscriber-${subscriber.id}`}
+                            >
+                              <Eye className="h-4 w-4" />
+                              Ver Detalhes
+                            </Button>
+                            
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" data-testid={`subscriber-actions-${subscriber.id}`}>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                {subscriber.role !== 'admin' && (
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <DropdownMenuItem 
+                                        onSelect={(e) => e.preventDefault()}
+                                        className="text-blue-600 cursor-pointer"
+                                      >
+                                        <Shield className="h-4 w-4 mr-2" />
+                                        Promover a Admin
+                                      </DropdownMenuItem>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Promover a Administrador</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Tem certeza que deseja promover {subscriber.firstName} {subscriber.lastName} a administrador? 
+                                          Esta ação dará todos os privilégios administrativos para este usuário.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                        <AlertDialogAction
+                                          onClick={() => promoteUserMutation.mutate(subscriber.id)}
+                                          className="bg-blue-600 hover:bg-blue-700"
+                                          data-testid={`confirm-promote-${subscriber.id}`}
+                                        >
+                                          Promover
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                )}
+                                
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <DropdownMenuItem 
+                                      onSelect={(e) => e.preventDefault()}
+                                      className="text-red-600 cursor-pointer"
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-2" />
+                                      Deletar Usuário
+                                    </DropdownMenuItem>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Deletar Usuário</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        ⚠️ <strong>ATENÇÃO:</strong> Tem certeza que deseja deletar permanentemente {subscriber.firstName} {subscriber.lastName}? 
+                                        <br /><br />
+                                        Esta ação é <strong>irreversível</strong> e removerá:
+                                        <br />• Conta do usuário
+                                        <br />• Todos os documentos
+                                        <br />• Relatórios e dados de compliance
+                                        <br />• Histórico de auditoria
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => deleteUserMutation.mutate(subscriber.id)}
+                                        className="bg-red-600 hover:bg-red-700"
+                                        data-testid={`confirm-delete-subscriber-${subscriber.id}`}
+                                      >
+                                        Deletar Permanentemente
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
                         </td>
                       </tr>
                     ))}

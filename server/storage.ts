@@ -111,6 +111,7 @@ export interface IStorage {
   createAdministrator(adminData: { email: string; firstName: string; lastName: string }): Promise<any>;
   promoteUserToAdmin(userId: string): Promise<void>;
   demoteAdminToUser(userId: string): Promise<void>;
+  deleteUser(userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -816,6 +817,29 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date(),
       })
       .where(eq(users.id, userId));
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!user) {
+      throw new Error('Usuário não encontrado');
+    }
+
+    // Delete related data first (cascade delete)
+    await db.delete(auditLog).where(eq(auditLog.userId, userId));
+    await db.delete(complianceReports).where(eq(complianceReports.userId, userId));
+    await db.delete(complianceTasks).where(eq(complianceTasks.userId, userId));
+    await db.delete(documents).where(eq(documents.userId, userId));
+    await db.delete(questionnaireResponses).where(eq(questionnaireResponses.userId, userId));
+    await db.delete(companyProfiles).where(eq(companyProfiles.userId, userId));
+    
+    // Finally delete the user
+    await db.delete(users).where(eq(users.id, userId));
   }
 }
 

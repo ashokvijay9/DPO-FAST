@@ -24,7 +24,8 @@ import {
   User,
   Calendar,
   MoreHorizontal,
-  Search
+  Search,
+  Trash2
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -142,6 +143,32 @@ export default function AdminManagement() {
     onError: (error: Error) => {
       toast({ 
         title: "Erro ao rebaixar administrador", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    },
+  });
+
+  // Delete user mutation
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Erro ao deletar usuário");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/administrators"] });
+      toast({ title: "Usuário deletado com sucesso!" });
+    },
+    onError: (error: Error) => {
+      toast({ 
+        title: "Erro ao deletar usuário", 
         description: error.message,
         variant: "destructive" 
       });
@@ -365,36 +392,74 @@ export default function AdminManagement() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           {!admin.isCurrentUser && (
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <DropdownMenuItem 
-                                  onSelect={(e) => e.preventDefault()}
-                                  className="text-red-600 cursor-pointer"
-                                >
-                                  <UserMinus className="h-4 w-4 mr-2" />
-                                  Rebaixar a Usuário
-                                </DropdownMenuItem>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Rebaixar Administrador</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Tem certeza que deseja rebaixar {admin.firstName} {admin.lastName} de administrador para usuário comum? 
-                                    Esta ação removerá todos os privilégios administrativos.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => demoteAdminMutation.mutate(admin.id)}
-                                    className="bg-red-600 hover:bg-red-700"
-                                    data-testid={`confirm-demote-${admin.id}`}
+                            <>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <DropdownMenuItem 
+                                    onSelect={(e) => e.preventDefault()}
+                                    className="text-orange-600 cursor-pointer"
                                   >
-                                    Rebaixar
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
+                                    <UserMinus className="h-4 w-4 mr-2" />
+                                    Rebaixar a Usuário
+                                  </DropdownMenuItem>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Rebaixar Administrador</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Tem certeza que deseja rebaixar {admin.firstName} {admin.lastName} de administrador para usuário comum? 
+                                      Esta ação removerá todos os privilégios administrativos mas manterá a conta ativa.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => demoteAdminMutation.mutate(admin.id)}
+                                      className="bg-orange-600 hover:bg-orange-700"
+                                      data-testid={`confirm-demote-${admin.id}`}
+                                    >
+                                      Rebaixar
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                              
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <DropdownMenuItem 
+                                    onSelect={(e) => e.preventDefault()}
+                                    className="text-red-600 cursor-pointer"
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Deletar Completamente
+                                  </DropdownMenuItem>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Deletar Usuário</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      ⚠️ <strong>ATENÇÃO:</strong> Tem certeza que deseja deletar permanentemente {admin.firstName} {admin.lastName}? 
+                                      <br /><br />
+                                      Esta ação é <strong>irreversível</strong> e removerá:
+                                      <br />• Conta do usuário
+                                      <br />• Todos os documentos
+                                      <br />• Relatórios e dados de compliance
+                                      <br />• Histórico de auditoria
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => deleteUserMutation.mutate(admin.id)}
+                                      className="bg-red-600 hover:bg-red-700"
+                                      data-testid={`confirm-delete-${admin.id}`}
+                                    >
+                                      Deletar Permanentemente
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </>
                           )}
                         </DropdownMenuContent>
                       </DropdownMenu>

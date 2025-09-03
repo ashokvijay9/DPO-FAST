@@ -2532,4 +2532,52 @@ export function setupAdminRoutes(app: Express) {
       }
     }
   });
+
+  app.delete("/api/admin/users/:id", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const adminId = req.adminUser!.id;
+      const userId = req.params.id;
+
+      // Prevent self-deletion
+      if (adminId === userId) {
+        return res.status(400).json({ message: "Você não pode deletar a si mesmo" });
+      }
+
+      // Get user info for logging before deletion
+      const userToDelete = await storage.getUser(userId);
+      if (!userToDelete) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+
+      await storage.deleteUser(userId);
+
+      // Log the action
+      await storage.createAuditLog({
+        userId: adminId,
+        action: "delete_user",
+        resourceType: "user",
+        resourceId: userId,
+        details: { 
+          deletedUser: {
+            email: userToDelete.email,
+            role: userToDelete.role,
+            firstName: userToDelete.firstName,
+            lastName: userToDelete.lastName
+          },
+          deletedBy: adminId 
+        },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent') || null,
+      });
+
+      res.json({ message: "Usuário deletado com sucesso" });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      if (error instanceof Error) {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Failed to delete user" });
+      }
+    }
+  });
 }
