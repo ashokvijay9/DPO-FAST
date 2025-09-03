@@ -2312,4 +2312,112 @@ export function setupAdminRoutes(app: Express) {
       res.status(500).json({ message: "Failed to fetch subscriber details" });
     }
   });
+
+  // Admin Profile Routes
+  app.get("/api/admin/profile", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const adminId = req.user!.id;
+      const adminProfile = await storage.getUser(adminId);
+      
+      if (!adminProfile) {
+        return res.status(404).json({ message: "Admin profile not found" });
+      }
+      
+      res.json({
+        id: adminProfile.id,
+        email: adminProfile.email,
+        firstName: adminProfile.firstName,
+        lastName: adminProfile.lastName,
+        role: adminProfile.role,
+        createdAt: adminProfile.createdAt,
+        lastLogin: adminProfile.updatedAt,
+        permissions: ["Gerenciar Usuários", "Aprovar Documentos", "Visualizar Relatórios", "Configurações do Sistema"]
+      });
+    } catch (error) {
+      console.error("Error fetching admin profile:", error);
+      res.status(500).json({ message: "Failed to fetch admin profile" });
+    }
+  });
+
+  app.patch("/api/admin/profile", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const adminId = req.user!.id;
+      const { firstName, lastName } = req.body;
+      
+      const updateData: any = {};
+      if (firstName !== undefined) updateData.firstName = firstName;
+      if (lastName !== undefined) updateData.lastName = lastName;
+      
+      const updatedProfile = await storage.updateUserProfile(adminId, updateData);
+      
+      res.json(updatedProfile);
+    } catch (error) {
+      console.error("Error updating admin profile:", error);
+      res.status(500).json({ message: "Failed to update admin profile" });
+    }
+  });
+
+  // Admin Settings Routes
+  app.get("/api/admin/settings", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      // Default admin settings - in a real app, these would be stored in database
+      const defaultSettings = {
+        emailNotifications: true,
+        systemNotifications: true,
+        maintenanceMode: false,
+        autoApproveDocuments: false,
+        maxFileSize: 10,
+        sessionTimeout: 30,
+        defaultUserPlan: "free",
+        requireDocumentApproval: true
+      };
+      
+      res.json(defaultSettings);
+    } catch (error) {
+      console.error("Error fetching admin settings:", error);
+      res.status(500).json({ message: "Failed to fetch admin settings" });
+    }
+  });
+
+  app.patch("/api/admin/settings", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const adminId = req.user!.id;
+      const settings = req.body;
+      
+      // Log the settings change
+      await storage.createAuditLog({
+        userId: adminId,
+        action: "update_admin_settings",
+        resourceType: "settings",
+        resourceId: "admin_settings",
+        details: { changedSettings: settings },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent') || null,
+      });
+      
+      // In a real app, you'd save these to a settings table
+      res.json({ message: "Settings updated successfully", settings });
+    } catch (error) {
+      console.error("Error updating admin settings:", error);
+      res.status(500).json({ message: "Failed to update admin settings" });
+    }
+  });
+
+  // System Statistics Route
+  app.get("/api/admin/system-stats", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      // Mock system statistics - in a real app, these would come from monitoring
+      const systemStats = {
+        uptime: "72h 30m",
+        activeUsers: Math.floor(Math.random() * 100) + 1,
+        storageUsed: "2.4 GB",
+        apiCalls: Math.floor(Math.random() * 1000) + 100
+      };
+      
+      res.json(systemStats);
+    } catch (error) {
+      console.error("Error fetching system stats:", error);
+      res.status(500).json({ message: "Failed to fetch system statistics" });
+    }
+  });
 }

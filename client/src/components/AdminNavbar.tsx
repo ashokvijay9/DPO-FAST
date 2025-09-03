@@ -25,7 +25,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 
-export default function AdminNavbar() {
+export function AdminNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [location] = useLocation();
   const { logout } = useAuth();
@@ -151,13 +151,13 @@ export default function AdminNavbar() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/profile" className="cursor-pointer">
+                  <Link href="/admin/profile" className="cursor-pointer">
                     <User className="mr-2 h-4 w-4" />
-                    <span>Meu Perfil</span>
+                    <span>Perfil Admin</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/admin/settings" className="cursor-pointer">
+                  <Link href="/admin/profile" className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Configurações</span>
                   </Link>
@@ -230,3 +230,5 @@ export default function AdminNavbar() {
     </nav>
   );
 }
+
+export default AdminNavbar;

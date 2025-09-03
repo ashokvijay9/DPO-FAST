@@ -25,6 +25,7 @@ import AdminDashboard from "@/pages/admin/admin-dashboard";
 import AdminSubscribers from "@/pages/admin/admin-subscribers";
 import AdminDocuments from "@/pages/admin/admin-documents";
 import AdminReports from "@/pages/admin/admin-reports";
+import AdminProfile from "@/pages/admin/admin-profile";
 
 function LoadingScreen() {
   return (
@@ -91,6 +92,7 @@ function Router() {
           <Route path="/admin/subscribers" component={AdminSubscribers} />
           <Route path="/admin/documents" component={AdminDocuments} />
           <Route path="/admin/reports" component={AdminReports} />
+          <Route path="/admin/profile" component={AdminProfile} />
           <Route path="/profile" component={Profile} />
           <Route component={NotFound} />
         </Switch>
