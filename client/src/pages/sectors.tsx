@@ -75,10 +75,7 @@ export default function SectorsPage() {
   // Create sector mutation
   const createSectorMutation = useMutation({
     mutationFn: (data: SectorFormData) =>
-      apiRequest("/api/company-sectors", {
-        method: "POST",
-        body: JSON.stringify(data),
-      }),
+      apiRequest("/api/company-sectors", "POST", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/company-sectors"] });
       setIsCreateDialogOpen(false);
@@ -100,10 +97,7 @@ export default function SectorsPage() {
   // Update sector mutation
   const updateSectorMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: SectorFormData }) =>
-      apiRequest(`/api/company-sectors/${id}`, {
-        method: "PUT",
-        body: JSON.stringify(data),
-      }),
+      apiRequest(`/api/company-sectors/${id}`, "PUT", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/company-sectors"] });
       setEditingSector(null);
@@ -125,7 +119,7 @@ export default function SectorsPage() {
   // Delete sector mutation
   const deleteSectorMutation = useMutation({
     mutationFn: (id: string) =>
-      apiRequest(`/api/company-sectors/${id}`, { method: "DELETE" }),
+      apiRequest(`/api/company-sectors/${id}`, "DELETE"),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/company-sectors"] });
       toast({
