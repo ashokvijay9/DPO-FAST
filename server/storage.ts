@@ -23,7 +23,8 @@ import {
   type UpdateUserProfile,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, gte, lt, sql } from "drizzle-orm";
+import { v4 as uuidv4 } from "uuid";
 
 // Interface for storage operations
 export interface IStorage {
@@ -104,6 +105,12 @@ export interface IStorage {
   }>;
   getSubscriberDetails(subscriberId: string): Promise<any>;
   createAuditLog(log: InsertAuditLog): Promise<AuditLog>;
+  
+  // Admin management operations
+  getAllAdministrators(currentUserId: string): Promise<any[]>;
+  createAdministrator(adminData: { email: string; firstName: string; lastName: string }): Promise<any>;
+  promoteUserToAdmin(userId: string): Promise<void>;
+  demoteAdminToUser(userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -707,6 +714,108 @@ export class DatabaseStorage implements IStorage {
       reportCount: reportCount.count,
       taskCount: taskCount.count,
     };
+  }
+
+  // Admin management operations implementation
+  async getAllAdministrators(currentUserId: string): Promise<any[]> {
+    const administrators = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        role: users.role,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+      })
+      .from(users)
+      .where(eq(users.role, 'admin'))
+      .orderBy(desc(users.createdAt));
+
+    return administrators.map(admin => ({
+      ...admin,
+      lastLogin: admin.updatedAt,
+      isCurrentUser: admin.id === currentUserId,
+    }));
+  }
+
+  async createAdministrator(adminData: { email: string; firstName: string; lastName: string }): Promise<any> {
+    // Check if user with this email already exists
+    const existingUser = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, adminData.email))
+      .limit(1);
+
+    if (existingUser.length > 0) {
+      throw new Error('Usuário com este email já existe');
+    }
+
+    // Create new admin user
+    const [newAdmin] = await db
+      .insert(users)
+      .values({
+        id: uuidv4(),
+        email: adminData.email,
+        firstName: adminData.firstName,
+        lastName: adminData.lastName,
+        role: 'admin',
+        subscriptionStatus: 'active',
+        subscriptionPlan: 'pro', // Give admins pro access
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    return newAdmin;
+  }
+
+  async promoteUserToAdmin(userId: string): Promise<void> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!user) {
+      throw new Error('Usuário não encontrado');
+    }
+
+    if (user.role === 'admin') {
+      throw new Error('Usuário já é administrador');
+    }
+
+    await db
+      .update(users)
+      .set({
+        role: 'admin',
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async demoteAdminToUser(userId: string): Promise<void> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!user) {
+      throw new Error('Usuário não encontrado');
+    }
+
+    if (user.role !== 'admin') {
+      throw new Error('Usuário não é administrador');
+    }
+
+    await db
+      .update(users)
+      .set({
+        role: 'user',
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
   }
 }
 

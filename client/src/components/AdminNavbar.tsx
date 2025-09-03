@@ -66,6 +66,12 @@ function AdminNavbar() {
       icon: BarChart3,
       current: location === "/admin/reports",
     },
+    {
+      name: "Administradores",
+      href: "/admin/management",
+      icon: Shield,
+      current: location === "/admin/management",
+    },
   ];
 
   const handleLogout = () => {

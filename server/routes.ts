@@ -2420,4 +2420,116 @@ export function setupAdminRoutes(app: Express) {
       res.status(500).json({ message: "Failed to fetch system statistics" });
     }
   });
+
+  // Admin Management Routes
+  app.get("/api/admin/administrators", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const currentUserId = req.user!.id;
+      const administrators = await storage.getAllAdministrators(currentUserId);
+      res.json(administrators);
+    } catch (error) {
+      console.error("Error fetching administrators:", error);
+      res.status(500).json({ message: "Failed to fetch administrators" });
+    }
+  });
+
+  app.post("/api/admin/administrators", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const adminId = req.user!.id;
+      const { email, firstName, lastName } = req.body;
+
+      // Validate input
+      if (!email || !firstName || !lastName) {
+        return res.status(400).json({ message: "Email, nome e sobrenome são obrigatórios" });
+      }
+
+      const newAdmin = await storage.createAdministrator({ email, firstName, lastName });
+
+      // Log the action
+      await storage.createAuditLog({
+        userId: adminId,
+        action: "create_administrator",
+        resourceType: "user",
+        resourceId: newAdmin.id,
+        details: { 
+          createdAdmin: { email, firstName, lastName },
+          createdBy: adminId 
+        },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent') || null,
+      });
+
+      res.status(201).json(newAdmin);
+    } catch (error) {
+      console.error("Error creating administrator:", error);
+      if (error instanceof Error) {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Failed to create administrator" });
+      }
+    }
+  });
+
+  app.patch("/api/admin/users/:id/promote", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const adminId = req.user!.id;
+      const userId = req.params.id;
+
+      await storage.promoteUserToAdmin(userId);
+
+      // Log the action
+      await storage.createAuditLog({
+        userId: adminId,
+        action: "promote_user_to_admin",
+        resourceType: "user",
+        resourceId: userId,
+        details: { promotedBy: adminId },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent') || null,
+      });
+
+      res.json({ message: "Usuário promovido a administrador com sucesso" });
+    } catch (error) {
+      console.error("Error promoting user:", error);
+      if (error instanceof Error) {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Failed to promote user" });
+      }
+    }
+  });
+
+  app.patch("/api/admin/users/:id/demote", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const adminId = req.user!.id;
+      const userId = req.params.id;
+
+      // Prevent self-demotion
+      if (adminId === userId) {
+        return res.status(400).json({ message: "Você não pode rebaixar a si mesmo" });
+      }
+
+      await storage.demoteAdminToUser(userId);
+
+      // Log the action
+      await storage.createAuditLog({
+        userId: adminId,
+        action: "demote_admin_to_user",
+        resourceType: "user",
+        resourceId: userId,
+        details: { demotedBy: adminId },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent') || null,
+      });
+
+      res.json({ message: "Administrador rebaixado a usuário comum com sucesso" });
+    } catch (error) {
+      console.error("Error demoting admin:", error);
+      if (error instanceof Error) {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Failed to demote admin" });
+      }
+    }
+  });
 }
