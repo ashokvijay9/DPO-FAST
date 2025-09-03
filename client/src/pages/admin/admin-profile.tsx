@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { AdminNavbar } from "@/components/AdminNavbar";
+import AdminNavbar from "@/components/AdminNavbar";
 import { Shield, User, Settings, Bell, Database, Activity } from "lucide-react";
 
 interface AdminProfile {
