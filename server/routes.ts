@@ -2221,7 +2221,7 @@ export function setupAdminRoutes(app: Express) {
   app.post("/api/admin/documents/:id/approve", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
     try {
       const documentId = req.params.id;
-      const adminId = req.user!.id;
+      const adminId = req.adminUser!.id;
       
       await storage.approveDocument(documentId, adminId);
       
@@ -2247,7 +2247,7 @@ export function setupAdminRoutes(app: Express) {
   app.post("/api/admin/documents/:id/reject", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
     try {
       const documentId = req.params.id;
-      const adminId = req.user!.id;
+      const adminId = req.adminUser!.id;
       const { reason } = req.body;
       
       if (!reason || typeof reason !== 'string' || reason.trim() === '') {
@@ -2316,7 +2316,7 @@ export function setupAdminRoutes(app: Express) {
   // Admin Profile Routes
   app.get("/api/admin/profile", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
     try {
-      const adminId = req.user!.id;
+      const adminId = req.adminUser!.id;
       const adminProfile = await storage.getUser(adminId);
       
       if (!adminProfile) {
@@ -2341,7 +2341,7 @@ export function setupAdminRoutes(app: Express) {
 
   app.patch("/api/admin/profile", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
     try {
-      const adminId = req.user!.id;
+      const adminId = req.adminUser!.id;
       const { firstName, lastName } = req.body;
       
       const updateData: any = {};
@@ -2381,7 +2381,7 @@ export function setupAdminRoutes(app: Express) {
 
   app.patch("/api/admin/settings", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
     try {
-      const adminId = req.user!.id;
+      const adminId = req.adminUser!.id;
       const settings = req.body;
       
       // Log the settings change
@@ -2424,7 +2424,7 @@ export function setupAdminRoutes(app: Express) {
   // Admin Management Routes
   app.get("/api/admin/administrators", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
     try {
-      const currentUserId = req.user!.id;
+      const currentUserId = req.adminUser!.id;
       const administrators = await storage.getAllAdministrators(currentUserId);
       res.json(administrators);
     } catch (error) {
@@ -2435,7 +2435,7 @@ export function setupAdminRoutes(app: Express) {
 
   app.post("/api/admin/administrators", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
     try {
-      const adminId = req.user!.id;
+      const adminId = req.adminUser!.id;
       const { email, firstName, lastName } = req.body;
 
       // Validate input
@@ -2472,7 +2472,7 @@ export function setupAdminRoutes(app: Express) {
 
   app.patch("/api/admin/users/:id/promote", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
     try {
-      const adminId = req.user!.id;
+      const adminId = req.adminUser!.id;
       const userId = req.params.id;
 
       await storage.promoteUserToAdmin(userId);
@@ -2501,7 +2501,7 @@ export function setupAdminRoutes(app: Express) {
 
   app.patch("/api/admin/users/:id/demote", isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
     try {
-      const adminId = req.user!.id;
+      const adminId = req.adminUser!.id;
       const userId = req.params.id;
 
       // Prevent self-demotion

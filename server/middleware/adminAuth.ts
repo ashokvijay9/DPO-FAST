@@ -2,7 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import { storage } from '../storage';
 
 export interface AdminRequest extends Request {
-  user?: {
+  user?: any; // OIDC user object
+  adminUser?: {
     id: string;
     email: string;
     role: string;
@@ -11,13 +12,16 @@ export interface AdminRequest extends Request {
 
 export const requireAdmin = async (req: AdminRequest, res: Response, next: NextFunction) => {
   try {
+    // Get user ID from OIDC claims structure
+    const userId = (req.user as any)?.claims?.sub;
+    
     // Check if user is authenticated
-    if (!req.user?.id) {
+    if (!userId) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
     // Get user from database to check role
-    const user = await storage.getUser(req.user.id);
+    const user = await storage.getUser(userId);
     
     if (!user) {
       return res.status(401).json({ message: 'User not found' });
@@ -31,8 +35,8 @@ export const requireAdmin = async (req: AdminRequest, res: Response, next: NextF
       });
     }
 
-    // Add user info to request for further use
-    req.user = {
+    // Add user info to request for further use in admin routes
+    (req as any).adminUser = {
       id: user.id,
       email: user.email || '',
       role: user.role || 'user'
@@ -53,4 +57,9 @@ export const checkAdminRole = async (userId: string): Promise<boolean> => {
     console.error('Error checking admin role:', error);
     return false;
   }
+};
+
+// Helper to get admin user ID from request
+export const getAdminUserId = (req: AdminRequest): string => {
+  return req.adminUser?.id || '';
 };
