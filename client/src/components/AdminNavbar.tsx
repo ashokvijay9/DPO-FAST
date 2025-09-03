@@ -20,7 +20,8 @@ import {
   Home,
   Settings,
   User,
-  Shield
+  Shield,
+  ClipboardCheck
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
@@ -59,6 +60,14 @@ function AdminNavbar() {
       current: location === "/admin/documents",
       badge: adminStats?.pendingDocuments || 0,
       badgeColor: "bg-orange-500 text-white",
+    },
+    {
+      name: "Revisão DPO",
+      href: "/admin/dpo-review",
+      icon: ClipboardCheck,
+      current: location === "/admin/dpo-review",
+      badge: adminStats?.pendingValidationTasks || 0,
+      badgeColor: "bg-purple-500 text-white",
     },
     {
       name: "Relatórios",

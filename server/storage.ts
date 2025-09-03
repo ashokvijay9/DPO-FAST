@@ -59,6 +59,8 @@ export interface IStorage {
   getComplianceTasks(userId: string): Promise<ComplianceTask[]>;
   getComplianceTask(id: string): Promise<ComplianceTask | undefined>;
   updateComplianceTask(id: string, updates: Partial<InsertComplianceTask>): Promise<ComplianceTask>;
+  getTasksForReview(): Promise<any[]>;
+  getTaskForReview(taskId: string): Promise<any>;
   
   // Compliance report operations
   createComplianceReport(report: InsertComplianceReport): Promise<ComplianceReport>;
@@ -292,6 +294,62 @@ export class DatabaseStorage implements IStorage {
     return updated;
   }
 
+  async getTasksForReview(): Promise<any[]> {
+    const tasks = await db
+      .select({
+        id: complianceTasks.id,
+        title: complianceTasks.title,
+        description: complianceTasks.description,
+        priority: complianceTasks.priority,
+        category: complianceTasks.category,
+        submittedAt: complianceTasks.submittedAt,
+        userComments: complianceTasks.userComments,
+        userId: complianceTasks.userId,
+        userEmail: users.email,
+        userFirstName: users.firstName,
+        userLastName: users.lastName,
+        companyName: companyProfiles.companyName
+      })
+      .from(complianceTasks)
+      .leftJoin(users, eq(complianceTasks.userId, users.id))
+      .leftJoin(companyProfiles, eq(users.id, companyProfiles.userId))
+      .where(eq(complianceTasks.status, 'in_review'))
+      .orderBy(desc(complianceTasks.submittedAt));
+    
+    return tasks;
+  }
+
+  async getTaskForReview(taskId: string): Promise<any> {
+    const [taskDetails] = await db
+      .select({
+        id: complianceTasks.id,
+        title: complianceTasks.title,
+        description: complianceTasks.description,
+        steps: complianceTasks.steps,
+        priority: complianceTasks.priority,
+        status: complianceTasks.status,
+        category: complianceTasks.category,
+        dueDate: complianceTasks.dueDate,
+        submittedAt: complianceTasks.submittedAt,
+        userComments: complianceTasks.userComments,
+        attachments: complianceTasks.attachments,
+        userId: complianceTasks.userId,
+        userEmail: users.email,
+        userFirstName: users.firstName,
+        userLastName: users.lastName,
+        companyName: companyProfiles.companyName,
+        companyEmail: companyProfiles.email,
+        companyPhone: companyProfiles.phone
+      })
+      .from(complianceTasks)
+      .leftJoin(users, eq(complianceTasks.userId, users.id))
+      .leftJoin(companyProfiles, eq(users.id, companyProfiles.userId))
+      .where(eq(complianceTasks.id, taskId))
+      .limit(1);
+    
+    return taskDetails;
+  }
+
   async deleteAllUserComplianceTasks(userId: string): Promise<void> {
     await db
       .delete(complianceTasks)
@@ -481,6 +539,7 @@ export class DatabaseStorage implements IStorage {
     pendingDocuments: number;
     approvedDocuments: number;
     reportsGenerated: number;
+    pendingValidationTasks: number;
   }> {
     const [subscribersCount] = await db
       .select({ count: sql<number>`count(*)` })
@@ -500,11 +559,17 @@ export class DatabaseStorage implements IStorage {
       .select({ count: sql<number>`count(*)` })
       .from(complianceReports);
 
+    const [pendingValidationTasksCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(complianceTasks)
+      .where(eq(complianceTasks.status, 'in_review'));
+
     return {
       totalSubscribers: subscribersCount.count,
       pendingDocuments: pendingDocsCount.count,
       approvedDocuments: approvedDocsCount.count,
       reportsGenerated: reportsCount.count,
+      pendingValidationTasks: pendingValidationTasksCount.count,
     };
   }
 

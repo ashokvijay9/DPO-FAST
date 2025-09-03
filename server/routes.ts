@@ -1121,6 +1121,110 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get tasks pending DPO review (Admin only)
+  app.get('/api/admin/pending-tasks', isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const pendingTasks = await storage.getTasksForReview();
+      res.json(pendingTasks);
+    } catch (error) {
+      console.error("Error fetching pending tasks for review:", error);
+      res.status(500).json({ message: "Erro ao buscar tarefas pendentes de revisão" });
+    }
+  });
+
+  // Get specific task for DPO review (Admin only)
+  app.get('/api/admin/tasks/:taskId/review', isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const { taskId } = req.params;
+      const taskDetails = await storage.getTaskForReview(taskId);
+      
+      if (!taskDetails) {
+        return res.status(404).json({ message: "Tarefa não encontrada" });
+      }
+
+      res.json(taskDetails);
+    } catch (error) {
+      console.error("Error fetching task for review:", error);
+      res.status(500).json({ message: "Erro ao buscar detalhes da tarefa" });
+    }
+  });
+
+  // Approve task (Admin/DPO only)
+  app.patch('/api/admin/tasks/:taskId/approve', isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const { taskId } = req.params;
+      const { reviewComments } = req.body;
+      const adminId = req.user.claims.sub;
+
+      const updatedTask = await storage.updateComplianceTask(taskId, {
+        status: 'approved',
+        reviewedAt: new Date(),
+        reviewedBy: adminId,
+        adminComments: reviewComments || ''
+      });
+
+      // Log the approval action
+      await storage.createAuditLog({
+        userId: adminId,
+        action: 'task_approved',
+        resourceType: 'compliance_task',
+        resourceId: taskId,
+        details: `Tarefa "${updatedTask.title}" aprovada pelo DPO`,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent') || 'unknown'
+      });
+
+      res.json({
+        message: "Tarefa aprovada com sucesso",
+        task: updatedTask
+      });
+    } catch (error) {
+      console.error("Error approving task:", error);
+      res.status(500).json({ message: "Erro ao aprovar tarefa" });
+    }
+  });
+
+  // Reject task (Admin/DPO only)
+  app.patch('/api/admin/tasks/:taskId/reject', isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const { taskId } = req.params;
+      const { reviewComments } = req.body;
+      const adminId = req.user.claims.sub;
+
+      if (!reviewComments || reviewComments.trim() === '') {
+        return res.status(400).json({ 
+          message: "Comentários são obrigatórios para rejeitar uma tarefa" 
+        });
+      }
+
+      const updatedTask = await storage.updateComplianceTask(taskId, {
+        status: 'rejected',
+        reviewedAt: new Date(),
+        reviewedBy: adminId,
+        adminComments: reviewComments
+      });
+
+      // Log the rejection action
+      await storage.createAuditLog({
+        userId: adminId,
+        action: 'task_rejected',
+        resourceType: 'compliance_task',
+        resourceId: taskId,
+        details: `Tarefa "${updatedTask.title}" rejeitada pelo DPO: ${reviewComments}`,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent') || 'unknown'
+      });
+
+      res.json({
+        message: "Tarefa rejeitada com sucesso",
+        task: updatedTask
+      });
+    } catch (error) {
+      console.error("Error rejecting task:", error);
+      res.status(500).json({ message: "Erro ao rejeitar tarefa" });
+    }
+  });
+
   // Plan limits endpoint
   app.get('/api/plan/limits', isAuthenticated, attachUserPlan, async (req: any, res) => {
     try {

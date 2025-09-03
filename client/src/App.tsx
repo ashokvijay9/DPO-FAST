@@ -25,6 +25,7 @@ import AdminNavbar from "@/components/AdminNavbar";
 import AdminDashboard from "@/pages/admin/admin-dashboard";
 import AdminSubscribers from "@/pages/admin/admin-subscribers";
 import AdminDocuments from "@/pages/admin/admin-documents";
+import DPOReview from "@/pages/admin/dpo-review";
 import AdminReports from "@/pages/admin/admin-reports";
 import AdminProfile from "@/pages/admin/admin-profile";
 import AdminManagement from "@/pages/admin/admin-management";
@@ -93,6 +94,7 @@ function Router() {
           <Route path="/admin" component={AdminDashboard} />
           <Route path="/admin/subscribers" component={AdminSubscribers} />
           <Route path="/admin/documents" component={AdminDocuments} />
+          <Route path="/admin/dpo-review" component={DPOReview} />
           <Route path="/admin/reports" component={AdminReports} />
           <Route path="/admin/management" component={AdminManagement} />
           <Route path="/admin/profile" component={AdminProfile} />
