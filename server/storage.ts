@@ -321,70 +321,49 @@ export class DatabaseStorage implements IStorage {
 
   async getTaskForReview(taskId: string): Promise<any> {
     try {
-      // Get task details first
-      const task = await db
-        .select({
-          id: complianceTasks.id,
-          title: complianceTasks.title,
-          description: complianceTasks.description,
-          steps: complianceTasks.steps,
-          priority: complianceTasks.priority,
-          status: complianceTasks.status,
-          category: complianceTasks.category,
-          dueDate: complianceTasks.dueDate,
-          submittedAt: complianceTasks.submittedAt,
-          userComments: complianceTasks.userComments,
-          attachedDocuments: complianceTasks.attachedDocuments,
-          userId: complianceTasks.userId
-        })
+      // Use basic select to avoid Drizzle ordering issues
+      const taskQuery = await db
+        .select()
         .from(complianceTasks)
         .where(eq(complianceTasks.id, taskId))
         .limit(1);
 
-      if (!task.length) {
+      if (!taskQuery.length) {
         return null;
       }
 
-      const taskData = task[0];
+      const taskData = taskQuery[0];
 
       // Get user details
-      const user = await db
-        .select({
-          email: users.email,
-          firstName: users.firstName,
-          lastName: users.lastName
-        })
+      const userQuery = await db
+        .select()
         .from(users)
         .where(eq(users.id, taskData.userId))
         .limit(1);
 
       // Get company profile if exists
-      const companyProfile = await db
-        .select({
-          companyName: companyProfiles.companyName,
-          email: companyProfiles.email,
-          phone: companyProfiles.phone
-        })
+      const companyQuery = await db
+        .select()
         .from(companyProfiles)
         .where(eq(companyProfiles.userId, taskData.userId))
         .limit(1);
 
-      const userData = user[0] || {};
-      const companyData = companyProfile[0] || {};
+      const userData = userQuery[0] || {};
+      const companyData = companyQuery[0] || {};
 
       return {
-        id: taskData.id,
+        id: taskData.id || '',
         title: taskData.title || '',
         description: taskData.description || '',
         steps: taskData.steps || [],
         priority: taskData.priority || 'medium',
         status: taskData.status || '',
         category: taskData.category || '',
-        dueDate: taskData.dueDate,
-        submittedAt: taskData.submittedAt,
+        dueDate: taskData.dueDate || null,
+        submittedAt: taskData.submittedAt || null,
         userComments: taskData.userComments || '',
         attachments: taskData.attachedDocuments || [],
-        userId: taskData.userId,
+        userId: taskData.userId || '',
         userEmail: userData.email || '',
         userFirstName: userData.firstName || '',
         userLastName: userData.lastName || '',
