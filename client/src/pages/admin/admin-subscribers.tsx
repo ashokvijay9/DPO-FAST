@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { 
   Search, 
   Users, 
@@ -17,7 +20,8 @@ import {
   Filter,
   MoreHorizontal,
   Trash2,
-  Shield
+  Shield,
+  CreditCard
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
@@ -46,6 +50,10 @@ export default function AdminSubscribers() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPlan, setFilterPlan] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [selectedUser, setSelectedUser] = useState<Subscriber | null>(null);
+  const [newPlan, setNewPlan] = useState("");
+  const [newStatus, setNewStatus] = useState("");
+  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
   
   const { isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
@@ -122,6 +130,74 @@ export default function AdminSubscribers() {
       });
     },
   });
+
+  // Change subscription mutation
+  const changeSubscriptionMutation = useMutation({
+    mutationFn: async ({ userId, subscriptionPlan, subscriptionStatus }: { 
+      userId: string; 
+      subscriptionPlan?: string; 
+      subscriptionStatus?: string; 
+    }) => {
+      const response = await fetch(`/api/admin/users/${userId}/subscription`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subscriptionPlan, subscriptionStatus }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Erro ao alterar assinatura");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/subscribers"] });
+      setIsSubscriptionDialogOpen(false);
+      setSelectedUser(null);
+      setNewPlan("");
+      setNewStatus("");
+      toast({ title: "Assinatura alterada com sucesso!" });
+    },
+    onError: (error: Error) => {
+      toast({ 
+        title: "Erro ao alterar assinatura", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    },
+  });
+
+  const handleChangeSubscription = () => {
+    if (!selectedUser) return;
+    
+    const updates: { subscriptionPlan?: string; subscriptionStatus?: string } = {};
+    if (newPlan && newPlan !== selectedUser.subscriptionPlan) {
+      updates.subscriptionPlan = newPlan;
+    }
+    if (newStatus && newStatus !== selectedUser.subscriptionStatus) {
+      updates.subscriptionStatus = newStatus;
+    }
+    
+    if (Object.keys(updates).length === 0) {
+      toast({ 
+        title: "Nenhuma alteração", 
+        description: "Selecione um plano ou status diferente do atual",
+        variant: "destructive" 
+      });
+      return;
+    }
+
+    changeSubscriptionMutation.mutate({ 
+      userId: selectedUser.id, 
+      ...updates 
+    });
+  };
+
+  const openSubscriptionDialog = (user: Subscriber) => {
+    setSelectedUser(user);
+    setNewPlan(user.subscriptionPlan);
+    setNewStatus(user.subscriptionStatus);
+    setIsSubscriptionDialogOpen(true);
+  };
 
   const filteredSubscribers = subscribers?.filter((subscriber: Subscriber) => {
     const matchesSearch = 
@@ -341,6 +417,14 @@ export default function AdminSubscribers() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
+                                <DropdownMenuItem 
+                                  onSelect={() => openSubscriptionDialog(subscriber)}
+                                  className="text-green-600 cursor-pointer"
+                                >
+                                  <CreditCard className="h-4 w-4 mr-2" />
+                                  Alterar Assinatura
+                                </DropdownMenuItem>
+
                                 {subscriber.role !== 'admin' && (
                                   <AlertDialog>
                                     <AlertDialogTrigger asChild>
@@ -433,6 +517,80 @@ export default function AdminSubscribers() {
             )}
           </CardContent>
         </Card>
+
+        {/* Change Subscription Dialog */}
+        <Dialog open={isSubscriptionDialogOpen} onOpenChange={setIsSubscriptionDialogOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Alterar Assinatura</DialogTitle>
+              <DialogDescription>
+                Altere o plano e status de assinatura de {selectedUser?.firstName} {selectedUser?.lastName}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="plan" className="text-right">
+                  Plano
+                </Label>
+                <div className="col-span-3">
+                  <Select value={newPlan} onValueChange={setNewPlan}>
+                    <SelectTrigger data-testid="select-new-plan">
+                      <SelectValue placeholder="Selecione um plano" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="free">Gratuito</SelectItem>
+                      <SelectItem value="basic">Básico</SelectItem>
+                      <SelectItem value="pro">Pro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="status" className="text-right">
+                  Status
+                </Label>
+                <div className="col-span-3">
+                  <Select value={newStatus} onValueChange={setNewStatus}>
+                    <SelectTrigger data-testid="select-new-status">
+                      <SelectValue placeholder="Selecione um status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Ativo</SelectItem>
+                      <SelectItem value="inactive">Inativo</SelectItem>
+                      <SelectItem value="canceled">Cancelado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {selectedUser && (
+                <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
+                  <p><strong>Plano atual:</strong> {selectedUser.subscriptionPlan === 'free' ? 'Gratuito' : selectedUser.subscriptionPlan === 'basic' ? 'Básico' : 'Pro'}</p>
+                  <p><strong>Status atual:</strong> {selectedUser.subscriptionStatus === 'active' ? 'Ativo' : selectedUser.subscriptionStatus === 'inactive' ? 'Inativo' : 'Cancelado'}</p>
+                </div>
+              )}
+            </div>
+            
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsSubscriptionDialogOpen(false)}
+                disabled={changeSubscriptionMutation.isPending}
+              >
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleChangeSubscription}
+                disabled={changeSubscriptionMutation.isPending}
+                data-testid="confirm-change-subscription"
+              >
+                {changeSubscriptionMutation.isPending ? "Alterando..." : "Alterar Assinatura"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

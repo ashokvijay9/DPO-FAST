@@ -1061,6 +1061,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Change user subscription plan (Admin only)
+  app.patch('/api/admin/users/:userId/subscription', isAuthenticated, requireAdmin, async (req: AdminRequest, res) => {
+    try {
+      const { userId } = req.params;
+      const { subscriptionPlan, subscriptionStatus } = req.body;
+      const adminId = req.user.claims.sub;
+
+      // Validate subscription plan
+      const validPlans = ['free', 'basic', 'pro'];
+      const validStatuses = ['active', 'inactive', 'canceled'];
+
+      if (subscriptionPlan && !validPlans.includes(subscriptionPlan)) {
+        return res.status(400).json({ 
+          message: "Plano de assinatura inválido. Use: free, basic ou pro" 
+        });
+      }
+
+      if (subscriptionStatus && !validStatuses.includes(subscriptionStatus)) {
+        return res.status(400).json({ 
+          message: "Status de assinatura inválido. Use: active, inactive ou canceled" 
+        });
+      }
+
+      // Check if user exists
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+
+      // Update user subscription
+      const updatedUser = await storage.updateUserSubscription(userId, {
+        subscriptionPlan: subscriptionPlan || user.subscriptionPlan,
+        subscriptionStatus: subscriptionStatus || user.subscriptionStatus
+      });
+
+      // Log the action
+      await storage.createAuditLog({
+        userId: adminId,
+        action: 'subscription_changed',
+        resourceType: 'user',
+        resourceId: userId,
+        details: `Assinatura alterada de ${user.subscriptionPlan}/${user.subscriptionStatus} para ${updatedUser.subscriptionPlan}/${updatedUser.subscriptionStatus}`,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent') || 'unknown'
+      });
+
+      res.json({ 
+        message: "Assinatura alterada com sucesso",
+        user: {
+          id: updatedUser.id,
+          subscriptionPlan: updatedUser.subscriptionPlan,
+          subscriptionStatus: updatedUser.subscriptionStatus
+        }
+      });
+    } catch (error) {
+      console.error("Error updating user subscription:", error);
+      res.status(500).json({ message: "Erro ao alterar assinatura do usuário" });
+    }
+  });
+
   // Plan limits endpoint
   app.get('/api/plan/limits', isAuthenticated, attachUserPlan, async (req: any, res) => {
     try {

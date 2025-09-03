@@ -32,6 +32,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserSubscription(userId: string, customerId: string, subscriptionId: string, plan: string): Promise<User>;
+  updateUserSubscription(userId: string, updates: { subscriptionPlan?: string; subscriptionStatus?: string }): Promise<User>;
   updateUserProfile(userId: string, updates: UpdateUserProfile): Promise<User>;
   
   // Company profile operations
@@ -137,19 +138,42 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async updateUserSubscription(userId: string, customerId: string, subscriptionId: string, plan: string): Promise<User> {
-    const [user] = await db
-      .update(users)
-      .set({
-        subscriptionStatus: "active",
-        subscriptionPlan: plan,
-        stripeCustomerId: customerId,
-        stripeSubscriptionId: subscriptionId,
-        updatedAt: new Date(),
-      })
-      .where(eq(users.id, userId))
-      .returning();
-    return user;
+  async updateUserSubscription(userId: string, customerId: string, subscriptionId: string, plan: string): Promise<User>;
+  async updateUserSubscription(userId: string, updates: { subscriptionPlan?: string; subscriptionStatus?: string }): Promise<User>;
+  async updateUserSubscription(
+    userId: string, 
+    customerId?: string | { subscriptionPlan?: string; subscriptionStatus?: string }, 
+    subscriptionId?: string, 
+    plan?: string
+  ): Promise<User> {
+    // Handle both overloads
+    if (typeof customerId === 'object') {
+      // New overload: updateUserSubscription(userId, { subscriptionPlan, subscriptionStatus })
+      const updates = customerId;
+      const [user] = await db
+        .update(users)
+        .set({
+          ...updates,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, userId))
+        .returning();
+      return user;
+    } else {
+      // Original overload: updateUserSubscription(userId, customerId, subscriptionId, plan)
+      const [user] = await db
+        .update(users)
+        .set({
+          subscriptionStatus: "active",
+          subscriptionPlan: plan,
+          stripeCustomerId: customerId,
+          stripeSubscriptionId: subscriptionId,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, userId))
+        .returning();
+      return user;
+    }
   }
 
   async updateUserProfile(userId: string, updates: UpdateUserProfile): Promise<User> {
