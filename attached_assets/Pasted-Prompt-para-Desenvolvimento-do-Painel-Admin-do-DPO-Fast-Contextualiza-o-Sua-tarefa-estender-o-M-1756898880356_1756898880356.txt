@@ -1,0 +1,43 @@
+Prompt para Desenvolvimento do Painel Admin do DPO Fast
+Contextualização
+Sua tarefa é estender o Micro-SaaS DPO Fast com um painel administrativo para a equipe de DPOs (Data Protection Officers), onde eles podem analisar todas as documentações enviadas pelos assinantes da plataforma, aprovar ou rejeitar os documentos, e permitir que os assinantes avancem no processo de adequação à LGPD.
+O painel admin do DPO Fast deve incluir:
+
+Autenticação para Admins: Acesso restrito, com verificação de role de administrador.
+Lista de Assinantes e Documentos: Visualização de todos os assinantes ativos, com acesso aos documentos enviados no questionário e relatórios gerados.
+Revisão e Aprovação de Documentos: Funcionalidade para revisar documentos (visualizar, baixar), aprovar ou rejeitar, atualizando o status.
+Notificações: Notificar assinantes sobre aprovações ou rejeições, e registrar ações.
+Dashboard Admin: Uma visão geral com métricas (ex.: número de documentos pendentes, assinantes ativos), usando tabelas e gráficos simples.
+Segurança: Permitir que admins acessem dados de múltiplos usuários, mas mantenham a integridade.
+Integração com Componentes Existentes: Conectar aos componentes existentes para documentos e relatórios.
+
+O desenvolvimento será dividido em etapas para facilitar a implementação e evitar sobrecarga. Cada etapa terá um prompt específico com instruções claras, focando no que cada tela e parte do sistema deve possuir, com o nome DPO Fast integrado em títulos e descrições.
+Etapas de Desenvolvimento
+Etapa 1: Configuração do Painel Admin e Autenticação
+Objetivo: Criar a estrutura inicial do painel admin do DPO Fast, com autenticação restrita para usuários com role de admin.
+Prompt:Crie a estrutura inicial para o painel administrativo do Micro-SaaS DPO Fast. A seção principal do dashboard deve incluir uma barra de navegação com o logotipo DPO Fast Admin e links para "Assinantes", "Documentos Pendentes", "Relatórios" e "Logout". Deve verificar se o usuário autenticado tem role de "admin". Se não for admin, redirecione para a tela de login. Deve gerenciar perfis de admins. Inclua estilos personalizados para o painel admin, mantendo responsividade e uma paleta de cores profissional. Descreva em detalhes o que essa seção deve possuir e como deve funcionar.
+Etapa 2: Lista de Assinantes e Visão Geral
+Objetivo: Desenvolver uma seção para listar assinantes e exibir métricas gerais no painel admin do DPO Fast.
+Prompt:Desenvolva a seção de assinantes para o painel admin do DPO Fast, exibindo uma lista de todos os assinantes ativos. Deve incluir uma tabela responsiva com colunas como "Nome", "Email", "Data de Assinatura", "Número de Documentos Enviados" e "Ações" (ex.: visualizar documentos). Deve consultar métricas agregadas (ex.: total de assinantes, documentos pendentes) e exibir um dashboard simples com cards (ex.: "Assinantes Ativos: X", "Documentos Pendentes: Y"). Deve otimizar consultas em grande escala. Descreva em detalhes o que essa seção deve possuir e como deve funcionar.
+Etapa 3: Revisão de Documentos Enviados
+Objetivo: Criar funcionalidade para revisar e aprovar/rejeitar documentos enviados pelos assinantes no DPO Fast.
+Prompt:Crie a seção de documentos para o painel admin do DPO Fast, listando todos os documentos enviados pelos assinantes, filtrando por status "pendente". Deve incluir uma tabela com colunas como "Assinante", "Nome do Documento", "Data de Envio", "Visualizar" e "Ações" (botões para "Aprovar" ou "Rejeitar"). Deve atualizar o status ao clicar nos botões e registrar a ação. Deve re-verificar documentos durante a revisão. Descreva em detalhes o que essa seção deve possuir e como deve funcionar.
+Etapa 4: Notificações e Atualizações para Assinantes
+Objetivo: Implementar notificações por e-mail para assinantes após aprovação/rejeição no painel admin do DPO Fast.
+Prompt:Integre notificações ao painel admin do DPO Fast. Na seção de documentos, ao aprovar ou rejeitar um documento, deve enviar uma notificação automática ao assinante com mensagens personalizadas (ex.: "Seu documento foi aprovado e você pode prosseguir com o processo de adequação à LGPD" ou "Seu documento foi rejeitado: [motivo]"). Deve incluir um campo para o admin inserir um motivo de rejeição em um modal. Deve atualizar o status do processo de adequação do assinante. Descreva em detalhes o que essa funcionalidade deve possuir e como deve funcionar, incluindo um exemplo de configuração de notificações.
+Etapa 5: Visualização de Relatórios e Métricas Avançadas
+Objetivo: Permitir que admins visualizem relatórios gerados pelos assinantes e métricas avançadas no DPO Fast.
+Prompt:Crie a seção de relatórios para o painel admin do DPO Fast, exibindo uma lista de relatórios gerados pelos assinantes. Deve incluir cards ou tabela com colunas como "Assinante", "Data de Geração", "Nível de Adequação" e "Baixar PDF". Deve implementar métricas avançadas, como gráficos simples para distribuição de níveis de adequação ou documentos aprovados por mês. Deve permitir que admins gerem relatórios consolidados. Descreva em detalhes o que essa seção deve possuir e como deve funcionar.
+Etapa 6: Configuração de Regras de Segurança para Admins
+Objetivo: Configurar regras de segurança específicas para o painel admin do DPO Fast.
+Prompt:Atualize as regras de segurança para o painel admin do DPO Fast, permitindo que usuários com role "admin" leiam e atualizem dados de múltiplos usuários, mas restrinjam escritas não autorizadas. Deve manter a integridade registrando todas as ações de admins. Descreva em detalhes as regras de segurança e como devem funcionar, incluindo condições baseadas em role e instruções para testar as regras.
+Etapa 7: Deploy e Integração com o Sistema Existente
+Objetivo: Integrar o painel admin ao deploy existente do DPO Fast.
+Prompt:Integre o painel admin ao Micro-SaaS DPO Fast. Deve incluir as novas seções admin e configurar redirecionamentos ou autenticação se necessário. Forneça instruções passo a passo para adicionar o painel ao sistema existente, testar a integração (ex.: fluxo de envio de documento pelo assinante até aprovação pelo admin) e realizar o deploy. Inclua um processo para automatizar o deploy parcial do painel. Descreva em detalhes o que essa integração deve possuir e como deve funcionar, incluindo as instruções de deploy.
+Notas Adicionais
+
+Segurança: Reforce a auditoria de ações sensíveis no painel admin. Use regras de segurança para diferenciar acessos de admins e usuários comuns.
+Escalabilidade: Otimize consultas para listas grandes de assinantes/documentos.
+Usabilidade: Mantenha a interface intuitiva, adicionando modais para ações críticas (ex.: rejeição com motivo) e indicadores para operações assíncronas.
+Integração: Certifique-se de que o painel admin se conecte perfeitamente aos componentes existentes, como o questionário e geração de relatórios.
+Testes: Simule cenários de revisão e aprovação antes do deploy.
