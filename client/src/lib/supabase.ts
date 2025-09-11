@@ -1,18 +1,20 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Check if Supabase is properly configured
-const supabaseUrl = import.meta.env.VITE_NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseUrl = import.meta.env.VITE_NEXT_PUBLIC_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_NEXT_PUBLIC_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 // Create a mock client for development when Supabase is not configured
 const createMockSupabaseClient = () => ({
   auth: {
     signUp: async () => ({ data: null, error: { message: 'Supabase not configured' } }),
     signInWithPassword: async () => ({ data: null, error: { message: 'Supabase not configured' } }),
+    signInWithOAuth: async () => ({ data: null, error: { message: 'Supabase not configured' } }),
     signOut: async () => ({ error: null }),
     getUser: async () => ({ data: { user: null }, error: null }),
     getSession: async () => ({ data: { session: null }, error: null }),
-    onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } })
+    onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+    resetPasswordForEmail: async () => ({ error: null })
   },
   from: () => ({
     select: () => ({ data: [], error: null }),
@@ -22,9 +24,15 @@ const createMockSupabaseClient = () => ({
   })
 })
 
-// Client for browser/frontend use
+// Client for browser/frontend use with auth configuration
 export const supabase = (supabaseUrl && supabaseAnonKey) 
-  ? createClient(supabaseUrl, supabaseAnonKey)
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
+      }
+    })
   : createMockSupabaseClient()
 
 if (!supabaseUrl || !supabaseAnonKey) {

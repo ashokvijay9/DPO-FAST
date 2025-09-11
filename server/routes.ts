@@ -8,7 +8,7 @@ import multer from "multer";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import Stripe from "stripe";
-import { attachUserPlan, checkDocumentLimits, checkReportLimits, requireAdvancedFeatures, getPlanLimits, type AuthenticatedRequest } from "./middleware/planLimits";
+import { attachUserPlan, checkDocumentLimits, checkReportLimits, requireAdvancedFeatures, getPlanLimits } from "./middleware/planLimits";
 import { generateComplianceReportHTML, type ReportData } from "./reportGenerator";
 import fs from "fs";
 import { requireAdmin, type AdminRequest } from "./middleware/adminAuth";

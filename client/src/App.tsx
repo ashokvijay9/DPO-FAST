@@ -8,6 +8,9 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/components/AuthProvider";
 import { useAuth } from "@/hooks/useAuth";
 import Landing from "@/pages/landing";
+import LoginPage from "@/pages/auth/login";
+import RegisterPage from "@/pages/auth/register";
+import AuthCallback from "@/pages/auth/callback";
 import Home from "@/pages/home";
 import Questionnaire from "@/pages/questionnaire";
 import QuestionnaireSectors from "@/pages/questionnaire-sectors";
@@ -58,7 +61,10 @@ function Router() {
     return (
       <Switch>
         <Route path="/" component={Landing} />
-        <Route path="*" component={Landing} />
+        <Route path="/login" component={LoginPage} />
+        <Route path="/register" component={RegisterPage} />
+        <Route path="/auth/callback" component={AuthCallback} />
+        <Route path="*" component={LoginPage} />
       </Switch>
     );
   }

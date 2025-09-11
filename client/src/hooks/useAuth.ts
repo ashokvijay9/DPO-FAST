@@ -28,6 +28,7 @@ export function useAuth() {
     session: supabaseAuth.session,
     signIn: supabaseAuth.signIn,
     signUp: supabaseAuth.signUp,
+    signInWithGoogle: supabaseAuth.signInWithGoogle,
     signOut: supabaseAuth.signOut,
     logout: async () => {
       await supabaseAuth.signOut()

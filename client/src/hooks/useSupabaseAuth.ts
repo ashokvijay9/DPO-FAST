@@ -7,7 +7,8 @@ interface AuthContextType {
   session: Session | null
   isLoading: boolean
   signIn: (email: string, password: string) => Promise<{ error: any }>
-  signUp: (email: string, password: string) => Promise<{ error: any }>
+  signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: any }>
+  signInWithGoogle: () => Promise<{ error: any }>
   signOut: () => Promise<{ error: any }>
   resetPassword: (email: string) => Promise<{ error: any }>
 }
@@ -18,6 +19,7 @@ export const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   signIn: async () => ({ error: null }),
   signUp: async () => ({ error: null }),
+  signInWithGoogle: async () => ({ error: null }),
   signOut: async () => ({ error: null }),
   resetPassword: async () => ({ error: null }),
 })
@@ -58,10 +60,26 @@ export const useSupabaseAuth = () => {
     return { error }
   }
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+        }
+      }
+    })
+    return { error }
+  }
+
+  const signInWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`
+      }
     })
     return { error }
   }
@@ -82,6 +100,7 @@ export const useSupabaseAuth = () => {
     isLoading,
     signIn,
     signUp,
+    signInWithGoogle,
     signOut,
     resetPassword,
   }
