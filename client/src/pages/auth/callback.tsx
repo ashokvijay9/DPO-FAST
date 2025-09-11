@@ -9,9 +9,21 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Check if we have a hash fragment with auth data
-        if (window.location.hash) {
-          // Let Supabase handle the OAuth callback automatically
+        // Check if we have URL parameters (PKCE flow) or hash fragments (implicit flow)
+        if (window.location.search || window.location.hash) {
+          // For PKCE flow, exchange code for session
+          if (window.location.search.includes('code=')) {
+            console.log('PKCE flow detected, exchanging code for session')
+            const { data: exchangeData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(window.location.href)
+            
+            if (exchangeError) {
+              console.error('Auth exchange error:', exchangeError)
+              setLocation('/login?error=auth_exchange_failed')
+              return
+            }
+          }
+
+          // Get the session (works for both PKCE and implicit flows)
           const { data, error } = await supabase.auth.getSession()
           
           if (error) {
