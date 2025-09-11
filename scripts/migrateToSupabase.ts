@@ -304,8 +304,8 @@ async function main() {
 }
 
 // Run migration if called directly
-if (require.main === module) {
-  main()
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch(console.error)
 }
 
 export { main as migrateToSupabase }
