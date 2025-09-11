@@ -78,7 +78,7 @@ export const useSupabaseAuth = () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `https://05bbd61a-9cb6-4829-ba5c-2033b038a9d2-00-35pq4jo1kle3q.picard.replit.dev/auth/callback`
+        redirectTo: `${window.location.origin}/auth/callback`
       }
     })
     return { error }

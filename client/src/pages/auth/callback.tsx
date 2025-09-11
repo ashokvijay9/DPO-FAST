@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { useLocation } from 'wouter'
 import { supabase } from '@/lib/supabase'
 import { Loader2 } from 'lucide-react'
@@ -9,6 +9,16 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
+        // First, exchange the URL hash for a session
+        const { data: exchangeData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(window.location.href)
+        
+        if (exchangeError) {
+          console.error('Auth exchange error:', exchangeError)
+          setLocation('/login?error=auth_exchange_failed')
+          return
+        }
+
+        // Then get the session to confirm
         const { data, error } = await supabase.auth.getSession()
         
         if (error) {
@@ -18,9 +28,11 @@ export default function AuthCallback() {
         }
 
         if (data.session) {
+          console.log('OAuth successful, redirecting to home')
           // User successfully authenticated, redirect to home
           setLocation('/home')
         } else {
+          console.log('No session found after OAuth callback')
           // No session found, redirect to login
           setLocation('/login')
         }
