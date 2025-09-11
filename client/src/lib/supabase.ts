@@ -1,8 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Check if Supabase is properly configured
-const supabaseUrl = import.meta.env.VITE_NEXT_PUBLIC_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL
+// Force correct Supabase URL - environment variables contain wrong IP
+const supabaseUrl = 'https://vrhukcxtfjnzvmbqhbzt.supabase.co'
 const supabaseAnonKey = import.meta.env.VITE_NEXT_PUBLIC_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+console.log('✅ Frontend using Supabase URL:', supabaseUrl)
 
 // Create a mock client for development when Supabase is not configured
 const createMockSupabaseClient = () => ({
