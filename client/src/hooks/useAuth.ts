@@ -20,7 +20,8 @@ export function useAuth() {
   return {
     user,
     companyProfile,
-    isLoading: supabaseAuth.isLoading || userLoading || profileLoading,
+    // Only block on Supabase auth loading, not on backend API calls
+    isLoading: supabaseAuth.isLoading,
     // Allow authentication with Supabase session even if backend user fetch fails
     isAuthenticated: !!supabaseAuth.session && (!!user || !!supabaseAuth.user),
     hasCompanyProfile: !!companyProfile,
