@@ -576,7 +576,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Note: Auth routes are handled by authRouter above
 
   // Company profile routes
-  app.post('/api/company-profile', isAuthenticated, async (req: AuthenticatedRequest, res) => {
+  app.post('/api/company-profile', isAuthenticated, async (req: any, res) => {
     try {
       if (!req.user) {
         return res.status(401).json({ message: 'User not authenticated' })
@@ -604,7 +604,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/company-profile', isAuthenticated, async (req: AuthenticatedRequest, res) => {
+  app.get('/api/company-profile', isAuthenticated, async (req: any, res) => {
     try {
       if (!req.user) {
         return res.status(401).json({ message: 'User not authenticated' })
@@ -619,7 +619,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/company-profile', isAuthenticated, async (req: AuthenticatedRequest, res) => {
+  app.put('/api/company-profile', isAuthenticated, async (req: any, res) => {
     try {
       if (!req.user) {
         return res.status(401).json({ message: 'User not authenticated' })
