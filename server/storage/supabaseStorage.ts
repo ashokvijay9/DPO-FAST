@@ -74,7 +74,11 @@ export class SupabaseStorageService {
       throw new Error(`Failed to list files: ${error.message}`)
     }
 
-    return data || []
+    return data?.map(file => ({
+      name: file.name,
+      size: file.metadata?.size ?? 0,
+      updated_at: file.updated_at || new Date().toISOString()
+    })) || []
   }
 
   // Create bucket if it doesn't exist

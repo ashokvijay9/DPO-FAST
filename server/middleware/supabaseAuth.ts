@@ -13,11 +13,15 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
   }
 })
 
-interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequest extends Request {
   user?: {
     id: string
     email: string
-    claims: any
+    claims: {
+      sub: string
+      email?: string
+      [key: string]: any
+    }
   }
 }
 

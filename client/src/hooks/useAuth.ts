@@ -1,9 +1,14 @@
+import { useContext } from 'react'
 import { useQuery } from "@tanstack/react-query";
+import { AuthContext } from './useSupabaseAuth'
 
 export function useAuth() {
+  const supabaseAuth = useContext(AuthContext)
+  
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ["/api/auth/user"],
     retry: false,
+    enabled: !!supabaseAuth.session,
   });
 
   const { data: companyProfile, isLoading: profileLoading } = useQuery({
@@ -15,12 +20,17 @@ export function useAuth() {
   return {
     user,
     companyProfile,
-    isLoading: userLoading || profileLoading,
-    isAuthenticated: !!user,
+    isLoading: supabaseAuth.isLoading || userLoading || profileLoading,
+    isAuthenticated: !!supabaseAuth.session && !!user,
     hasCompanyProfile: !!companyProfile,
     isAdmin: user?.role === 'admin',
-    logout: () => {
-      // Logout functionality will be handled by the components
+    supabaseUser: supabaseAuth.user,
+    session: supabaseAuth.session,
+    signIn: supabaseAuth.signIn,
+    signUp: supabaseAuth.signUp,
+    signOut: supabaseAuth.signOut,
+    logout: async () => {
+      await supabaseAuth.signOut()
     },
   };
 }

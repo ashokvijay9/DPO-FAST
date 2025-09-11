@@ -35,6 +35,7 @@ import { v4 as uuidv4 } from "uuid";
 export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
+  getUserByAuthId(authUserId: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserSubscription(userId: string, customerId: string, subscriptionId: string, plan: string): Promise<User>;
   updateUserSubscription(userId: string, updates: { subscriptionPlan?: string; subscriptionStatus?: string }): Promise<User>;
@@ -134,6 +135,11 @@ export class DatabaseStorage implements IStorage {
   // User operations (required for Replit Auth)
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByAuthId(authUserId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.authUserId, authUserId));
     return user;
   }
 

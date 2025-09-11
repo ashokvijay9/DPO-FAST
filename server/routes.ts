@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { isAuthenticated, type AuthenticatedRequest } from "./middleware/supabaseAuth";
 import { insertQuestionnaireResponseSchema, insertDocumentSchema, updateUserProfileSchema, insertComplianceReportSchema, insertCompanyProfileSchema, companyOnboardingSchema, insertCompanySectorSchema, companySectorSchema, updateCompanySectorSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
@@ -569,27 +569,11 @@ async function generateDynamicQuestions(userId: string) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware
-  await setupAuth(app);
+  // Import auth routes
+  const authRoutes = await import('./routes/auth');
+  app.use('/api/auth', authRoutes.authRouter);
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, attachUserPlan, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      
-      // Include plan information in the response
-      const userWithPlan = {
-        ...user,
-        planLimits: req.planLimits
-      };
-      
-      res.json(userWithPlan);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+  // Note: Auth routes are handled by authRouter above
 
   // Company profile routes
   app.post('/api/company-profile', isAuthenticated, async (req: any, res) => {
