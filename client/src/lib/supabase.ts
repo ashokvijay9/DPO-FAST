@@ -1,15 +1,35 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Temporary placeholder values while migrating to Supabase
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder'
+// Check if Supabase is properly configured
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
-  console.warn('⚠️ Supabase not fully configured - using placeholder values for development. Backend auth still works.')
-}
+// Create a mock client for development when Supabase is not configured
+const createMockSupabaseClient = () => ({
+  auth: {
+    signUp: async () => ({ data: null, error: { message: 'Supabase not configured' } }),
+    signInWithPassword: async () => ({ data: null, error: { message: 'Supabase not configured' } }),
+    signOut: async () => ({ error: null }),
+    getUser: async () => ({ data: { user: null }, error: null }),
+    getSession: async () => ({ data: { session: null }, error: null }),
+    onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } })
+  },
+  from: () => ({
+    select: () => ({ data: [], error: null }),
+    insert: () => ({ data: [], error: null }),
+    update: () => ({ data: [], error: null }),
+    delete: () => ({ data: [], error: null })
+  })
+})
 
 // Client for browser/frontend use
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = (supabaseUrl && supabaseAnonKey) 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : createMockSupabaseClient()
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn('⚠️ Supabase not configured - using mock client. Backend authentication still works through Express.')
+}
 
 // Database types (will be auto-generated later)
 export type Database = {

@@ -23,7 +23,7 @@ export function useAuth() {
     isLoading: supabaseAuth.isLoading || userLoading || profileLoading,
     isAuthenticated: !!supabaseAuth.session && !!user,
     hasCompanyProfile: !!companyProfile,
-    isAdmin: user?.role === 'admin',
+    isAdmin: Boolean((user as any)?.role === 'admin'),
     supabaseUser: supabaseAuth.user,
     session: supabaseAuth.session,
     signIn: supabaseAuth.signIn,
