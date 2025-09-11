@@ -42,20 +42,21 @@ export default function Home() {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
-  // Redirect to login if not authenticated
+  // Redirect to login if not authenticated (with extra safety check)
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
+      console.log('Auth check failed - isAuthenticated:', isAuthenticated, 'user:', !!user, 'session:', !!user);
       toast({
         title: "Unauthorized",
         description: "You are logged out. Logging in again...",
         variant: "destructive",
       });
       setTimeout(() => {
-        window.location.href = "/api/login";
+        window.location.href = "/login";
       }, 500);
       return;
     }
-  }, [isAuthenticated, isLoading, toast]);
+  }, [isAuthenticated, isLoading, toast, user]);
 
   const { data: dashboardData, isLoading: isDashboardLoading } = useQuery({
     queryKey: ["/api/dashboard"],

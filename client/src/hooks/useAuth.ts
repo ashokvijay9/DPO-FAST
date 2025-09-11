@@ -21,7 +21,8 @@ export function useAuth() {
     user,
     companyProfile,
     isLoading: supabaseAuth.isLoading || userLoading || profileLoading,
-    isAuthenticated: !!supabaseAuth.session && !!user,
+    // Allow authentication with Supabase session even if backend user fetch fails
+    isAuthenticated: !!supabaseAuth.session && (!!user || !!supabaseAuth.user),
     hasCompanyProfile: !!companyProfile,
     isAdmin: Boolean((user as any)?.role === 'admin'),
     supabaseUser: supabaseAuth.user,
