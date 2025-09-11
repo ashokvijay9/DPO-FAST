@@ -115,9 +115,15 @@ export default function RegisterPage() {
       const { error } = await signInWithGoogle()
       
       if (error) {
-        setError('Erro ao cadastrar com Google. Tente novamente.')
+        console.error('Google signup error:', error)
+        if (error.message?.includes('provider is not enabled') || error.message?.includes('Unsupported provider')) {
+          setError('Login com Google não está habilitado. Por favor, configure o provedor Google no Supabase.')
+        } else {
+          setError('Erro ao cadastrar com Google. Tente novamente.')
+        }
       }
     } catch (error) {
+      console.error('Unexpected Google signup error:', error)
       setError('Erro inesperado. Tente novamente.')
     } finally {
       setLoading(false)

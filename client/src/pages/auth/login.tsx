@@ -59,9 +59,15 @@ export default function LoginPage() {
       const { error } = await signInWithGoogle()
       
       if (error) {
-        setError('Erro ao fazer login com Google. Tente novamente.')
+        console.error('Google login error:', error)
+        if (error.message?.includes('provider is not enabled') || error.message?.includes('Unsupported provider')) {
+          setError('Login com Google não está habilitado. Por favor, configure o provedor Google no Supabase.')
+        } else {
+          setError('Erro ao fazer login com Google. Tente novamente.')
+        }
       }
     } catch (error) {
+      console.error('Unexpected Google login error:', error)
       setError('Erro inesperado. Tente novamente.')
     } finally {
       setLoading(false)
