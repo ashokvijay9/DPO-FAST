@@ -2,7 +2,8 @@ import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+// Force correct Supabase URL - using NEXT_PUBLIC var contains wrong IP
+const supabaseUrl = 'https://vrhukcxtfjnzvmbqhbzt.supabase.co'
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 
 // Validate configuration at startup
@@ -10,6 +11,8 @@ if (!supabaseUrl || !supabaseServiceKey) {
   console.error('❌ CRITICAL: Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables')
   console.error('Backend authentication will not work until these are configured')
 }
+
+console.log('✅ Using Supabase URL:', supabaseUrl)
 
 // Admin client for server-side verification  
 const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {

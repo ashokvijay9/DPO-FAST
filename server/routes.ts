@@ -576,14 +576,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Note: Auth routes are handled by authRouter above
 
   // Company profile routes
-  app.post('/api/company-profile', isAuthenticated, async (req: any, res) => {
+  app.post('/api/company-profile', isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
-      const userId = req.user.claims.sub;
+      if (!req.user) {
+        return res.status(401).json({ message: 'User not authenticated' })
+      }
+      
+      const userId = req.user.id;
       const companyData = companyOnboardingSchema.parse(req.body);
       
       const profile = await storage.createCompanyProfile({
         userId,
         ...companyData,
+        employeeCount: companyData.employeeCount?.toString() || '', // Ensure string
         departments: companyData.departments as any, // Cast to jsonb
         sectors: companyData.sectors as any, // Cast to jsonb
         customSectors: companyData.customSectors as any, // Cast to jsonb
@@ -599,9 +604,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/company-profile', isAuthenticated, async (req: any, res) => {
+  app.get('/api/company-profile', isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
-      const userId = req.user.claims.sub;
+      if (!req.user) {
+        return res.status(401).json({ message: 'User not authenticated' })
+      }
+      
+      const userId = req.user.id;
       const profile = await storage.getCompanyProfile(userId);
       res.json(profile);
     } catch (error) {
@@ -610,13 +619,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/company-profile', isAuthenticated, async (req: any, res) => {
+  app.put('/api/company-profile', isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
-      const userId = req.user.claims.sub;
+      if (!req.user) {
+        return res.status(401).json({ message: 'User not authenticated' })
+      }
+      
+      const userId = req.user.id;
       const updates = companyOnboardingSchema.partial().parse(req.body);
       
       const profile = await storage.updateCompanyProfile(userId, {
         ...updates,
+        employeeCount: updates.employeeCount?.toString() || updates.employeeCount, // Ensure string
         departments: updates.departments as any, // Cast to jsonb
         sectors: updates.sectors as any, // Cast to jsonb
         customSectors: updates.customSectors as any, // Cast to jsonb
