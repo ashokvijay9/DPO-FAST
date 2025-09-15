@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { isAuthenticated, type AuthenticatedRequest } from "./middleware/supabaseAuth";
+import { isAuthenticated, type AuthenticatedRequest } from "./middleware/localAuth";
 import { insertQuestionnaireResponseSchema, insertDocumentSchema, updateUserProfileSchema, insertComplianceReportSchema, insertCompanyProfileSchema, companyOnboardingSchema, insertCompanySectorSchema, companySectorSchema, updateCompanySectorSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
@@ -12,6 +12,8 @@ import { attachUserPlan, checkDocumentLimits, checkReportLimits, requireAdvanced
 import { generateComplianceReportHTML, type ReportData } from "./reportGenerator";
 import fs from "fs";
 import { requireAdmin, type AdminRequest } from "./middleware/adminAuth";
+import { configureStaticFiles } from "./middleware/staticFiles";
+import { localStorageService } from "./storage/localStorage";
 import mammoth from "mammoth";
 import { 
   logAuditEvent, 
@@ -569,8 +571,11 @@ async function generateDynamicQuestions(userId: string) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Import auth routes
-  const authRoutes = await import('./routes/auth');
+  // Configure static file serving for uploads
+  configureStaticFiles(app);
+  
+  // Import local auth routes (replaces Supabase auth)
+  const authRoutes = await import('./routes/localAuth');
   app.use('/api/auth', authRoutes.authRouter);
 
   // Note: Auth routes are handled by authRouter above

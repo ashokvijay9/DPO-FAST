@@ -36,6 +36,7 @@ export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   getUserByAuthId(authUserId: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>; // For local auth
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserSubscription(userId: string, customerId: string, subscriptionId: string, plan: string): Promise<User>;
   updateUserSubscription(userId: string, updates: { subscriptionPlan?: string; subscriptionStatus?: string }): Promise<User>;
@@ -141,6 +142,11 @@ export class DatabaseStorage implements IStorage {
   async getUserByAuthId(authUserId: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.authUserId, authUserId));
     return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    const usersList = await db.select().from(users);
+    return usersList;
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
