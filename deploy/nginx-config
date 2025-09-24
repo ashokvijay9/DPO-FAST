@@ -1,0 +1,154 @@
+# Configuração Nginx para DPO Fast
+# Salvar em: /etc/nginx/sites-available/dpo-fast
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name SEU_DOMINIO.com www.SEU_DOMINIO.com;  # SUBSTITUIR PELO SEU DOMÍNIO
+    
+    # Redirect HTTP para HTTPS (descomentar após configurar SSL)
+    # return 301 https://$server_name$request_uri;
+    
+    # Rate limiting
+    limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
+    limit_req_zone $binary_remote_addr zone=login:10m rate=5r/m;
+    
+    # Root para arquivos estáticos (se necessário)
+    root /opt/dpo-fast/app/dist;
+    index index.html;
+    
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "no-referrer-when-downgrade" always;
+    add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline' 'unsafe-eval'" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+    
+    # Gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types
+        text/plain
+        text/css
+        text/xml
+        text/javascript
+        application/javascript
+        application/xml+rss
+        application/json;
+    
+    # Proxy para API Node.js
+    location /api/ {
+        limit_req zone=api burst=20 nodelay;
+        
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        
+        # Timeouts
+        proxy_read_timeout 300s;
+        proxy_connect_timeout 75s;
+        proxy_send_timeout 300s;
+        
+        # Buffering
+        proxy_buffering on;
+        proxy_buffer_size 128k;
+        proxy_buffers 4 256k;
+        proxy_busy_buffers_size 256k;
+    }
+    
+    # Rate limiting especial para login
+    location /api/auth/login {
+        limit_req zone=login burst=3 nodelay;
+        
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    
+    # Servir uploads/documentos
+    location /uploads/ {
+        alias /opt/dpo-fast/app/uploads/;
+        
+        # Cache por 1 ano
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        
+        # Security - apenas PDFs, imagens e documentos
+        location ~* \.(pdf|doc|docx|jpg|jpeg|png|gif)$ {
+            # OK
+        }
+        
+        # Bloquear outros tipos de arquivo
+        location ~ {
+            return 403;
+        }
+    }
+    
+    # Frontend SPA (Single Page Application)
+    location / {
+        try_files $uri $uri/ @proxy_to_app;
+    }
+    
+    # Fallback para aplicação Node.js
+    location @proxy_to_app {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    
+    # Bloquear arquivos sensíveis
+    location ~ /\.(ht|git|env) {
+        deny all;
+        return 404;
+    }
+    
+    location ~ \.(log|sql|backup)$ {
+        deny all;
+        return 404;
+    }
+    
+    # Logs customizados
+    access_log /var/log/nginx/dpo-fast-access.log;
+    error_log /var/log/nginx/dpo-fast-error.log;
+}
+
+# Configuração HTTPS (descomentar após obter certificado SSL)
+# server {
+#     listen 443 ssl http2;
+#     listen [::]:443 ssl http2;
+#     server_name SEU_DOMINIO.com www.SEU_DOMINIO.com;
+#     
+#     # Certificados SSL (Let's Encrypt adicionará automaticamente)
+#     ssl_certificate /etc/letsencrypt/live/SEU_DOMINIO.com/fullchain.pem;
+#     ssl_certificate_key /etc/letsencrypt/live/SEU_DOMINIO.com/privkey.pem;
+#     
+#     # Configurações SSL modernas
+#     ssl_protocols TLSv1.2 TLSv1.3;
+#     ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384;
+#     ssl_prefer_server_ciphers off;
+#     ssl_session_cache shared:SSL:10m;
+#     ssl_session_timeout 10m;
+#     
+#     # OCSP Stapling
+#     ssl_stapling on;
+#     ssl_stapling_verify on;
+#     ssl_trusted_certificate /etc/letsencrypt/live/SEU_DOMINIO.com/chain.pem;
+#     
+#     # [Repetir toda a configuração do servidor HTTP aqui]
+# }
