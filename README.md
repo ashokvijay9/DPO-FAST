@@ -25,63 +25,44 @@ O nome "DPO Fast" reflete o foco em agilizar o processo de designação e gestã
 
 ## 🔄 Fluxo Geral de Funcionamento
 1. O assinante se cadastra, configura setores e responde ao questionário por setor.
-2. O sistema usa Qwen AI para gerar relatórios e to-do lists por setor.
-3. O assinante completa tarefas na to-do list, anexa documentos e envia para validação.
-4. Admins revisam no painel, aprovam/revogam e notificam.
-5. Após aprovações, o progresso é atualizado, e relatórios finais são gerados para comprovação de adequação.
+2. O assinante completa tarefas na to-do list, anexa documentos e envia para validação.
+3. Admins revisam no painel, aprovam/revogam e notificam.
+4. Após aprovações, o progresso é atualizado, e relatórios finais são gerados para comprovação de adequação.
 
 ## 🛠️ Tecnologias Utilizadas
 - **Frontend**: React, HTML, CSS, JavaScript, TypeScript para interfaces responsivas e intuitivas.
 - **Backend e Banco de Dados**: Supabase (PostgreSQL para dados relacionais, Auth para autenticação, Storage para arquivos). Migrado de Replit Database para maior escalabilidade e funcionalidades relacionais.
 - **Integrações Externas**:
   - Stripe para gerenciamento de assinaturas e pagamentos.
-- **Hospedagem**: Firebase Hosting (para escalabilidade automática), com integração ao Supabase como backend principal.
+- **Hospedagem**: CWP control para controle e gerenciamento do servidor e hospedagem da Solution com integração NodeJS Apps para hospedar a API do backend principal.
 
 ## 🚀 Instalação e Configuração
 ### Requisitos
-- Conta no Supabase (para banco de dados, auth e storage).
+- Acesso ao servidor da Solution (para banco de dados, storage e acesso a API).
 - Conta no Stripe (para assinaturas).
-- Conta no Firebase (para hosting e extensões, se mantido híbrido).
 
 ### 📋 Passos de Configuração
 1. **Clone o Repositório**:
    ```
-   git clone https://github.com/seu-repo/dpo-fast.git
+   git clone https://github.com/Projetosdevsol/DPO-FAST.git
    cd dpo-fast
-   ```
-
-2. **Configurar Supabase**:
-   - Crie um projeto no dashboard do Supabase.
-   - Defina tabelas no PostgreSQL (ex.: users, respostas, documentos) com Row Level Security (RLS) para acessos restritos.
-   - Configure Auth com provedores desejados.
-   - Crie buckets no Storage para documentos.
-   - Adicione variáveis de ambiente no arquivo `.env` ou no ambiente de deploy:
-     ```
-     SUPABASE_URL=seu-supabase-url
-     SUPABASE_KEY=seu-supabase-key
-     ```
-
-3. **Instalar Dependências**:
+      ```
+2. **Instalar Dependências**:
    - Para o frontend (se usando npm): `npm install supabase-js stripe bootstrap chart.js`.
    - Integre o cliente Supabase no JS para autenticação e queries.
-
-4. **Configurar Stripe e Qwen AI**:
+3. **Configurar Stripe**:
    - No dashboard do Stripe, crie produtos para planos de assinatura.
    - Obtenha API keys e configure webhooks para atualizações de status.
-   - Para Qwen AI, configure prompts personalizados na API e integre chamadas no código de geração de relatórios.
+4. **Migrar Dados (se aplicável)**:
+   - Exporte dados antigos com o schema em arquivoSQL.
+   - Importe o arquivo para o phpPGAdmin.
 
-5. **Migrar Dados (se aplicável)**:
-   - Exporte dados antigos (ex.: de Replit DB) para JSON/CSV.
-   - Importe para Supabase usando o dashboard ou scripts.
-
-6. **Deploy**:
+5. **Deploy**:
    - Use Firebase CLI para hospedar: `firebase deploy`.
    - Ou deploy no Replit/Vercel/Netlify, configurando o Supabase como backend remoto.
 
 ### Ambiente de Desenvolvimento
-- Use VS Code ou Replit para edição.
-- Teste localmente com Supabase emuladores (se disponível) ou ambiente de staging.
-
+- Use VS Code ou Firebase Studio.
 ## Uso
 - **Para Assinantes**: Acesse via navegador, cadastre-se, configure setores, responda questionários e gerencie to-do lists.
 - **Para Admins**: Login com role "admin"; revise envios no painel.
@@ -100,4 +81,4 @@ O nome "DPO Fast" reflete o foco em agilizar o processo de designação e gestã
 ## Licença
 MIT License - Sinta-se livre para usar e modificar, com atribuição.
 
-Para mais detalhes, contate a equipe de desenvolvimento em [felipesadrak2@gmail.com].
+Para mais detalhes, contate a equipe de desenvolvimento em [projetossolutiondev@gmail.com].
